@@ -31,12 +31,20 @@ class ParserException(Exception):
     def __init__(self, msg):
         super().__init__(msg)
 
+class Intermediate:
+    def __init__(self):
+        self.segments = {}
+        self.symbols = {}
+        self.relocations = []
+        self.data = []
+
 class Parser:
     def __init__(self, f):
         self.fin = f
         self.tokens = []
         self.lineno = 0
-        self.segments = {}
+        self.ir = Intermediate()
+        self.ir.segments = {}
         self.symbols = {}
         self.relocations = []
         self.data = []
@@ -58,25 +66,25 @@ class Parser:
     def readsegments(self, N):
         for _ in range(N):
             name, start, len, attr = self.tokens
-            self.segments[name] = [int(start), int(len), attr]
+            self.ir.segments[name] = [int(start), int(len), attr]
             self.advance()
 
     def readsymbols(self, N):
         for _ in range(N):
             name, val, segment, type = self.tokens
-            self.symbols[name] = [val, int(segment), type]
+            self.ir.symbols[name] = [val, int(segment), type]
             self.advance()
 
     def readrelocations(self, N):
         for _ in range(N):
             loc, segment, ref, type = self.tokens
-            self.relocations.append([int(loc), int(segment), int(ref), type])
+            self.ir.relocations.append([int(loc), int(segment), int(ref), type])
             self.advance()
 
     def readdata(self, N):
         for _ in range(N):
             bytes = ''.join(self.tokens)
-            self.data.append(bytes)
+            self.ir.data.append(bytes)
             self.advance()
 
     def advance(self):
@@ -93,33 +101,61 @@ class Parser:
         self.advance()
 
 
+class Writer:
+    """
+    Take intermediate format. 
+    find .text segment
+        write it at 0x1000
+    find .data segment
+        write it at 0x1000 + len(.text) + offset to next page
+    find .bss segment
+        write it at to 4 byte boundary after end(data)
+    """
+    def __init__(self, ir):
+        self.ir = ir
+        assert '.text' in self.ir.segments
+        assert '.data' in self.ir.segments
+        assert '.bss' in self.ir.segments
+
+    def roundup(self, addr):
+        """ Roundup to next page boundary """
+        PAGE = 0x1000
+        return addr + PAGE & ~(PAGE-1)
+
 def printobject(p):
-    print(p.segments)
-    print(p.symbols)
-    print(p.relocations)
-    print(p.data)
+    print(p.ir.segments)
+    print(p.ir.symbols)
+    print(p.ir.relocations)
+    print(p.ir.data)
 
-s = """LINK
-0 0 0
+def testparser():
+    s = """LINK
+    0 0 0
 
-"""
-p = Parser(io.StringIO(s))
-assert p.segments == {}
-assert p.symbols == {}
-assert p.relocations == []
-assert p.data == []
+    """
+    p = Parser(io.StringIO(s))
+    assert p.ir.segments == {}
+    assert p.ir.symbols == {}
+    assert p.ir.relocations == []
+    assert p.ir.data == []
 
-s = """LINK
-1 1 1
-.text 1000 3 RP
-foo ff 1 D
-01 1 1 A4
-11223344
+    s = """LINK
+    1 1 1
+    .text 1000 3 RP
+    foo ff 1 D
+    01 1 1 A4
+    11223344
 
-"""
+    """
 
-p = Parser(io.StringIO(s))
-assert p.segments == {'.text' : [1000, 3, 'RP']}
-assert p.symbols == {'foo' : ['ff', 1, 'D']}
-assert p.relocations == [[1, 1, 1, 'A4']]
-assert p.data == ['11223344']
+    p = Parser(io.StringIO(s))
+    assert p.ir.segments == {'.text' : [1000, 3, 'RP']}
+    assert p.ir.symbols == {'foo' : ['ff', 1, 'D']}
+    assert p.ir.relocations == [[1, 1, 1, 'A4']]
+    assert p.ir.data == ['11223344']
+    return "parser tests passed"
+
+def testwriter():
+    pass
+
+testparser()
