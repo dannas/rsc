@@ -26,17 +26,11 @@ Example:
 import sys
 import re
 import io
+from intermediate import Intermediate
 
 class ParserException(Exception):
     def __init__(self, msg):
         super().__init__(msg)
-
-class Intermediate:
-    def __init__(self):
-        self.segments = {}
-        self.symbols = {}
-        self.relocations = []
-        self.data = []
 
 class Parser:
     def __init__(self, f):
@@ -111,11 +105,15 @@ class Writer:
     find .bss segment
         write it at to 4 byte boundary after end(data)
     """
-    def __init__(self, ir):
+    def __init__(self, ir, fout):
         self.ir = ir
+        self.fout = fout
+
         assert '.text' in self.ir.segments
         assert '.data' in self.ir.segments
         assert '.bss' in self.ir.segments
+
+
 
     def roundup(self, addr):
         """ Roundup to next page boundary """
