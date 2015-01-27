@@ -1,0 +1,136 @@
+Notes for C++ Concurrency in action
+
+2. Managing threads
+    Every prog has one thread => running main
+    start => construct thread object
+        pass a func, and possibly params 
+    end => func returns
+
+    thread t((task()));   // extra parens avoids vexing parse...
+    thread t([] () { // ... });
+
+    caller thread 
+        waits (.join()) 
+        or does not wait (.detach()).
+    if detached
+        lifetime issues...
+    if exceptions is thrown before joinable thread is joined
+        join is skipped => app gets terminated
+    workaround by catching exception
+
+    class thread_guard
+    {
+        thread& t_;
+    public:
+        explicit thread_guard(thread& t) :
+            t_(t)
+            {}
+        ~thread_guard()
+        {
+            if (t.joinable())
+                t.join();
+        ]
+        thread_guard(thread_guard const&) = delete;
+        thread_guard& operator=(thread_guard const&) = delete;
+    };
+
+    running thread in background
+        thread obj disconnected from thread
+        no direct means for communication
+        C++runtime lib guarentees proper destruction
+        daemon threads
+        when use?
+            fire and forget
+            when there are other means for communicating with t
+            long-running tasks
+        example of usage of detached thread
+            document running msg loop
+    passing params
+        needs to ensure params are copied to the new thread
+        refs and ptrs may gpointerso out of scope in calling t
+        example
+            void oops(int d) {
+                char buf[] = "foo";
+                thread t(f, buf);   // ERR: ptr passed
+                t.detach()
+            }
+        sometimes you do want a ref
+        example
+            int f(int &x);
+            void oops() {
+                int x;
+                thread t(f, x); // ERR: val passed, use std::ref()
+            }
+        pass member funcs
+            struct C { void f(); };
+            void g() {
+                C c;
+                thread t(C::f, &c); // Calls member func
+            }
+        moveable params
+            unique_ptr<int> p;
+            thread(f, move(p)); // automatic if p is temporary
+    threads can be moved too
+        class scoped_thread 
+        {
+            thread t_;
+        public:
+            explicit scoped_thread(thread t) :
+            t_(move(t_))
+            {
+                if (!t_.joinable())
+                    throw logic_error("No thread");
+            }
+            ~scoped_thread()
+            {
+                t.join();
+            }
+            scoped_thread(const scoped_thread&) =delete;
+            scoped_thread& operator=(const scoped_thread&) =delete;
+        };
+    Choosing # of threads at runtime
+        std::thread::hardware_concurrency()
+    identifying threads
+        std::thread::id()
+            returns special val if no t associated
+        std::this_thread::get_id()
+        id can be compared and used in hashtable
+
+3. Sharing data between threads
+    t key benefit => easily share data
+        but also a big drawback
+    use invariants for reasoning about correctness
+    race condition
+        outcome depndes on rel ordering of ops on >1 t
+    mutex
+        std::lock_guard<std::mutex> g(mu);
+        // ...
+        don't pass ptr and refs to protected data outside scope of lock
+        whether by ret from func, storing in ext visible mem, or passing
+        them as args to user-supplied funcs.
+    race cond inherent in interfaces
+        class stack {
+            // ...
+            bool empty() const;
+            size_t size() const;
+        };
+         Can't be relied on. Other t may push data after your call to size().
+    deadlock
+        always lock two mu in same order
+        problem => swap operation
+        solution => use std::lock
+
+            void swap(X& lhs, X&rhs) {
+                if (&lhs == &rhs) return;
+                lock(lhs.m, rhs.m)
+                lock_guard<mutex> lock_a(lhs.m, adopt_lock);
+                lock_guard<mutex> lock_b(rhs.m, adopt_lock);
+                swap(lhs.x, rhs.x);
+            }
+        guidelines
+            avoid nested locks
+            avoid calling user-supplied code while holding a lock
+            aquire locks in a fixed order
+            use a lock hiearchy
+
+
