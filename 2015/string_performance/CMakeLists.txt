@@ -18,3 +18,5 @@ include_directories(${PKG_INCLUDE_DIRS})
 add_executable(stringtest stringtest.cpp)
 target_link_libraries(stringtest Qt5::Core "${PKG_LDFLAGS} -lfolly -lfollybenchmark")
 
+add_executable(String String.cpp)
+
