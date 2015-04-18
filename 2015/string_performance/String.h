@@ -2,33 +2,42 @@
 
 #include <cstring>
 
-// Uses new[] instead of malloc.
-char *strdup(const char *s)
+static int roundup(int x, int multiple)
 {
-    char *t = new char[strlen(s)+1];
-    strcpy(t, s);
-    return t;
+    return (x + multiple - 1) & ~(multiple - 1);
 }
-
 
 class String
 {
 public:
     String();
-    ~String();
-    String(const char *t);
     String(const String &t);
+    ~String();
+    // TODO(dannas): Rule-of-tree. Add assignment operator.
 
-    String& operator=(const char *t);
-    String& operator=(const String &t);
+    void append(const String &t);
 
 private:
+    void resize(int max);
     char *sp;
+    int N;
+    int cap;
 };
 
 String::String()
 {
-    sp = strdup("");
+    cap = 64;
+    resize(cap);
+    *sp = '\0';
+    N = 0;
+}
+
+String::String(const String &t)
+{
+    cap = 64;
+    resize(cap);
+    N = 0;
+    append(t);
 }
 
 String::~String()
@@ -36,31 +45,25 @@ String::~String()
     delete[] sp;
 }
 
-String::String(const char* t)
+void String::append(const String &t)
 {
-    sp = strdup(t);
-}
-
-String::String(const String &t)
-{
-    sp = strdup(t.sp);
-}
-
-String& String::operator=(const char *t)
-{
-    if (sp != t) {
-        delete[] sp;
-        sp = strdup(t);
+    int max = t.N + 1;
+    if (max > cap) {
+        max = roundup(max, 64);
+        resize(max);
     }
-    return *this;
-
+    for (int i = N; i < N + t.N; i++)
+        sp[i] = t.sp[i];
+    N = t.N;
 }
 
-String& String::operator=(const String &t)
+void String::resize(int max)
 {
-    if (this != &t) {
-        delete[] sp;
-        sp = strdup(t.sp);
-    }
-    return *this;
+    char *t = new char[max];
+    cap = max;
+
+    for (int i = 0; i < N; i++)
+        t[i] = sp[i];
+    t[N] = '\0';
+    sp = t;
 }
