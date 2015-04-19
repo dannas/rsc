@@ -20,11 +20,14 @@
 #include <QString>
 #include <sstream>
 
+#include "String.h"
+
 using namespace folly;
 using namespace std;
 
 string t = "abcdefghijklmnopqrstuvwxyz";
 QString qt = "abcdefghijklmnopqrstuvwxyz";
+String st = "abcdefghijklmnopqrstuvwxyz";
 
 char* rawCopy(char *dest, const void *src, size_t n)
 {

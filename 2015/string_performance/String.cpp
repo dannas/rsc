@@ -2,12 +2,10 @@
 
 int main()
 {
-    String s;
+    String s("");
     String t(s);
     String u = t;
     t = s;
 
-    String w = "abc";
-    t = "def";
 
 }
