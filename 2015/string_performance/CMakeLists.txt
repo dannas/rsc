@@ -8,15 +8,15 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
 
-# Find the QtWidgets library
 find_package(Qt5Core)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PKG REQUIRED libglog)
+pkg_check_modules(PKG REQUIRED libgflags)
 include_directories(${PKG_INCLUDE_DIRS})
 
 add_executable(stringtest stringtest.cpp)
-target_link_libraries(stringtest Qt5::Core "${PKG_LDFLAGS} -lfolly -lfollybenchmark")
+target_link_libraries(stringtest Qt5::Core "${PKG_LDFLAGS} -lgflags -lfolly -lfollybenchmark")
 
 add_executable(String String.cpp)
 

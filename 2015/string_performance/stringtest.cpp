@@ -116,8 +116,16 @@ BENCHMARK(qappendReserve, iters) {
     doNotOptimizeAway(&s);
 }
 
-int main()
+BENCHMARK(simpleAppend, iters) {
+    String s;
+    FOR_EACH_RANGE(i, 0, iters)
+        s.append(st);
+    doNotOptimizeAway(&s);
+}
+
+int main(int argc, char *argv[])
 {
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
     runBenchmarks();
 }
 
