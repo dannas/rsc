@@ -15,8 +15,10 @@
 // ============================================================================
 
 #include <folly/Benchmark.h>
+#include <folly/FBString.h>
 #include <folly/Foreach.h>
 #include <string>
+#include <ext/vstring.h>
 #include <QString>
 #include <sstream>
 
@@ -26,8 +28,11 @@ using namespace folly;
 using namespace std;
 
 string t = "abcdefghijklmnopqrstuvwxyz";
+__gnu_cxx::__vstring gt = "abcdefghijklmnopqrstuvwxyz";
 QString qt = "abcdefghijklmnopqrstuvwxyz";
-String st = "abcdefghijklmnopqrstuvwxyz";
+v1::string st = "abcdefghijklmnopqrstuvwxyz";
+v2::string st2 = "abcdefghijklmnopqrstuvwxyz";
+fbstring fs = "abcdefghijklmnopqrstuvwxyz";
 
 char* rawCopy(char *dest, const void *src, size_t n)
 {
@@ -62,6 +67,67 @@ BENCHMARK(appendReserve, iters) {
     }
     FOR_EACH_RANGE(i, 0, iters)
         s.append(t);
+    doNotOptimizeAway(&s);
+}
+
+BENCHMARK(follyOperatorPlus, iters) {
+    fbstring s;
+    FOR_EACH_RANGE(i, 0, iters)
+        s = s + fs;
+    doNotOptimizeAway(&s);
+}
+BENCHMARK(follyOperatorPlusAssign, iters) {
+    fbstring s;
+    FOR_EACH_RANGE(i, 0, iters)
+        s += fs;
+    doNotOptimizeAway(&s);
+}
+
+BENCHMARK(follyAppend, iters) {
+    fbstring s;
+    FOR_EACH_RANGE(i, 0, iters)
+        s.append(fs);
+    doNotOptimizeAway(&s);
+}
+
+BENCHMARK(follyAppendReserve, iters) {
+    fbstring s;
+    BENCHMARK_SUSPEND {
+        s.reserve(iters * 30);
+    }
+    FOR_EACH_RANGE(i, 0, iters)
+        s.append(fs);
+    doNotOptimizeAway(&s);
+}
+
+
+BENCHMARK(vstringOperatorPlus, iters) {
+    __gnu_cxx::__vstring s;
+    FOR_EACH_RANGE(i, 0, iters)
+        s = s + gt;
+    doNotOptimizeAway(&s);
+}
+BENCHMARK(vstringOperatorPlusAssign, iters) {
+    __gnu_cxx::__vstring s;
+    FOR_EACH_RANGE(i, 0, iters)
+        s += gt;
+    doNotOptimizeAway(&s);
+}
+
+BENCHMARK(vstringAppend, iters) {
+    __gnu_cxx::__vstring s;
+    FOR_EACH_RANGE(i, 0, iters)
+        s.append(gt);
+    doNotOptimizeAway(&s);
+}
+
+BENCHMARK(vstringAppendReserve, iters) {
+    __gnu_cxx::__vstring s;
+    BENCHMARK_SUSPEND {
+        s.reserve(iters * 30);
+    }
+    FOR_EACH_RANGE(i, 0, iters)
+        s.append(gt);
     doNotOptimizeAway(&s);
 }
 
