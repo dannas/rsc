@@ -2,105 +2,161 @@
 
 #include <cstring>
 #include <iostream> // DEBUG
+#include <algorithm>
 
 static int roundup(int x, int multiple)
 {
     return (x + multiple - 1) & ~(multiple - 1);
 }
 
-class String
+namespace v1 {
+class string
 {
 public:
-    String();
-    String(const char *t);
-    String(const String &t);
-    ~String();
+    string();
+    string(const char *t);
+    string(const string &t);
+    ~string();
 
-    String& operator=(const String &t);
-
-    void append(const String &t);
-    void append(const char *t);
+    void append(const string &t);
 
 private:
-    void resize(int max);
-    char *sp;
-    int N;
+    void reserve(int max);
+    char *buf;
+    int len;
+    int cap;
+
+};
+
+string::string()
+    : buf(0), cap(0), len(0)
+{
+}
+
+string::string(const char *t)
+{
+    cap = len = strlen(t);
+    buf = new char[cap];
+    std::copy(t, t + len, buf);
+}
+
+string::string(const string &t)
+    : buf(new char[t.cap]),
+      cap(t.cap),
+      len(t.len)
+{
+    std::copy(t.buf, t.buf+len, buf);
+}
+
+string::~string()
+{
+    delete[] buf;
+}
+
+void string::append(const string &t)
+{
+    reserve(len + t.len);
+    std::copy(t.buf, t.buf+t.len, buf+len);
+    len += t.len;
+}
+
+void string::reserve(int n)
+{
+    if (cap < n) {
+        n = std::max(2*cap, n);
+        char *t = new char[n];
+        std::copy(buf, buf+len, t);
+        delete[] buf;
+        buf = t;
+        cap = n;
+    }
+}
+} // namespace v1
+
+namespace v2 {
+
+class string
+{
+public:
+    string();
+    string(const char *t);
+    string(const string &t);
+    ~string();
+
+    void append(const string &t);
+private:
+    void reserve(int max);
+
+    union {
+        char *buf;
+        char s[24];
+    };
+    int len;
     int cap;
 };
 
-String::String()
+string::string()
+    : buf(0), len(0), cap(0)
 {
-    cap = 64;
-    N = 0;
-    resize(cap);
-    *sp = '\0';
 }
 
-String::String(const char *t)
+string::string(const char *t)
 {
-    cap = 64;
-    N = 0;
-    resize(cap);
-    append(t);
-}
-
-String::String(const String &t)
-{
-    cap = 64;
-    N = 0;
-    resize(cap);
-    append(t);
-}
-
-String::~String()
-{
-    delete[] sp;
-}
-
-String& String::operator=(const String &t)
-{
-    if (this != &t) {
-        delete[] sp;
-        N = cap = 0;
-        append(t);
+    cap = len = strlen(t);
+    if (len < 24) {
+        std::copy(t, t+len, s);
+    } else {
+        buf = new char[cap];
+        std::copy(t, t + len, buf);
     }
-    return *this;
 }
 
-void String::append(const String &t)
+string::string(const string &t)
 {
-    //std::cerr << __func__ << " " << N << " " << cap << "\n";
-    int max = t.N + 1;
-    if (max+N > cap) {
-        max = roundup(max+N, 64);
-        resize(max);
+    len = t.len;
+    cap = t.cap;
+    if (len < 24) {
+        std::copy(t.s, t.s+len, s);
+    } else {
+        buf = new char[cap];
+        std::copy(t.buf, t.buf+len, buf);
     }
-    for (int i = N; i < N + t.N; i++)
-        sp[i] = t.sp[i];
-    N = t.N;
 }
 
-void String::append(const char *t)
+string::~string()
 {
-    int max = strlen(t) + 1;
-    if (max > cap) {
-        max = roundup(max, 64);
-        resize(max);
+    if (len >= 24)
+        delete[] buf;
+}
+
+void string::append(const string &t)
+{
+    // TODO(dannas): SIGSEGV in copy call
+    reserve(len + t.len);
+    if (len + t.len < 24)
+        std::copy(t.s, t.s+t.len, s+len);
+    else
+        std::copy(t.buf, t.buf+t.len, buf+len);
+
+    len += t.len;
+}
+
+void string::reserve(int n)
+{
+    if (n <= 24)
+        return;
+
+    if (cap < n) {
+        n = std::max(2*cap, n);
+        char *t = new char[n];
+        if (cap <= 24)
+            std::copy(s, s+len, t);
+        else {
+            std::copy(buf, buf+len, t);
+            delete[] buf;
+        }
+        buf = t;
+        cap = n;
     }
-    for (int i = N; i < N + max; i++)
-        sp[i] = t[i];
-    N = max-1;
 }
-
-
-void String::resize(int max)
-{
-    //std::cerr << "     " << __func__ << " " << max << "\n";
-    char *t = new char[max];
-    cap = max;
-
-    for (int i = 0; i < N; i++)
-        t[i] = sp[i];
-    t[N] = '\0';
-    sp = t;
-}
+} // namespace v2

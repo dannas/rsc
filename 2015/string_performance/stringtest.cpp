@@ -186,9 +186,16 @@ BENCHMARK(qappendReserve, iters) {
 }
 
 BENCHMARK(simpleAppend, iters) {
-    String s;
+    v1::string s;
     FOR_EACH_RANGE(i, 0, iters)
         s.append(st);
+    doNotOptimizeAway(&s);
+}
+
+BENCHMARK(simpleSsoAppend, iters) {
+    v2::string s;
+    FOR_EACH_RANGE(i, 0, iters)
+        s.append(st2);
     doNotOptimizeAway(&s);
 }
 

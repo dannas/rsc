@@ -2,9 +2,10 @@
 
 int main()
 {
-    String s("");
-    String t(s);
-    String u = t;
+    using namespace v1;
+    string s;
+    string t(s);
+    string u = t;
     t = s;
 
 
