@@ -2,11 +2,9 @@
 
 int main()
 {
-    using namespace v1;
+    using namespace v2;
     string s;
-    string t(s);
-    string u = t;
-    t = s;
 
-
+    for (int i = 0; i < 30; i++)
+        s.append("a");
 }

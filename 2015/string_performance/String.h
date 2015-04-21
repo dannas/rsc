@@ -96,14 +96,14 @@ private:
 };
 
 string::string()
-    : buf(0), len(0), cap(0)
+    : buf(0), len(0), cap(24)
 {
 }
 
 string::string(const char *t)
 {
     cap = len = strlen(t);
-    if (len < 24) {
+    if (len <= 24) {
         std::copy(t, t+len, s);
     } else {
         buf = new char[cap];
@@ -115,7 +115,7 @@ string::string(const string &t)
 {
     len = t.len;
     cap = t.cap;
-    if (len < 24) {
+    if (len <= 24) {
         std::copy(t.s, t.s+len, s);
     } else {
         buf = new char[cap];
@@ -131,19 +131,27 @@ string::~string()
 
 void string::append(const string &t)
 {
-    // TODO(dannas): SIGSEGV in copy call
     reserve(len + t.len);
-    if (len + t.len < 24)
+
+    // TODO(dannas): Use iterators for hiding this mess
+    // We need to both keep track of whether our string
+    // uses the stack or heap and what the other string does.
+    if (len + t.len <= 24) {
         std::copy(t.s, t.s+t.len, s+len);
-    else
-        std::copy(t.buf, t.buf+t.len, buf+len);
+    } else {
+        if (t.len <= 24)
+            std::copy(t.s, t.s+t.len, buf+len);
+        else
+            std::copy(t.buf, t.buf+t.len, buf+len);
+    }
 
     len += t.len;
 }
 
 void string::reserve(int n)
 {
-    if (n <= 24)
+    // enough room in s
+    if (len <= 24 && n <= 24)
         return;
 
     if (cap < n) {
