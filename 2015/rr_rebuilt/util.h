@@ -20,6 +20,10 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+// Not part of system headers
+#define PTRACE_SYSEMU (__ptrace_request)31
+#define PTRACE_SYSEMU_SINGLESTEP (__ptrace_request)32
+
 /**
  * Converts a vector of strings to a POSIX-style array of char*s terminated
  * by a nullptr.

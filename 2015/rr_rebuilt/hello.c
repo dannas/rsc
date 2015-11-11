@@ -14,7 +14,7 @@ int my_write(int fd, const char* buf, size_t count) {
 
 int my_exit(int status) {
   int ret;
-  __asm__("syscall\n\t" : "=a"(ret) : "a"(SYS_exit));
+  __asm__("syscall\n\t" : "=a"(ret) : "a"(SYS_exit), "D"(status));
   return ret;
 }
 

@@ -7,29 +7,48 @@
 // signals;
 // does not provide any scheduler; and does not optimize writing of trace files.
 //
-// TODO(dannas): Add replay command
+// Relies on address randomization being disabled.
+//
+// Example usage:
+//
+//      $ echo 0 | sudo tee /proc/sys/kernel/randomize_va_spaces
+//      0
+//
+//      $ ./rr-v1 ./hello
+//      Hello world
+//
+//      $ cat /tmp/rr-log.txt
+//      ENTER_SYSCALL 59 rdi=603048, rsi=603080, rdx=7fffffffddd0,
+//      rax=ffffffffffffffda
+//      EXIT_SYSCALL 59 rdi=0, rsi=0, rdx=0, rax=0
+//      ENTER_SYSCALL 1 rdi=1, rsi=7fffffffdda8, rdx=c, rax=ffffffffffffffda
+//      EXIT_SYSCALL 1 rdi=1, rsi=7fffffffdda8, rdx=c, rax=c
+//      ENTER_SYSCALL 60 rdi=0, rsi=7fffffffdda8, rdx=0, rax=ffffffffffffffda
+//
+//      $ ./rr-v1 replay
+//      Hello world
+//
+// TODO(dannas): Figure out why there's a mismatch in registers between record
+// and replay.
 
 #include "util.h"
 
+FILE* log_fp = nullptr;
+
 void run_target(int argc, char* argv[]) {
-  xpersonality(ADDR_NO_RANDOMIZE);
   std::vector<std::string> args(argv + 1, argv + argc);
-  xptrace(PTRACE_TRACEME, 0, 0, 0);
+  xptrace(PTRACE_TRACEME, 0, nullptr, nullptr);
 
   // Signal to tracer that we've started.
   kill(getpid(), SIGSTOP);
 
-  // TODO(dannas): The addresses for execvp are not consistent across runs,
-  // despite ADDR_NO_RANDOMIZE being set. Why? Because the stack is allocated
-  // before the personality() call? Tried calling personality from main() but
-  // the addresses were still unconsistent.
   xexecvp(args[0].c_str(), StringVectorToCharArray(args).get());
 }
 
-int wait_for_syscall(pid_t child) {
+int wait_for_syscall(pid_t child, __ptrace_request request) {
   int status;
   while (true) {
-    xptrace(PTRACE_SYSCALL, child, 0, 0);
+    xptrace(request, child, 0, 0);
     waitpid(child, &status, 0);
 
     // Syscalls have the 8'th bit set.
@@ -46,7 +65,11 @@ user_regs_struct get_regs(pid_t child) {
   return regs;
 }
 
-void write_event(const char* event, const user_regs_struct& regs) {
+void set_regs(pid_t child, user_regs_struct& regs) {
+  xptrace(PTRACE_SETREGS, child, nullptr, &regs);
+}
+
+void write_event(FILE* fp, const char* event, const user_regs_struct& regs) {
 
   // The Linux/x86-64 kernel expects the system call parameters in
   // registers according to the following table:
@@ -64,13 +87,26 @@ void write_event(const char* event, const user_regs_struct& regs) {
   //  syscall		rcx
   //  eflags from syscall	r11
   //
-  printf("%s %llu rdi=%llx, rsi=%llx, rdx=%llx, rax=%llx\n", event,
-         regs.orig_rax, regs.rdi, regs.rsi, regs.rdx, regs.rax);
+  fprintf(fp, "%s %llu rdi=%llx rsi=%llx rdx=%llx rax=%llx\n", event,
+          regs.orig_rax, regs.rdi, regs.rsi, regs.rdx, regs.rax);
+}
+
+void read_event(std::string& type, user_regs_struct* regs) {
+  char buf[BUFSIZ];
+  int nread =
+      fscanf(log_fp, "%s %llu rdi=%llx rsi=%llx rdx=%llx rax=%llx\n", buf,
+             &regs->orig_rax, &regs->rdi, &regs->rsi, &regs->rdx, &regs->rax);
+  if (nread != 6) {
+    die("fscanf parsing error");
+  }
+  type = buf;
 }
 
 void record(pid_t child) {
-  int status;
 
+  log_fp = fopen("/tmp/rr-log.txt", "w");
+
+  int status;
   // Wait for SIGSTOP
   waitpid(child, &status, 0);
 
@@ -78,13 +114,46 @@ void record(pid_t child) {
   ptrace(PTRACE_SETOPTIONS, child, 0, PTRACE_O_TRACESYSGOOD);
 
   while (true) {
-    if (wait_for_syscall(child) != 0)
+    if (wait_for_syscall(child, PTRACE_SYSCALL) != 0)
       break;
-    write_event("ENTER_SYSCALL", get_regs(child));
+    write_event(log_fp, "ENTER_SYSCALL", get_regs(child));
 
-    if (wait_for_syscall(child) != 0)
+    if (wait_for_syscall(child, PTRACE_SYSCALL) != 0)
       break;
-    write_event("EXIT_SYSCALL", get_regs(child));
+    write_event(log_fp, "EXIT_SYSCALL", get_regs(child));
+  }
+}
+
+void replay(pid_t child) {
+  log_fp = fopen("/tmp/rr-log.txt", "r");
+  int status;
+  // Wait for SIGSTOP
+  waitpid(child, &status, 0);
+
+  // Allow us to distinguish system calls from other events.
+  ptrace(PTRACE_SETOPTIONS, child, 0, PTRACE_O_TRACESYSGOOD);
+
+  while (true) {
+    std::string type;
+    user_regs_struct r_regs;
+
+    if (wait_for_syscall(child, PTRACE_SYSEMU) != 0)
+      break;
+
+    read_event(type, &r_regs);
+
+    if (wait_for_syscall(child, PTRACE_SYSEMU_SINGLESTEP) != 0)
+      break;
+
+    auto regs = get_regs(child);
+
+    read_event(type, &r_regs);
+    regs.orig_rax = r_regs.orig_rax;
+    regs.rdi = r_regs.rdi;
+    regs.rsi = r_regs.rsi;
+    regs.rdx = r_regs.rdx;
+    regs.rax = r_regs.rax;
+    set_regs(child, regs);
   }
 }
 
@@ -97,6 +166,9 @@ int main(int argc, char* argv[]) {
   if (pid == 0) {
     run_target(argc, argv);
   } else {
-    record(pid);
+    if (strcmp(argv[1], "replay") == 0)
+      replay(pid);
+    else
+      record(pid);
   }
 }
