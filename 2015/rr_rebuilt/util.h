@@ -9,14 +9,14 @@
 #include <cstdlib>
 #include <cstdarg>
 #include <cerrno>
-#include <cstring>          // strerror
+#include <cstring> // strerror
 
 #include <sys/personality.h>
 #include <sys/ptrace.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/user.h>
-#include <sys/reg.h>        // Constants ORIG_RAX, RAX, ...
+#include <sys/reg.h> // Constants ORIG_RAX, RAX, ...
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -33,17 +33,16 @@ public:
     array.push_back(nullptr);
   }
   char** get() { return array.data(); }
+
 private:
   std::vector<char*> array;
 };
 
-
-void die(const char *fmt, ...);
+void die(const char* fmt, ...);
 
 pid_t xfork();
 
-long xptrace(enum __ptrace_request request, pid_t pid,
-             void *addr, void *data);
+long xptrace(enum __ptrace_request request, pid_t pid, void* addr, void* data);
 
 void xexecvp(const char* file, char* const argv[]);
 
