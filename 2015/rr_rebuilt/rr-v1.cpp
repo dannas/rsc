@@ -17,14 +17,6 @@
 //      $ ./rr-v1 ./hello
 //      Hello world
 //
-//      $ cat /tmp/rr-log.txt
-//      ENTER_SYSCALL 59 rdi=603048, rsi=603080, rdx=7fffffffddd0,
-//      rax=ffffffffffffffda
-//      EXIT_SYSCALL 59 rdi=0, rsi=0, rdx=0, rax=0
-//      ENTER_SYSCALL 1 rdi=1, rsi=7fffffffdda8, rdx=c, rax=ffffffffffffffda
-//      EXIT_SYSCALL 1 rdi=1, rsi=7fffffffdda8, rdx=c, rax=c
-//      ENTER_SYSCALL 60 rdi=0, rsi=7fffffffdda8, rdx=0, rax=ffffffffffffffda
-//
 //      $ ./rr-v1 replay
 //      Hello world
 //
@@ -69,8 +61,24 @@ void set_regs(pid_t child, user_regs_struct& regs) {
   xptrace(PTRACE_SETREGS, child, nullptr, &regs);
 }
 
-void write_event(FILE* fp, const char* event, const user_regs_struct& regs) {
+enum EventType { ENTERSYSCALL, EXITSYSCALL };
 
+struct Event {
+  Event() {}
+  Event(EventType t, const user_regs_struct& r) : type(t), regs(r) {}
+  EventType type;
+  user_regs_struct regs;
+};
+
+size_t write(FILE* fp, const Event& event) {
+  return fwrite(&event, sizeof(event), 1, fp);
+}
+
+size_t read(FILE* fp, Event& event) {
+  return fread(&event, sizeof(event), 1, fp);
+}
+
+void dump(FILE* fp, const Event& event) {
   // The Linux/x86-64 kernel expects the system call parameters in
   // registers according to the following table:
   //
@@ -86,20 +94,16 @@ void write_event(FILE* fp, const char* event, const user_regs_struct& regs) {
   //  return address from
   //  syscall		rcx
   //  eflags from syscall	r11
-  //
-  fprintf(fp, "%s %llu rdi=%llx rsi=%llx rdx=%llx rax=%llx\n", event,
-          regs.orig_rax, regs.rdi, regs.rsi, regs.rdx, regs.rax);
-}
-
-void read_event(std::string& type, user_regs_struct* regs) {
-  char buf[BUFSIZ];
-  int nread =
-      fscanf(log_fp, "%s %llu rdi=%llx rsi=%llx rdx=%llx rax=%llx\n", buf,
-             &regs->orig_rax, &regs->rdi, &regs->rsi, &regs->rdx, &regs->rax);
-  if (nread != 6) {
-    die("fscanf parsing error");
+  std::string evstr;
+  if (event.type == ENTERSYSCALL) {
+    evstr = "ENTERSYSCALL";
+  } else {
+    evstr = "EXITSYSCALL";
   }
-  type = buf;
+
+  auto regs = event.regs;
+  fprintf(fp, "%s %llu rdi=%llx rsi=%llx rdx=%llx rax=%llx\n", evstr.c_str(),
+          regs.orig_rax, regs.rdi, regs.rsi, regs.rdx, regs.rax);
 }
 
 void record(pid_t child) {
@@ -116,11 +120,17 @@ void record(pid_t child) {
   while (true) {
     if (wait_for_syscall(child, PTRACE_SYSCALL) != 0)
       break;
-    write_event(log_fp, "ENTER_SYSCALL", get_regs(child));
+
+    Event enter(ENTERSYSCALL, get_regs(child));
+    write(log_fp, enter);
+    dump(stdout, enter);
 
     if (wait_for_syscall(child, PTRACE_SYSCALL) != 0)
       break;
-    write_event(log_fp, "EXIT_SYSCALL", get_regs(child));
+
+    Event exit(EXITSYSCALL, get_regs(child));
+    write(log_fp, exit);
+    dump(stdout, exit);
   }
 }
 
@@ -134,26 +144,20 @@ void replay(pid_t child) {
   ptrace(PTRACE_SETOPTIONS, child, 0, PTRACE_O_TRACESYSGOOD);
 
   while (true) {
-    std::string type;
-    user_regs_struct r_regs;
+    Event event;
 
     if (wait_for_syscall(child, PTRACE_SYSEMU) != 0)
       break;
 
-    read_event(type, &r_regs);
+    read(log_fp, event);
 
     if (wait_for_syscall(child, PTRACE_SYSEMU_SINGLESTEP) != 0)
       break;
 
     auto regs = get_regs(child);
+    dump(stdout, event);
 
-    read_event(type, &r_regs);
-    regs.orig_rax = r_regs.orig_rax;
-    regs.rdi = r_regs.rdi;
-    regs.rsi = r_regs.rsi;
-    regs.rdx = r_regs.rdx;
-    regs.rax = r_regs.rax;
-    set_regs(child, regs);
+    set_regs(child, event.regs);
   }
 }
 
