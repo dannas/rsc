@@ -1,0 +1,16 @@
+Solutions to exercises in the book Algorithms 4th edition, by Robert
+Sedgewick and Kevin Wayne.
+
+Setting up the classpath:
+
+    $ cd build
+    $ export CLASSPATH="$(echo ../lib/*.jar | tr ' ' ':'):."
+    $ java Foo args
+
+You can also use wildcards for the jars but I haven't been able to do that.
+    http://stackoverflow.com/questions/219585/setting-multiple-jars-in-java-classpath
+
+Use ant from vim:
+
+    set makeprg=ant\ -emacs
+
