@@ -10,10 +10,11 @@
 //      array::interpret=6
 //
 // DESCRIPTION
-//      Interprets |bytecode| and prints the result.
-//      One interpret() uses pointers internally, the other, arrays to demonstrate
-//      the tradeoffs in readability; the references to the ip is cleaner with
-//      pointers but the stack is more readable with indexes.
+//      Adds two numbers and prints the result.
+//
+//      One interpret() uses pointers internally, the other arrays, for
+//      demonstrating readability tradeoffs; the ip expressions are cleaner with
+//      pointers but the stack expressions are more readable with indexes.
 //
 // LIMITATIONS
 //      Only handles the add operation
@@ -41,7 +42,7 @@ int interpret(uint8_t* bytecode) {
         case OP_ADD:
             x = stack[--sp];
             y = stack[--sp];
-            stack[sp++] = x + y;
+            stack[sp++] = y + x;
             break;
         case OP_HALT:
             goto out;
@@ -73,7 +74,7 @@ int interpret(uint8_t* bytecode) {
         case OP_ADD:
             x = *--sp;
             y = *--sp;
-            *sp++ = x + y;
+            *sp++ = y + x;
             break;
         case OP_HALT:
             goto out;
