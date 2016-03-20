@@ -1,4 +1,4 @@
-CPPFLAGS= -Wall -g -std=c++14
+CPPFLAGS= -Wall -g -std=c++14 -Wswitch-enum -Wswitch-default
 LIBS =-lpthread
 
 PROGRAMS := $(patsubst %.cpp, %, $(wildcard *.cpp))
