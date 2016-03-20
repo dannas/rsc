@@ -62,28 +62,23 @@ void interpret(uint32_t* bytecode, uint32_t* globals) {
             stack.push(y - x);
             break;
         case OP_ICONST:
-            x = bytecode[ip + 1];
+            x = bytecode[++ip];
             stack.push(x);
-            ip++;
             break;
         case OP_BRT:
-            a = bytecode[ip + 1];
+            a = bytecode[++ip];
             if (stack.top())
                 ip = a - 1;  // -1 to accomandate end of loop ip++
-            else
-                ip++;
             break;
         case OP_GLOAD:
-            x = bytecode[ip + 1];
+            x = bytecode[++ip];
             y = globals[x];
             stack.push(y);
-            ip++;
             break;
         case OP_GSTORE:
-            x = bytecode[ip + 1];
+            x = bytecode[++ip];
             y = stack.pop();
             globals[x] = y;
-            ip++;
             break;
         case OP_PRINT:
             std::cout << stack.top() << "\n";
