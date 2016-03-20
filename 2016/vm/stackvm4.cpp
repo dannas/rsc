@@ -85,7 +85,7 @@ void interpret(uint32_t* bytecode, uint32_t* globals) {
         ip++; // Move to next opcode or operand
 
         switch (op) {
-            int x, y, addr;
+            int x, y, addr, ret;
         case OP_IADD:
             x = stack.pop();
             y = stack.pop();
@@ -124,7 +124,9 @@ void interpret(uint32_t* bytecode, uint32_t* globals) {
             ip = addr;
             break;
         case OP_RET:
+            ret = stack.pop();
             ip = stack.pop();
+            stack.push(ret);
             break;
         case OP_HALT:
             return;
@@ -145,10 +147,12 @@ int main() {
     //    ret
 
     uint32_t bytecode[] = {
-        OP_CALL, 3,
-        OP_HALT,
-        OP_ICONST, 42,
+        OP_CALL, 4,
         OP_PRINT,
+        OP_HALT,
+        OP_ICONST, 1,
+        OP_ICONST, 1,
+        OP_IADD,
         OP_RET,
     };
     uint32_t globals[] = {};
