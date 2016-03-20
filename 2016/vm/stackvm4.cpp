@@ -82,6 +82,8 @@ void interpret(uint32_t* bytecode, uint32_t* globals) {
 
         cout << op << "\t" << stack << "\n";
 
+        ip++; // Move to next opcode or operand
+
         switch (op) {
             int x, y, addr;
         case OP_IADD:
@@ -95,21 +97,21 @@ void interpret(uint32_t* bytecode, uint32_t* globals) {
             stack.push(y - x);
             break;
         case OP_ICONST:
-            x = bytecode[++ip];
+            x = bytecode[ip++];
             stack.push(x);
             break;
         case OP_BRT:
-            addr = bytecode[++ip];
+            addr = bytecode[ip++];
             if (stack.top())
-                ip = addr - 1;  // -1 to accomandate end of loop ip++
+                ip = addr;
             break;
         case OP_GLOAD:
-            x = bytecode[++ip];
+            x = bytecode[ip++];
             y = globals[x];
             stack.push(y);
             break;
         case OP_GSTORE:
-            x = bytecode[++ip];
+            x = bytecode[ip++];
             y = stack.pop();
             globals[x] = y;
             break;
@@ -117,9 +119,9 @@ void interpret(uint32_t* bytecode, uint32_t* globals) {
             cout << stack.pop() << "\n";
             break;
         case OP_CALL:
-            addr = bytecode[++ip];
+            addr = bytecode[ip++];
             stack.push(ip);
-            ip = addr - 1;      // -1 to accomondate end of loop ip++
+            ip = addr;
             break;
         case OP_RET:
             ip = stack.pop();
@@ -129,7 +131,6 @@ void interpret(uint32_t* bytecode, uint32_t* globals) {
         default:
             assert(false && "unknown opcode");
         }
-        ip++;
     }
 }
 
