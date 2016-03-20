@@ -24,7 +24,9 @@ using namespace std;
     macro(OP_GLOAD,   "gload")   \
     macro(OP_GSTORE,  "gstore")  \
     macro(OP_PRINT,   "print")   \
-    macro(OP_HALT,    "halt")
+    macro(OP_CALL,    "call")    \
+    macro(OP_RET,     "ret")     \
+    macro(OP_HALT,    "halt")    \
 
 enum OpCode : uint32_t {
 #define macro(op, desc) op,
@@ -81,7 +83,7 @@ void interpret(uint32_t* bytecode, uint32_t* globals) {
         cout << op << "\t" << stack << "\n";
 
         switch (op) {
-            int x, y, a;
+            int x, y, addr;
         case OP_IADD:
             x = stack.pop();
             y = stack.pop();
@@ -97,9 +99,9 @@ void interpret(uint32_t* bytecode, uint32_t* globals) {
             stack.push(x);
             break;
         case OP_BRT:
-            a = bytecode[++ip];
+            addr = bytecode[++ip];
             if (stack.top())
-                ip = a - 1;  // -1 to accomandate end of loop ip++
+                ip = addr - 1;  // -1 to accomandate end of loop ip++
             break;
         case OP_GLOAD:
             x = bytecode[++ip];
@@ -112,7 +114,15 @@ void interpret(uint32_t* bytecode, uint32_t* globals) {
             globals[x] = y;
             break;
         case OP_PRINT:
-            cout << stack.top() << "\n";
+            cout << stack.pop() << "\n";
+            break;
+        case OP_CALL:
+            addr = bytecode[++ip];
+            stack.push(ip);
+            ip = addr - 1;      // -1 to accomondate end of loop ip++
+            break;
+        case OP_RET:
+            ip = stack.pop();
             break;
         case OP_HALT:
             return;
@@ -125,22 +135,22 @@ void interpret(uint32_t* bytecode, uint32_t* globals) {
 
 int main() {
 
-    // .top:
-    // gload 0
-    // iconst 1
-    // isub
-    // brt top
-    // print
-    // halt
-    uint32_t bytecode[] = { OP_GLOAD,  0x00000000,
-                           OP_ICONST,  0x00000001,
-                           OP_ISUB,
-                           OP_BRT,    0x00000002,
-                           OP_PRINT,
-                           OP_HALT };
+    // .start
+    //    call .hello
+    //    halt
+    // .hello
+    //    iconst 42
+    //    print
+    //    ret
 
-    uint32_t globals[] = {
-        0x05,
+    uint32_t bytecode[] = {
+        OP_CALL, 3,
+        OP_HALT,
+        OP_ICONST, 42,
+        OP_PRINT,
+        OP_RET,
     };
+    uint32_t globals[] = {};
+
     interpret(bytecode, globals);
 }
