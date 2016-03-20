@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <cassert>
 
+using namespace std;
+
 // NAME
 //      stackvm4 - minimal stackbased bytecode interpreter
 //
@@ -14,43 +16,27 @@
 // LIMITATIONS
 //      TODO
 
+#define FOR_EACH_OPCODE(macro)   \
+    macro(OP_IADD,    "iadd")    \
+    macro(OP_ISUB,    "isub")    \
+    macro(OP_ICONST,  "iconst")  \
+    macro(OP_BRT,     "brt")     \
+    macro(OP_GLOAD,   "gload")   \
+    macro(OP_GSTORE,  "gstore")  \
+    macro(OP_PRINT,   "print")   \
+    macro(OP_HALT,    "halt")
+
 enum OpCode : uint32_t {
-    OP_IADD,         // Pop lval and rval, push lval + rval
-    OP_ISUB,         // Pop lval and rval, push lval - rval
-    OP_ICONST,       // Push constant onto stack
-    OP_BRT,          // Branch to offset if top of stack is true
-    OP_GLOAD,        // Load constant from global memory
-    OP_GSTORE,       // Store constant to global memory
-    OP_PRINT,        // Print top of stack to stdout
-    OP_HALT,         // Halt execution
+#define macro(op, desc) op,
+    FOR_EACH_OPCODE(macro)
+#undef macro
 };
 
-std::ostream& operator<< (std::ostream& os, OpCode code) {
+ostream& operator<< (ostream& os, OpCode code) {
     switch (code) {
-    case OP_IADD:
-        os << "iadd";
-        break;
-    case OP_ISUB:
-        os << "isub";
-        break;
-    case OP_ICONST:
-        os << "iconst";
-        break;
-    case OP_BRT:
-        os << "brt";
-        break;
-    case OP_GLOAD:
-        os << "gload";
-        break;
-    case OP_GSTORE:
-        os << "gstore";
-        break;
-    case OP_PRINT:
-        os << "print";
-        break;
-    case OP_HALT:
-        os << "halt";
-        break;
+#define macro(op, desc) case op: os << desc; break;
+        FOR_EACH_OPCODE(macro)
+#undef macro
     default:
         assert(false && "unknown opcode");
     }
@@ -60,19 +46,19 @@ std::ostream& operator<< (std::ostream& os, OpCode code) {
 class Stack {
 public:
     Stack() : sp(0)  {}
-    void push(uint32_t val) { checkRep(); arr[sp++] = val; }
+    void push(uint32_t val) { checkRep();        arr[sp++] = val; }
     uint32_t pop()          { checkRep(); return arr[--sp]; }
     uint32_t top()          { checkRep(); return arr[sp - 1]; }
 
 private:
     void checkRep()         { assert(sp >= 0 && sp < 64); }
-    friend std::ostream& operator<< (std::ostream& os, const Stack& stack);
+    friend ostream& operator<< (ostream& os, const Stack& stack);
     uint32_t arr[64];
     int sp;
 };
 
-std::ostream& operator<< (std::ostream& os, const Stack& stack) {
-    std::string delim = "";
+ostream& operator<< (ostream& os, const Stack& stack) {
+    string delim = "";
     os << "[";
     for (int i = 0; i < stack.sp; i++) {
         if (i > 0)
@@ -92,7 +78,7 @@ void interpret(uint32_t* bytecode, uint32_t* globals) {
     while (true) {
         OpCode op = static_cast<OpCode>(bytecode[ip]);
 
-        std::cout << op << "\t" << stack << "\n";
+        cout << op << "\t" << stack << "\n";
 
         switch (op) {
             int x, y, a;
@@ -126,10 +112,12 @@ void interpret(uint32_t* bytecode, uint32_t* globals) {
             globals[x] = y;
             break;
         case OP_PRINT:
-            std::cout << stack.top() << "\n";
+            cout << stack.top() << "\n";
             break;
         case OP_HALT:
             return;
+        default:
+            assert(false && "unknown opcode");
         }
         ip++;
     }
