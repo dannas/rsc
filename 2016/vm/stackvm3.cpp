@@ -33,11 +33,12 @@ enum : uint32_t {
 class Stack {
 public:
     Stack() : sp(0)  {}
-    void push(uint32_t val) { assert(sp >= 0 && sp < 64); arr[sp++] = val; }
-    uint32_t pop()          { assert(sp >= 0 && sp < 64); return arr[--sp]; }
-    uint32_t top()          { assert(sp >= 0 && sp < 64); return arr[sp - 1]; }
+    void push(uint32_t val) { checkRep(); arr[sp++] = val; }
+    uint32_t pop()          { checkRep(); return arr[--sp]; }
+    uint32_t top()          { checkRep(); return arr[sp - 1]; }
 
 private:
+    void checkRep()         { assert(sp >= 0 && sp < 64); }
     uint32_t arr[64];
     int sp;
 };
