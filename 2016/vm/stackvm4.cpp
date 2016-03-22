@@ -97,13 +97,14 @@ private:
 };
 
 ostream& operator<< (ostream& os, const Stack& stack) {
-    string delim = "";
     os << "[";
-    for (int i = 0; i < stack.sp; i++) {
-        if (i > 0)
-            delim = ", ";
-        os << delim << stack.arr[i];
-    }
+
+    if (stack.sp > 0)
+        os << stack.arr[0];
+
+    for (int i = 1; i < stack.sp; i++)
+        os << ", " << stack.arr[i];
+
     os << "]";
     return os;
 }
