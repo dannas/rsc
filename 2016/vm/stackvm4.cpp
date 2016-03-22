@@ -47,16 +47,41 @@ ostream& operator<< (ostream& os, OpCode code) {
 
 class Stack {
 public:
-    Stack() : sp(0)  {}
-    void push(uint32_t val) { checkRep();        arr[sp++] = val; }
-    uint32_t pop()          { checkRep(); return arr[--sp]; }
-    uint32_t top()          { checkRep(); return arr[sp - 1]; }
+    Stack() : sp(0), fp(-1)  {
+    }
+
+    void push(uint32_t val) {
+        checkRep();
+        arr[sp++] = val;
+    }
+    void pushfp() {
+        arr[sp++] = fp;
+        fp = sp;
+    }
+
+    void popfp() {
+        fp = pop();
+    }
+
+    uint32_t pop() {
+        checkRep();
+        return arr[--sp];
+    }
+
+    uint32_t top() {
+        checkRep();
+        return arr[sp - 1];
+    }
 
 private:
-    void checkRep()         { assert(sp >= 0 && sp < 64); }
+    void checkRep() {
+        assert(sp >= 0 && sp < 64 && fp >= -1 && fp <= sp);
+    }
     friend ostream& operator<< (ostream& os, const Stack& stack);
+
     uint32_t arr[64];
     int sp;
+    int fp;
 };
 
 ostream& operator<< (ostream& os, const Stack& stack) {
@@ -121,10 +146,12 @@ void interpret(uint32_t* bytecode, uint32_t* globals) {
         case OP_CALL:
             addr = bytecode[ip++];
             stack.push(ip);
+            stack.pushfp();
             ip = addr;
             break;
         case OP_RET:
             ret = stack.pop();
+            stack.popfp();
             ip = stack.pop();
             stack.push(ret);
             break;
