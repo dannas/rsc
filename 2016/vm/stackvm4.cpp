@@ -108,14 +108,15 @@ ostream& operator<< (ostream& os, const Stack& stack) {
     return os;
 }
 
-void interpret(int32_t* bytecode, int32_t* globals) {
+// interpret the bytecode in |code| using global variables storied in |globals|.
+void interpret(int32_t* code, int32_t* globals) {
 
     Stack stack;
 
     int ip = 0;
 
     while (true) {
-        OpCode op = static_cast<OpCode>(bytecode[ip]);
+        OpCode op = static_cast<OpCode>(code[ip]);
 
         cout << op << "\t" << stack << "\n";
 
@@ -134,38 +135,38 @@ void interpret(int32_t* bytecode, int32_t* globals) {
             stack.push(y - x);
             break;
         case OP_ICONST:
-            x = bytecode[ip++];
+            x = code[ip++];
             stack.push(x);
             break;
         case OP_BRT:
-            addr = bytecode[ip++];
+            addr = code[ip++];
             if (stack.top())
                 ip = addr;
             break;
         case OP_GLOAD:
-            x = bytecode[ip++];
+            x = code[ip++];
             y = globals[x];
             stack.push(y);
             break;
         case OP_GSTORE:
-            x = bytecode[ip++];
+            x = code[ip++];
             y = stack.pop();
             globals[x] = y;
             break;
         case OP_LOAD:
-            x = bytecode[ip++];
+            x = code[ip++];
             stack.load(x);
             break;
         case OP_STORE:
-            x = bytecode[ip++];
+            x = code[ip++];
             stack.store(x);
             break;
         case OP_PRINT:
             cout << stack.pop() << "\n";
             break;
         case OP_CALL:
-            addr = bytecode[ip++];
-            nargs = bytecode[ip++];
+            addr = code[ip++];
+            nargs = code[ip++];
             stack.push(nargs);
             stack.pushfp();
             stack.push(ip);
@@ -198,7 +199,7 @@ int main() {
     //    print
     //    ret
 
-    int32_t bytecode[] = {
+    int32_t code[] = {
         OP_ICONST, 1,
         OP_ICONST, 2,
         OP_CALL,   9, 2,
@@ -211,5 +212,5 @@ int main() {
     };
     int32_t globals[] = {};
 
-    interpret(bytecode, globals);
+    interpret(code, globals);
 }

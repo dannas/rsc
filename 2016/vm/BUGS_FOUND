@@ -1,0 +1,10 @@
+Missed that bytecode[ip++] and bytecode[ip + 1] are not equivalent.
+    Found by distilling the problem into a small test program.
+
+Wasted time trying to trace the execution by singlestepping.
+    Wrote ostream overloads for tracing the execution.
+        Much easier to get an overview.
+
+Forgot that the ip is incremented at end of interpret loop.
+    Used separate var for keeping track of ip and opcode.
+        Allowed me to remove special case adjustments of ip for operands.
