@@ -23,12 +23,14 @@ using namespace std;
     macro(OP_BRT,     "brt")     \
     macro(OP_GLOAD,   "gload")   \
     macro(OP_GSTORE,  "gstore")  \
+    macro(OP_LOAD,    "load")    \
+    macro(OP_STORE,   "store")   \
     macro(OP_PRINT,   "print")   \
     macro(OP_CALL,    "call")    \
     macro(OP_RET,     "ret")     \
     macro(OP_HALT,    "halt")    \
 
-enum OpCode : uint32_t {
+enum OpCode : int32_t {
 #define macro(op, desc) op,
     FOR_EACH_OPCODE(macro)
 #undef macro
@@ -47,10 +49,10 @@ ostream& operator<< (ostream& os, OpCode code) {
 
 class Stack {
 public:
-    Stack() : sp(0), fp(-1)  {
+    Stack() : sp(0), fp(0)  {
     }
 
-    void push(uint32_t val) {
+    void push(int32_t val) {
         checkRep();
         arr[sp++] = val;
     }
@@ -63,14 +65,24 @@ public:
         fp = pop();
     }
 
-    uint32_t pop() {
+    int32_t pop() {
         checkRep();
         return arr[--sp];
     }
 
-    uint32_t top() {
+    int32_t top() {
         checkRep();
         return arr[sp - 1];
+    }
+
+    void load(int offset) {
+        checkRep();
+        push(arr[fp+offset]);
+    }
+
+    void store(int offset) {
+        checkRep();
+        arr[fp+offset] = pop();
     }
 
 private:
@@ -79,7 +91,7 @@ private:
     }
     friend ostream& operator<< (ostream& os, const Stack& stack);
 
-    uint32_t arr[64];
+    int32_t arr[64];
     int sp;
     int fp;
 };
@@ -96,7 +108,7 @@ ostream& operator<< (ostream& os, const Stack& stack) {
     return os;
 }
 
-void interpret(uint32_t* bytecode, uint32_t* globals) {
+void interpret(int32_t* bytecode, int32_t* globals) {
 
     Stack stack;
 
@@ -110,7 +122,7 @@ void interpret(uint32_t* bytecode, uint32_t* globals) {
         ip++; // Move to next opcode or operand
 
         switch (op) {
-            int x, y, addr, ret;
+            int x, y, addr, nargs, ret;
         case OP_IADD:
             x = stack.pop();
             y = stack.pop();
@@ -140,19 +152,32 @@ void interpret(uint32_t* bytecode, uint32_t* globals) {
             y = stack.pop();
             globals[x] = y;
             break;
+        case OP_LOAD:
+            x = bytecode[ip++];
+            stack.load(x);
+            break;
+        case OP_STORE:
+            x = bytecode[ip++];
+            stack.store(x);
+            break;
         case OP_PRINT:
             cout << stack.pop() << "\n";
             break;
         case OP_CALL:
             addr = bytecode[ip++];
-            stack.push(ip);
+            nargs = bytecode[ip++];
+            stack.push(nargs);
             stack.pushfp();
+            stack.push(ip);
             ip = addr;
             break;
         case OP_RET:
             ret = stack.pop();
-            stack.popfp();
             ip = stack.pop();
+            stack.popfp();
+            nargs = stack.pop();
+            while (nargs--)
+                stack.pop();
             stack.push(ret);
             break;
         case OP_HALT:
@@ -173,16 +198,18 @@ int main() {
     //    print
     //    ret
 
-    uint32_t bytecode[] = {
-        OP_CALL, 4,
+    int32_t bytecode[] = {
+        OP_ICONST, 1,
+        OP_ICONST, 2,
+        OP_CALL,   9, 2,
         OP_PRINT,
         OP_HALT,
-        OP_ICONST, 1,
-        OP_ICONST, 1,
+        OP_LOAD, -1,
+        OP_LOAD, -2,
         OP_IADD,
         OP_RET,
     };
-    uint32_t globals[] = {};
+    int32_t globals[] = {};
 
     interpret(bytecode, globals);
 }
