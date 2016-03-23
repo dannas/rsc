@@ -194,11 +194,15 @@ void interpret(int32_t* code, int32_t* globals) {
 int main() {
 
     // .start
+    //    iconst 1
+    //    iconst 2
     //    call .hello
+    //    print
     //    halt
     // .hello
-    //    iconst 42
-    //    print
+    //    load -2
+    //    load -3
+    //    iadd
     //    ret
 
     int32_t code[] = {
