@@ -8,3 +8,16 @@ Wasted time trying to trace the execution by singlestepping.
 Forgot that the ip is incremented at end of interpret loop.
     Used separate var for keeping track of ip and opcode.
         Allowed me to remove special case adjustments of ip for operands.
+
+Using a separate ADT for the stack makes it harder to add fp support
+    Added separate functions for it - a bit clunky though.
+
+Made an off-by-one error when accessing parameters as offsets from fp.
+    Detected by inspecting the execution trace.
+    Fixed by storing correct fp.
+
+The assembler had missing consume() calls for some token types.
+    Added those.
+
+The assembler did not handle negative numbers
+    Added an expression to match those as well.
