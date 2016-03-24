@@ -36,6 +36,18 @@ enum OpCode : int32_t {
 #undef macro
 };
 
+struct NameOpCode {
+    const char* name;
+    OpCode op;
+};
+
+NameOpCode nameOpCodeMapping[] = {
+#define macro(op, desc) {desc, op},
+    FOR_EACH_OPCODE(macro)
+#undef macro
+};
+
+
 ostream& operator<< (ostream& os, OpCode code) {
     switch (code) {
 #define macro(op, desc) case op: os << desc; break;
