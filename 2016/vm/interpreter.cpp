@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <cassert>
 
+#include "opcodes.h"
+
 using namespace std;
 
 // NAME
@@ -16,6 +18,7 @@ using namespace std;
 // LIMITATIONS
 //      TODO
 
+#if 0
 #define FOR_EACH_OPCODE(macro)   \
     macro(OP_IADD,    "iadd")    \
     macro(OP_ISUB,    "isub")    \
@@ -58,6 +61,7 @@ ostream& operator<< (ostream& os, OpCode code) {
     }
     return os;
 }
+#endif
 
 class Stack {
 public:
