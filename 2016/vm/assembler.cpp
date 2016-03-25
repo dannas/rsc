@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <cassert>
 
+#include "opcodes.h"
+
 using namespace std;
 
 // NAME
@@ -19,6 +21,7 @@ using namespace std;
 
 #define FOR_EACH_TOKEN(macro) \
     macro(LABEL)              \
+    macro(FUNCDEF)            \
     macro(COMMA)              \
     macro(EQUALSIGN)          \
     macro(NEWLINE)            \
@@ -109,7 +112,10 @@ private:
             text += c;
             consume();
         } while (isalpha(c));
-        return {LABEL, text};
+        if (text == ".def")
+            return {FUNCDEF, text};
+        else
+            return {LABEL, text};
 
     }
 
@@ -125,6 +131,97 @@ private:
     int c;
 };
 
+// Grammar for the assembly syntax.
+//
+// globalsdeclaration   => NEWLINE* '.globals'
+// functiondeclaration  => NEWLINE* '.def' ID 'args' '=' OPERAND ',' 'locals' '=' OPERAND
+// labeldeclaration     => NEWLINE* LABEL
+// instr                => ID NEWLINE
+//                      => ID OPERAND NEWLINE
+//                      => ID LABEL NEWLINE
+//                      => ID OPERAND ',' OPERAND NEWLINE
+//
+// TODO(dannas): Parse .globals.
+// TODO(dannas): Write bytecode.
+// TODO(dannas): Patch labels.
+class Parser {
+public:
+    Parser(Lexer& lexer_) : lexer(lexer_) {
+        tok = lexer.next();
+        program();
+    }
+private:
+    void consume() {
+        tok = lexer.next();
+        std::cout << tok.type << "\t\t" << tok.text << "\n";
+        if (tok.type == NEWLINE)
+            line++;
+    }
+    void match(TokenType expected) {
+        assert(expected == tok.type);
+        consume();
+    }
+    void program() {
+        while (true) {
+            if (tok.type == END)
+                return;
+            else if (tok.type == NEWLINE)
+                consume();
+            else if (tok.type == LABEL)
+                label();
+            else if (tok.type == FUNCDEF)
+                funcdef();
+            else if (tok.type == ID)
+                instr();
+        }
+
+    }
+    void label() {
+        match(LABEL);
+        match(NEWLINE);
+    }
+    void funcdef() {
+        match(FUNCDEF);
+        match(ID);
+        match(ID);
+        match(EQUALSIGN);
+        match(OPERAND);
+        match(COMMA);
+        match(ID);
+        match(EQUALSIGN);
+        match(OPERAND);
+        match(NEWLINE);
+    }
+
+    void instr() {
+        match(ID);
+        if (tok.type == NEWLINE) {
+            match(NEWLINE);
+            return;
+        }
+        if (tok.type == LABEL) {
+            match(LABEL);
+            match(NEWLINE);
+            return;
+        }
+        if (tok.type == OPERAND) {
+            match(OPERAND);
+            if (tok.type == OPERAND) {
+                match(OPERAND);
+                match(NEWLINE);
+                return;
+            } else {
+                match(NEWLINE);
+                return;
+            }
+        }
+        assert(false && "unreachable");
+    }
+    Lexer& lexer;
+    Token tok;  // lookahead token
+    int line;
+};
+
 int main(int argc, char* argv[]) {
     FILE* fp = nullptr;
 
@@ -133,12 +230,5 @@ int main(int argc, char* argv[]) {
     else
         fp = fopen(argv[1], "r");
     Lexer lexer(fp);
-
-    while (true) {
-        Token tok = lexer.next();
-        std::cout << tok.type << "\t\t" << tok.text << "\n";
-        if (tok.type == END) {
-            return 0;
-        }
-    }
+    Parser parser(lexer);
 }
