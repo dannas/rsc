@@ -23,17 +23,7 @@ enum OpCode : int32_t {
 #undef macro
 };
 
-struct NameOpCode {
-    const char* name;
-    OpCode op;
-};
-
-static const NameOpCode nameOpCodeMapping[] = {
-#define macro(op, desc) {desc, op},
-    FOR_EACH_OPCODE(macro)
-#undef macro
-};
-
+bool InstrExists(const std::string& instr);
 
 inline std::ostream& operator<< (std::ostream& os, OpCode code) {
     switch (code) {

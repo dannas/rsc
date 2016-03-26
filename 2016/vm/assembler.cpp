@@ -2,6 +2,7 @@
 #include <string>
 #include <cstdio>
 #include <cassert>
+#include <vector>
 
 #include "opcodes.h"
 
@@ -194,7 +195,8 @@ private:
     }
 
     void instr() {
-        match(ID);
+        assert(InstrExists(tok.text) && "unkown opcode");
+        consume();
         if (tok.type == NEWLINE) {
             match(NEWLINE);
             return;
@@ -219,6 +221,7 @@ private:
     }
     Lexer& lexer;
     Token tok;  // lookahead token
+    vector<int32_t> bytecode;
     int line;
 };
 

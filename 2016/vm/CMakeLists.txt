@@ -5,8 +5,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g3 -Wall -Wextra -Werror -Wswitch-e
 
 add_executable(interpreter
     interpreter.cpp
+    opcodes.cpp
 )
 
 add_executable(assembler
     assembler.cpp
+    opcodes.cpp
 )
