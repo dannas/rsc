@@ -1,7 +1,8 @@
 #pragma once
 
-#include <iostream>
+#include <iosfwd>
 #include <cassert>
+#include <cstdint>
 
 #define FOR_EACH_OPCODE(macro)   \
     macro(OP_IADD,    "iadd")    \
@@ -25,13 +26,4 @@ enum OpCode : int32_t {
 
 bool InstrExists(const std::string& instr);
 
-inline std::ostream& operator<< (std::ostream& os, OpCode code) {
-    switch (code) {
-#define macro(op, desc) case op: os << desc; break;
-        FOR_EACH_OPCODE(macro)
-#undef macro
-    default:
-        assert(false && "unknown opcode");
-    }
-    return os;
-}
+std::ostream& operator<< (std::ostream& os, OpCode code);
