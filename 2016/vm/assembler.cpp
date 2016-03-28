@@ -250,6 +250,7 @@ void runtests() {
         "halt"       "\n";
 
     FILE* fp = fmemopen(buf, strlen(buf), "r");
+    assert(fp);
     Lexer lexer(fp);
     Parser parser(lexer);
     auto code = parser.code();
@@ -261,6 +262,7 @@ void runtests() {
     assert(code[4] == OP_IADD);
     assert(code[5] == OP_PRINT);
     assert(code[6] == OP_HALT);
+    fclose(fp);
 }
 
 int main(int argc, char* argv[]) {
@@ -275,6 +277,8 @@ int main(int argc, char* argv[]) {
         fp = stdin;
     } else
         fp = fopen(argv[1], "r");
+    assert(fp);
     Lexer lexer(fp);
     Parser parser(lexer);
+    fclose(fp);
 }
