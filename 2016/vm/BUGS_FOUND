@@ -24,3 +24,14 @@ The assembler did not handle negative numbers
 
 Got weird compilation failures when I extracted some parts into opcodes.h
 	I don't have enough time to relearn make, I'll use cmake instead.
+
+Matched argv[1] against address of string literal
+    Caught by compiler.
+    Fixed by replacing
+        if (argv[1] == "--test")
+    with
+        if (strcmp(argv[1], "--test") == 0)
+
+The initial feeding of the lexer token lookahead character was not done by
+consume().
+    

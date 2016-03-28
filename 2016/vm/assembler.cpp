@@ -4,6 +4,7 @@
 #include <cassert>
 #include <vector>
 #include <cstdlib>
+#include <cstring>
 
 #include "opcodes.h"
 
@@ -148,8 +149,12 @@ private:
 class Parser {
 public:
     Parser(Lexer& lexer_) : lexer(lexer_) {
-        tok = lexer.next();
+        consume();
         program();
+    }
+
+    std::vector<int32_t> code() {
+        return bytecode;
     }
 private:
     void consume() {
@@ -235,12 +240,40 @@ private:
     int line;
 };
 
+
+void runtests() {
+    char buf[] =
+        "iconst 1"   "\n"
+        "iconst 2"   "\n"
+        "iadd"       "\n"
+        "print"      "\n"
+        "halt"       "\n";
+
+    FILE* fp = fmemopen(buf, strlen(buf), "r");
+    Lexer lexer(fp);
+    Parser parser(lexer);
+    auto code = parser.code();
+    assert(code.size() == 7);
+    assert(code[0] == OP_ICONST);
+    assert(code[1] == 1);
+    assert(code[2] == OP_ICONST);
+    assert(code[3] == 2);
+    assert(code[4] == OP_IADD);
+    assert(code[5] == OP_PRINT);
+    assert(code[6] == OP_HALT);
+}
+
 int main(int argc, char* argv[]) {
     FILE* fp = nullptr;
 
-    if (argc < 2)
+    if (argc == 2 && strcmp(argv[1], "--test") == 0) {
+        runtests();
+        return 0;
+    }
+
+    if (argc < 2) {
         fp = stdin;
-    else
+    } else
         fp = fopen(argv[1], "r");
     Lexer lexer(fp);
     Parser parser(lexer);
