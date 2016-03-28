@@ -5,8 +5,13 @@
 
 using namespace std;
 
-static const char* instructions[] = {
-#define macro(op, desc) desc,
+struct KeyVal {
+    const char* name;
+    OpCode val;
+};
+
+static const KeyVal instructions[] = {
+#define macro(op, desc) {desc, op},
     FOR_EACH_OPCODE(macro)
 #undef macro
 };
@@ -14,8 +19,15 @@ static const char* instructions[] = {
 bool InstrExists(const std::string& instr) {
     auto b = begin(instructions);
     auto e = end(instructions);
-    auto i = find(b, e, instr);
+    auto i = find_if(b, e, [=] (const KeyVal& kv) { return kv.name == instr; });
     return i != e;
+}
+
+OpCode OpCodeForInstr(const std::string& instr) {
+    auto b = begin(instructions);
+    auto e = end(instructions);
+    auto i = find_if(b, e, [=] (const KeyVal& kv) { return kv.name == instr; });
+    return i->val;
 }
 
 std::ostream& operator<< (std::ostream& os, OpCode code) {

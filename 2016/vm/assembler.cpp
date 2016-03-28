@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cassert>
 #include <vector>
+#include <cstdlib>
 
 #include "opcodes.h"
 
@@ -143,7 +144,6 @@ private:
 //                      => ID OPERAND ',' OPERAND NEWLINE
 //
 // TODO(dannas): Parse .globals.
-// TODO(dannas): Write bytecode.
 // TODO(dannas): Patch labels.
 class Parser {
 public:
@@ -162,6 +162,7 @@ private:
         assert(expected == tok.type);
         consume();
     }
+
     void program() {
         while (true) {
             if (tok.type == END)
@@ -178,10 +179,12 @@ private:
 
     }
     void label() {
+        // TODO: Write label to symbol table.
         match(LABEL);
         match(NEWLINE);
     }
     void funcdef() {
+        // TODO: Write func to symbol table.
         match(FUNCDEF);
         match(ID);
         match(ID);
@@ -196,28 +199,35 @@ private:
 
     void instr() {
         assert(InstrExists(tok.text) && "unkown opcode");
+        OpCode code = OpCodeForInstr(tok.text);
+        bytecode.push_back(code);
         consume();
+
         if (tok.type == NEWLINE) {
             match(NEWLINE);
             return;
         }
         if (tok.type == LABEL) {
+            // TODO: lookup label in symboltable
             match(LABEL);
             match(NEWLINE);
             return;
         }
         if (tok.type == OPERAND) {
-            match(OPERAND);
-            if (tok.type == OPERAND) {
-                match(OPERAND);
-                match(NEWLINE);
-                return;
-            } else {
-                match(NEWLINE);
-                return;
-            }
+            int32_t operand = atoi(tok.text.c_str());
+            bytecode.push_back(operand);
+            consume();
         }
-        assert(false && "unreachable");
+
+        if (tok.type == OPERAND) {
+            int32_t operand = atoi(tok.text.c_str());
+            bytecode.push_back(operand);
+            match(NEWLINE);
+            return;
+        }
+
+        match(NEWLINE);
+        return;
     }
     Lexer& lexer;
     Token tok;  // lookahead token

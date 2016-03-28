@@ -26,4 +26,6 @@ enum OpCode : int32_t {
 
 bool InstrExists(const std::string& instr);
 
+OpCode OpCodeForInstr(const std::string& instr);
+
 std::ostream& operator<< (std::ostream& os, OpCode code);
