@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstdlib>
 #include <cstring>
+#include <unordered_map>
 
 #include "opcodes.h"
 
@@ -134,6 +135,23 @@ private:
     int c;
 };
 
+class LabelSymbol {
+public:
+    LabelSymbol() : defined(false), address(0), forwardRefs() {}
+    LabelSymbol(int32_t addr) : defined(true), address(addr), forwardRefs() {}
+    void addForwardRef(int32_t ref) {
+        forwardRefs.push_back(ref);
+    }
+    bool resolved() {
+        return forwardRefs.empty();
+    }
+private:
+    bool defined;
+    int32_t address;
+    vector <int32_t> forwardRefs;
+};
+
+
 // Grammar for the assembly syntax.
 //
 // globalsdeclaration   => NEWLINE* '.globals'
@@ -148,7 +166,7 @@ private:
 // TODO(dannas): Patch labels.
 class Parser {
 public:
-    Parser(Lexer& lexer_) : lexer(lexer_) {
+    Parser(Lexer& lexer_) : lexer(lexer_), ip(0) {
         consume();
         program();
     }
@@ -184,8 +202,8 @@ private:
 
     }
     void label() {
-        // TODO: Write label to symbol table.
-        match(LABEL);
+        assert(labels.find(tok.text) == end(labels));
+        labels[tok.text] = LabelSymbol(ip);
         match(NEWLINE);
     }
     void funcdef() {
@@ -205,7 +223,7 @@ private:
     void instr() {
         assert(InstrExists(tok.text) && "unkown opcode");
         OpCode code = OpCodeForInstr(tok.text);
-        bytecode.push_back(code);
+        pushByteCode(code);
         consume();
 
         if (tok.type == NEWLINE) {
@@ -220,13 +238,13 @@ private:
         }
         if (tok.type == OPERAND) {
             int32_t operand = atoi(tok.text.c_str());
-            bytecode.push_back(operand);
+            pushByteCode(operand);
             consume();
         }
 
         if (tok.type == OPERAND) {
             int32_t operand = atoi(tok.text.c_str());
-            bytecode.push_back(operand);
+            pushByteCode(operand);
             match(NEWLINE);
             return;
         }
@@ -234,10 +252,17 @@ private:
         match(NEWLINE);
         return;
     }
+
+    void pushByteCode(int32_t code) {
+        bytecode.push_back(code);
+        ip++;
+    }
     Lexer& lexer;
     Token tok;  // lookahead token
     vector<int32_t> bytecode;
+    int ip;
     int line;
+    unordered_map<string, LabelSymbol> labels;
 };
 
 
