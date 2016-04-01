@@ -135,17 +135,20 @@ private:
     int c;
 };
 
-class LabelSymbol {
-public:
+// TODO(dannas): Clean up the usage of LabelSymbol.
+// At the moment, we destroy the forwardrefs when we insert a new LabelSymbol
+// into the map in |label()|.
+struct LabelSymbol {
     LabelSymbol() : defined(false), address(0), forwardRefs() {}
     LabelSymbol(int32_t addr) : defined(true), address(addr), forwardRefs() {}
     void addForwardRef(int32_t ref) {
         forwardRefs.push_back(ref);
     }
+
     bool resolved() {
         return forwardRefs.empty();
     }
-private:
+
     bool defined;
     int32_t address;
     vector <int32_t> forwardRefs;
@@ -202,8 +205,12 @@ private:
 
     }
     void label() {
-        assert(labels.find(tok.text) == end(labels));
+        auto i = labels.find(tok.text);
+        assert(i == end(labels) || i->second.defined == false);
+        for (const auto& pos : i->second.forwardRefs)
+            bytecode[pos] = ip;
         labels[tok.text] = LabelSymbol(ip);
+        consume();
         match(NEWLINE);
     }
     void funcdef() {
@@ -231,6 +238,15 @@ private:
             return;
         }
         if (tok.type == LABEL) {
+            if (labels.find(tok.text) == end(labels)) {
+                auto ls = LabelSymbol();
+                ls.addForwardRef(ip);
+                labels[tok.text] = ls;
+                pushByteCode(0);
+            } else {
+                pushByteCode(labels[tok.text].address);
+            }
+
             // TODO: lookup label in symboltable
             match(LABEL);
             match(NEWLINE);
@@ -265,8 +281,7 @@ private:
     unordered_map<string, LabelSymbol> labels;
 };
 
-
-void runtests() {
+void testAdd() {
     char buf[] =
         "iconst 1"   "\n"
         "iconst 2"   "\n"
@@ -288,6 +303,32 @@ void runtests() {
     assert(code[5] == OP_PRINT);
     assert(code[6] == OP_HALT);
     fclose(fp);
+}
+
+void testJump() {
+    char buf[] =
+        "iconst 1"   "\n"
+        "brt .end"   "\n"
+        ".end"       "\n"
+        "halt"       "\n";;
+
+    FILE* fp = fmemopen(buf, strlen(buf), "r");
+    assert(fp);
+    Lexer lexer(fp);
+    Parser parser(lexer);
+    auto code = parser.code();
+    assert(code.size() == 5);
+    assert(code[0] == OP_ICONST);
+    assert(code[1] == 1);
+    assert(code[2] == OP_BRT);
+    assert(code[3] == 4);
+    assert(code[4] == OP_HALT);
+    fclose(fp);
+}
+
+void runtests() {
+    testAdd();
+    testJump();
 }
 
 int main(int argc, char* argv[]) {
