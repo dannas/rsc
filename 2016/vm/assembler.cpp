@@ -281,6 +281,21 @@ private:
     unordered_map<string, LabelSymbol> labels;
 };
 
+template <int N>
+void checkCodeGen(char* buf, const int32_t (&expected)[N]) {
+    FILE* fp = fmemopen(buf, strlen(buf), "r");
+    assert(fp);
+    Lexer lexer(fp);
+    Parser parser(lexer);
+    auto code = parser.code();
+
+    assert(code.size() == N);
+
+    for (size_t i = 0; i < code.size(); i++)
+        assert(expected[i] == code[i]);
+    fclose(fp);
+}
+
 void testAdd() {
     char buf[] =
         "iconst 1"   "\n"
@@ -289,20 +304,14 @@ void testAdd() {
         "print"      "\n"
         "halt"       "\n";
 
-    FILE* fp = fmemopen(buf, strlen(buf), "r");
-    assert(fp);
-    Lexer lexer(fp);
-    Parser parser(lexer);
-    auto code = parser.code();
-    assert(code.size() == 7);
-    assert(code[0] == OP_ICONST);
-    assert(code[1] == 1);
-    assert(code[2] == OP_ICONST);
-    assert(code[3] == 2);
-    assert(code[4] == OP_IADD);
-    assert(code[5] == OP_PRINT);
-    assert(code[6] == OP_HALT);
-    fclose(fp);
+    int32_t code[] = {
+        OP_ICONST, 1,
+        OP_ICONST, 2,
+        OP_IADD,
+        OP_PRINT,
+        OP_HALT
+    };
+    checkCodeGen(buf, code);
 }
 
 void testJump() {
@@ -310,20 +319,15 @@ void testJump() {
         "iconst 1"   "\n"
         "brt .end"   "\n"
         ".end"       "\n"
-        "halt"       "\n";;
+        "halt"       "\n";
 
-    FILE* fp = fmemopen(buf, strlen(buf), "r");
-    assert(fp);
-    Lexer lexer(fp);
-    Parser parser(lexer);
-    auto code = parser.code();
-    assert(code.size() == 5);
-    assert(code[0] == OP_ICONST);
-    assert(code[1] == 1);
-    assert(code[2] == OP_BRT);
-    assert(code[3] == 4);
-    assert(code[4] == OP_HALT);
-    fclose(fp);
+    int32_t code[] = {
+        OP_ICONST, 1,
+        OP_BRT, 4,
+        OP_HALT
+    };
+
+    checkCodeGen(buf, code);
 }
 
 void runtests() {
