@@ -247,8 +247,7 @@ private:
                 pushByteCode(labels[tok.text].address);
             }
 
-            // TODO: lookup label in symboltable
-            match(LABEL);
+            consume();
             match(NEWLINE);
             return;
         }
