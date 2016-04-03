@@ -12,3 +12,7 @@ add_executable(assembler
     assembler.cpp
     opcodes.cpp
 )
+
+enable_testing()
+
+add_test(assembler assembler --test)
