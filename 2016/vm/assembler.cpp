@@ -57,7 +57,7 @@ struct Token {
 
 class Lexer {
 public:
-    Lexer(FILE* fp_) : fp(fp_) {
+    Lexer(FILE* fp_) : fp(fp_), line(0), col(0) {
         consume();
     }
     Token next() {
@@ -95,6 +95,12 @@ public:
 private:
     void consume() {
         c = fgetc(fp);
+        if (c == '\n') {
+            line++;
+            col = 0;
+        } else {
+            col++;
+        }
     }
 
     void ws() {
@@ -133,6 +139,10 @@ private:
     }
     FILE* fp;
     int c;
+
+    int line;
+    int col;
+    friend class Parser;
 };
 
 struct LabelSymbol {
@@ -198,10 +208,19 @@ private:
         if (tok.type == NEWLINE)
             line++;
     }
+
+    template <typename T>
+    void die(T actual, T expected) {
+        cerr << "<function>:" << lexer.line << ":" << lexer.col
+            << " expected '" << expected << "' but got '" << actual << "'\n";
+        exit(1);
+    }
+
     void match(TokenType type, const string& text = "") {
-        assert(type == tok.type);
-        if (text != "")
-            assert(text == tok.text);
+        if (type != tok.type)
+            die(type, tok.type);
+        if (text != "" && text != tok.text)
+            die(text, tok.text);
         consume();
     }
 
