@@ -135,23 +135,37 @@ private:
     int c;
 };
 
-// TODO(dannas): Clean up the usage of LabelSymbol.
-// At the moment, we destroy the forwardrefs when we insert a new LabelSymbol
-// into the map in |label()|.
 struct LabelSymbol {
-    LabelSymbol() : defined(false), address(0), forwardRefs() {}
-    LabelSymbol(int32_t addr) : defined(true), address(addr), forwardRefs() {}
-    void addForwardRef(int32_t ref) {
-        forwardRefs.push_back(ref);
-    }
-
-    bool resolved() {
-        return forwardRefs.empty();
-    }
+    LabelSymbol() : defined(false), address(0),    forwardRefs() {}
 
     bool defined;
     int32_t address;
     vector <int32_t> forwardRefs;
+};
+
+class SymbolTable {
+public:
+    SymbolTable() {
+    }
+    int32_t lookup(const std::string& name, int32_t ip) {
+        auto& l = labels[name];
+        if (!l.defined)
+            l.forwardRefs.push_back(ip);
+        return l.address;
+    }
+    void define(const std::string& name, int32_t ip, vector<int32_t> &bytecode) {
+        auto l = labels[name];
+        assert(!l.defined && "label already defined");
+
+        for (auto& ref : l.forwardRefs)
+            bytecode[ref] = ip;
+
+        l.defined = true;
+        l.address = ip;
+        l.forwardRefs.clear();
+    }
+private:
+    unordered_map<string, LabelSymbol> labels;
 };
 
 
@@ -206,11 +220,7 @@ private:
         }
     }
     void label() {
-        auto i = labels.find(tok.text);
-        assert(i == end(labels) || i->second.defined == false);
-        for (const auto& pos : i->second.forwardRefs)
-            bytecode[pos] = ip;
-        labels[tok.text] = LabelSymbol(ip);
+        symtab.define(tok.text, ip, bytecode);
         consume();
         match(NEWLINE);
     }
@@ -239,15 +249,8 @@ private:
             return;
         }
         if (tok.type == LABEL) {
-            if (labels.find(tok.text) == end(labels)) {
-                auto ls = LabelSymbol();
-                ls.addForwardRef(ip);
-                labels[tok.text] = ls;
-                pushByteCode(0);
-            } else {
-                pushByteCode(labels[tok.text].address);
-            }
-
+            int32_t addr = symtab.lookup(tok.text, ip);
+            pushByteCode(addr);
             consume();
             match(NEWLINE);
             return;
@@ -278,7 +281,7 @@ private:
     vector<int32_t> bytecode;
     int ip;
     int line;
-    unordered_map<string, LabelSymbol> labels;
+    SymbolTable symtab;
 };
 
 template <int N>
