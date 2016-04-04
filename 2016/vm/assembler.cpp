@@ -198,8 +198,10 @@ private:
         if (tok.type == NEWLINE)
             line++;
     }
-    void match(TokenType expected) {
-        assert(expected == tok.type);
+    void match(TokenType type, const string& text = "") {
+        assert(type == tok.type);
+        if (text != "")
+            assert(text == tok.text);
         consume();
     }
 
@@ -225,17 +227,23 @@ private:
         match(NEWLINE);
     }
     void funcdef() {
-        // TODO: Write func to symbol table.
         match(FUNCDEF);
-        match(ID);
-        match(ID);
+        symtab.define(tok.text, ip, bytecode);
+        consume();
+        match(ID, "args");
         match(EQUALSIGN);
-        match(OPERAND);
+        int32_t operand = atoi(tok.text.c_str());
+        pushByteCode(OP_LOAD);
+        pushByteCode(operand);
+        consume();
         match(COMMA);
-        match(ID);
+        match(ID, "locals");
         match(EQUALSIGN);
         match(OPERAND);
         match(NEWLINE);
+
+        while (tok.type == ID)
+            instr();
     }
 
     void instr() {
@@ -333,9 +341,26 @@ void testJump() {
     checkCodeGen(buf, code);
 }
 
+void testFunction() {
+    char buf[] =
+        "call .f"                  "\n"
+        "halt"                     "\n"
+        ".def .f args=0, locals=0" "\n"
+        "ret"                      "\n";
+
+    int32_t code[] = {
+        OP_CALL, 3,
+        OP_HALT,
+        OP_LOAD, 0,
+        OP_RET,
+    };
+    checkCodeGen(buf, code);
+}
+
 void runtests() {
     testAdd();
     testJump();
+    testFunction();
 }
 
 int main(int argc, char* argv[]) {
