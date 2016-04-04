@@ -201,8 +201,9 @@ private:
                 funcdef();
             else if (tok.type == ID)
                 instr();
+            else
+                assert(false && "unreachable");
         }
-
     }
     void label() {
         auto i = labels.find(tok.text);
