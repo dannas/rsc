@@ -68,6 +68,9 @@ public:
             case '\r':
                 ws();
                 continue;
+            case ';':
+                comment();
+                continue;
             case '\n':
                 consume();
                 return {NEWLINE, "\\n"};
@@ -105,6 +108,11 @@ private:
 
     void ws() {
         while (c == ' ' || c == '\t' || c == '\r')
+            consume();
+    }
+
+    void comment() {
+        while (c != '\n')
             consume();
     }
     Token id() {
@@ -376,10 +384,20 @@ void testFunction() {
     checkCodeGen(buf, code);
 }
 
+void testComment() {
+    char buf[] =
+        "halt ; This is a comment" "\n";
+    int32_t code[] = {
+        OP_HALT,
+    };
+    checkCodeGen(buf, code);
+}
+
 void runtests() {
     testAdd();
     testJump();
     testFunction();
+    testComment();
 }
 
 int main(int argc, char* argv[]) {
