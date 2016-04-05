@@ -12,16 +12,25 @@
 using namespace std;
 
 // NAME
-//      assembler - TODO
+//      assembler - simple p-code assembler
 //
 // SYNOPSIS
-//      TODO
+//      assembler [--test] [INPUTFILE] [OUTPUTFILE]
 //
 // DESCRIPTION
-//      TODO
+//      Translates assembly statements found in INPUTFILE into bytecode that is
+//      stored in OUTPUTFILE.
+//
+//      Passing the --test option, triggers a run of the internal test suite.
+//
+//      The syntax of the assembly and the organization of the bytecode is
+//      taken from Terrence Pratt's book "Language Implel mentation Patterns".
+//      The bytecode there is inspired by Pascals p-code.
 //
 // LIMITATIONS
-//      TODO
+//      Only 32 bit integers as operands.
+//      No macro functionality.
+//      Error reporting is incomplete and inconsistent.
 
 #define FOR_EACH_TOKEN(macro) \
     macro(LABEL)              \
@@ -189,8 +198,9 @@ private:
 
 // Grammar for the assembly syntax.
 //
+// program              => globaldeclaration functiondeclaration*
 // globalsdeclaration   => NEWLINE* '.globals'
-// functiondeclaration  => NEWLINE* '.def' ID 'args' '=' OPERAND ',' 'locals' '=' OPERAND
+// functiondeclaration  => NEWLINE* '.def' ID 'args' '=' OPERAND ',' 'locals' '=' OPERAND NEWLINE instr*
 // labeldeclaration     => NEWLINE* LABEL
 // instr                => ID NEWLINE
 //                      => ID OPERAND NEWLINE
@@ -198,7 +208,6 @@ private:
 //                      => ID OPERAND ',' OPERAND NEWLINE
 //
 // TODO(dannas): Parse .globals.
-// TODO(dannas): Patch labels.
 class Parser {
 public:
     Parser(Lexer& lexer_) : lexer(lexer_), ip(0) {
@@ -266,6 +275,7 @@ private:
         match(COMMA);
         match(ID, "locals");
         match(EQUALSIGN);
+        // TODO(dannas): Store number of locals.
         match(OPERAND);
         match(NEWLINE);
 
