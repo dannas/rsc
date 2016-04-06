@@ -409,18 +409,28 @@ void runtests() {
 
 int main(int argc, char* argv[]) {
     FILE* fp = nullptr;
+    FILE* outfp = nullptr;
 
     if (argc == 2 && strcmp(argv[1], "--test") == 0) {
         runtests();
         return 0;
     }
 
-    if (argc < 2) {
-        fp = stdin;
-    } else
-        fp = fopen(argv[1], "r");
+    if (argc != 3) {
+        cerr << "usage: " << argv[0]  << " INFILE OUTFILE\n";
+        exit(1);
+    }
+    fp = fopen(argv[1], "r");
+    outfp = fopen(argv[2], "w");
+
     assert(fp);
+    assert(outfp);
     Lexer lexer(fp);
     Parser parser(lexer);
+    auto code = parser.code();
+
+    fwrite(code.data(), sizeof(int32_t), code.size(), outfp);
+
     fclose(fp);
+    fclose(outfp);
 }
