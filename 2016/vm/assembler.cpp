@@ -155,11 +155,11 @@ private:
         return {OPERAND, text};
     }
     FILE* fp;
-    int c;
+    int c;                  // lookahead character
 
-    int line;
-    int col;
-    friend class Parser;
+    int line;               // pos of current token
+    int col;                // pos of current token
+    friend class Parser;    // for access to line, col
 };
 
 struct LabelSymbol {
@@ -222,8 +222,6 @@ private:
     void consume() {
         tok = lexer.next();
         std::cout << tok.type << "\t\t" << tok.text << "\n";
-        if (tok.type == NEWLINE)
-            line++;
     }
 
     template <typename T>
@@ -322,11 +320,10 @@ private:
         ip++;
     }
     Lexer& lexer;
-    Token tok;  // lookahead token
-    vector<int32_t> bytecode;
-    int ip;
-    int line;
-    SymbolTable symtab;
+    Token tok;                  // lookahead token
+    vector<int32_t> bytecode;   // the output
+    int ip;                     // current position in |bytecode|
+    SymbolTable symtab;         // map labels and func defs to addresses
 };
 
 template <int N>
