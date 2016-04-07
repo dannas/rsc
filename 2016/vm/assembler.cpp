@@ -407,30 +407,61 @@ void runtests() {
     testComment();
 }
 
-int main(int argc, char* argv[]) {
-    FILE* fp = nullptr;
-    FILE* outfp = nullptr;
+void disassemble(const char* fname) {
+    FILE* fp = fopen(fname, "r");
+    assert(fp);
 
-    if (argc == 2 && strcmp(argv[1], "--test") == 0) {
-        runtests();
-        return 0;
+    int c = fgetc(fp);
+    while (c != EOF) {
+        switch(c) {
+        // TODO(dannas): Clean up this mess
+#define macro(op, desc, nargs) \
+        case op: \
+            cout << desc; \
+            if (nargs) { \
+                c = fgetc(fp); \
+                cout << " " << c; \
+            } \
+            cout << "\n"; \
+            break;
+        FOR_EACH_OPCODE(macro);
+#undef macro
+        default:
+        assert(false && "uncreachable");
+        }
+        c = fgetc(fp);
     }
+    fclose(fp);
+}
 
-    if (argc != 3) {
-        cerr << "usage: " << argv[0]  << " INFILE OUTFILE\n";
+int main(int argc, char* argv[]) {
+    string op = argc >= 2 ? argv[1] : "";
+
+    if (op == "test") {
+        runtests();
+    } else if (op == "disassemble") {
+        disassemble(argv[2]);
+    } else if (op == "assemble") {
+
+        if (argc != 4) {
+            cerr << "usage: " << argv[0]  << " assemble INFILE OUTFILE\n";
+            exit(1);
+        }
+        FILE* fp = fopen(argv[1], "r");
+        FILE* outfp = fopen(argv[2], "w");
+
+        assert(fp);
+        assert(outfp);
+        Lexer lexer(fp);
+        Parser parser(lexer);
+        auto code = parser.code();
+
+        fwrite(code.data(), sizeof(int32_t), code.size(), outfp);
+
+        fclose(fp);
+        fclose(outfp);
+    } else {
+        cerr << "unknown operation\n";
         exit(1);
     }
-    fp = fopen(argv[1], "r");
-    outfp = fopen(argv[2], "w");
-
-    assert(fp);
-    assert(outfp);
-    Lexer lexer(fp);
-    Parser parser(lexer);
-    auto code = parser.code();
-
-    fwrite(code.data(), sizeof(int32_t), code.size(), outfp);
-
-    fclose(fp);
-    fclose(outfp);
 }

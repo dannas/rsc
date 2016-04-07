@@ -15,4 +15,4 @@ add_executable(assembler
 
 enable_testing()
 
-add_test(assembler assembler --test)
+add_test(assembler assembler test)

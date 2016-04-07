@@ -11,7 +11,7 @@ struct KeyVal {
 };
 
 static const KeyVal instructions[] = {
-#define macro(op, desc) {desc, op},
+#define macro(op, desc, nargs) {desc, op},
     FOR_EACH_OPCODE(macro)
 #undef macro
 };
@@ -32,7 +32,7 @@ OpCode OpCodeForInstr(const std::string& instr) {
 
 std::ostream& operator<< (std::ostream& os, OpCode code) {
     switch (code) {
-#define macro(op, desc) case op: os << desc; break;
+#define macro(op, desc, nargs) case op: os << desc; break;
         FOR_EACH_OPCODE(macro)
 #undef macro
     default:
