@@ -24,8 +24,8 @@ enum OpCode : int32_t {
 #undef macro
 };
 
-bool InstrExists(const std::string& instr);
+bool instrExists(const std::string& instr);
 
-OpCode OpCodeForInstr(const std::string& instr);
+OpCode opCodeForInstr(const std::string& instr);
 
 std::ostream& operator<< (std::ostream& os, OpCode code);

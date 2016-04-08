@@ -20,62 +20,62 @@ using namespace std;
 
 class Stack {
 public:
-    Stack() : sp(0), fp(0)  {
+    Stack() : sp_(0), fp_(0)  {
     }
 
     void push(int32_t val) {
         checkRep();
-        arr[sp++] = val;
+        arr_[sp_++] = val;
     }
     void pushfp() {
-        int oldfp = fp;
-        fp = sp;
-        arr[sp++] = oldfp;
+        int oldfp = fp_;
+        fp_ = sp_;
+        arr_[sp_++] = oldfp;
     }
 
     void popfp() {
-        fp = pop();
+        fp_ = pop();
     }
 
     int32_t pop() {
         checkRep();
-        return arr[--sp];
+        return arr_[--sp_];
     }
 
     int32_t top() {
         checkRep();
-        return arr[sp - 1];
+        return arr_[sp_ - 1];
     }
 
     void load(int offset) {
         checkRep();
-        push(arr[fp+offset]);
+        push(arr_[fp_+offset]);
     }
 
     void store(int offset) {
         checkRep();
-        arr[fp+offset] = pop();
+        arr_[fp_+offset] = pop();
     }
 
 private:
     void checkRep() {
-        assert(sp >= 0 && sp < 64 && fp >= -1 && fp <= sp);
+        assert(sp_ >= 0 && sp_ < 64 && fp_ >= -1 && fp_ <= sp_);
     }
     friend ostream& operator<< (ostream& os, const Stack& stack);
 
-    int32_t arr[64];
-    int sp;
-    int fp;
+    int32_t arr_[64];
+    int sp_;
+    int fp_;
 };
 
 ostream& operator<< (ostream& os, const Stack& stack) {
     os << "[";
 
-    if (stack.sp > 0)
-        os << stack.arr[0];
+    if (stack.sp_ > 0)
+        os << stack.arr_[0];
 
-    for (int i = 1; i < stack.sp; i++)
-        os << ", " << stack.arr[i];
+    for (int i = 1; i < stack.sp_; i++)
+        os << ", " << stack.arr_[i];
 
     os << "]";
     return os;

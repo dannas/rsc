@@ -67,12 +67,12 @@ struct Token {
 
 class Lexer {
 public:
-    Lexer(FILE* fp_) : fp(fp_), line(0), col(0) {
+    Lexer(FILE* fp_) : fp_(fp_), line_(0), col_(0) {
         consume();
     }
     Token next() {
-        while (c != EOF) {
-            switch (c) {
+        while (c_ != EOF) {
+            switch (c_) {
             case ' ':
             case '\t':
             case '\r':
@@ -95,9 +95,9 @@ public:
             case EOF:
                 return {END, ""};
             default:
-                if (c == '-' || isdigit(c))
+                if (c_ == '-' || isdigit(c_))
                     return operand();
-                if (isalpha(c))
+                if (isalpha(c_))
                     return id();
             }
             assert(false && "not reachable");
@@ -107,39 +107,39 @@ public:
 
 private:
     void consume() {
-        c = fgetc(fp);
-        if (c == '\n') {
-            line++;
-            col = 0;
+        c_ = fgetc(fp_);
+        if (c_ == '\n') {
+            line_++;
+            col_ = 0;
         } else {
-            col++;
+            col_++;
         }
     }
 
     void ws() {
-        while (c == ' ' || c == '\t' || c == '\r')
+        while (c_ == ' ' || c_ == '\t' || c_ == '\r')
             consume();
     }
 
     void comment() {
-        while (c != '\n')
+        while (c_ != '\n')
             consume();
     }
     Token id() {
         string text;
         do {
-            text += c;
+            text += c_;
             consume();
-        } while (isalpha(c));
+        } while (isalpha(c_));
         return {ID, text};
     }
 
     Token label() {
         string text;
         do {
-            text += c;
+            text += c_;
             consume();
-        } while (isalpha(c));
+        } while (isalpha(c_));
         if (text == ".def")
             return {FUNCDEF, text};
         else if (text == ".globals")
@@ -152,16 +152,16 @@ private:
     Token operand() {
         string text;
         do {
-            text += c;
+            text += c_;
             consume();
-        } while (isdigit(c));
+        } while (isdigit(c_));
         return {OPERAND, text};
     }
-    FILE* fp;
-    int c;                  // lookahead character
+    FILE* fp_;
+    int c_;                  // lookahead character
 
-    int line;               // pos of current token
-    int col;                // pos of current token
+    int line_;               // pos of current token
+    int col_;                // pos of current token
     friend class Parser;    // for access to line, col
 };
 
@@ -178,13 +178,13 @@ public:
     SymbolTable() {
     }
     int32_t lookup(const std::string& name, int32_t ip) {
-        auto& l = labels[name];
+        auto& l = labels_[name];
         if (!l.defined)
             l.forwardRefs.push_back(ip);
         return l.address;
     }
     void define(const std::string& name, int32_t ip, vector<int32_t> &bytecode) {
-        auto l = labels[name];
+        auto l = labels_[name];
         assert(!l.defined && "label already defined");
 
         for (auto& ref : l.forwardRefs)
@@ -195,7 +195,7 @@ public:
         l.forwardRefs.clear();
     }
 private:
-    unordered_map<string, LabelSymbol> labels;
+    unordered_map<string, LabelSymbol> labels_;
 };
 
 
@@ -229,7 +229,7 @@ private:
 
     template <typename T>
     void die(T actual, T expected) {
-        cerr << "<function>:" << lexer_.line << ":" << lexer_.col
+        cerr << "<function>:" << lexer_.line_ << ":" << lexer_.col_
             << " expected '" << expected << "' but got '" << actual << "'\n";
         exit(1);
     }
@@ -296,8 +296,8 @@ private:
     }
 
     void instr() {
-        assert(InstrExists(tok_.text) && "unkown opcode");
-        OpCode code = OpCodeForInstr(tok_.text);
+        assert(instrExists(tok_.text) && "unkown opcode");
+        OpCode code = opCodeForInstr(tok_.text);
         pushByteCode(code);
         consume();
 

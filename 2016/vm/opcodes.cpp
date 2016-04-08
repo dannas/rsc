@@ -16,14 +16,14 @@ static const KeyVal instructions[] = {
 #undef macro
 };
 
-bool InstrExists(const std::string& instr) {
+bool instrExists(const std::string& instr) {
     auto b = begin(instructions);
     auto e = end(instructions);
     auto i = find_if(b, e, [=] (const KeyVal& kv) { return kv.name == instr; });
     return i != e;
 }
 
-OpCode OpCodeForInstr(const std::string& instr) {
+OpCode opCodeForInstr(const std::string& instr) {
     auto b = begin(instructions);
     auto e = end(instructions);
     auto i = find_if(b, e, [=] (const KeyVal& kv) { return kv.name == instr; });
