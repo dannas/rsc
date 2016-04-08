@@ -35,6 +35,7 @@ using namespace std;
 #define FOR_EACH_TOKEN(macro) \
     macro(LABEL)              \
     macro(FUNCDEF)            \
+    macro(GLOBALS)            \
     macro(COMMA)              \
     macro(EQUALSIGN)          \
     macro(NEWLINE)            \
@@ -141,6 +142,8 @@ private:
         } while (isalpha(c));
         if (text == ".def")
             return {FUNCDEF, text};
+        else if (text == ".globals")
+            return {GLOBALS, text};
         else
             return {LABEL, text};
 
@@ -210,63 +213,74 @@ private:
 // TODO(dannas): Parse .globals.
 class Parser {
 public:
-    Parser(Lexer& lexer_) : lexer(lexer_), ip(0) {
+    Parser(Lexer& lexer_) : lexer_(lexer_), ip_(0) {
         consume();
         program();
     }
 
     std::vector<int32_t> code() {
-        return bytecode;
+        return bytecode_;
     }
 private:
     void consume() {
-        tok = lexer.next();
-        std::cout << tok.type << "\t\t" << tok.text << "\n";
+        tok_ = lexer_.next();
+        std::cout << tok_.type << "\t\t" << tok_.text << "\n";
     }
 
     template <typename T>
     void die(T actual, T expected) {
-        cerr << "<function>:" << lexer.line << ":" << lexer.col
+        cerr << "<function>:" << lexer_.line << ":" << lexer_.col
             << " expected '" << expected << "' but got '" << actual << "'\n";
         exit(1);
     }
 
     void match(TokenType type, const string& text = "") {
-        if (type != tok.type)
-            die(type, tok.type);
-        if (text != "" && text != tok.text)
-            die(text, tok.text);
+        if (type != tok_.type)
+            die(type, tok_.type);
+        if (text != "" && text != tok_.text)
+            die(text, tok_.text);
         consume();
     }
 
     void program() {
         while (true) {
-            if (tok.type == END)
+            if (tok_.type == END)
                 return;
-            else if (tok.type == NEWLINE)
+            else if (tok_.type == NEWLINE)
                 consume();
-            else if (tok.type == LABEL)
+            else if (tok_.type == LABEL)
                 label();
-            else if (tok.type == FUNCDEF)
+            else if (tok_.type == FUNCDEF)
                 funcdef();
-            else if (tok.type == ID)
+            else if (tok_.type == ID)
                 instr();
             else
                 assert(false && "unreachable");
         }
     }
     void label() {
-        symtab.define(tok.text, ip, bytecode);
+        symtab_.define(tok_.text, ip_, bytecode_);
         consume();
         match(NEWLINE);
     }
+
+    void globals() {
+        match(GLOBALS);
+        while (tok_.type == ID)
+            global();
+    }
+    void global() {
+        int x = atoi(tok_.text.c_str());
+        globals_.push_back(x);
+    }
+
     void funcdef() {
         match(FUNCDEF);
-        symtab.define(tok.text, ip, bytecode);
+        symtab_.define(tok_.text, ip_, bytecode_);
         consume();
         match(ID, "args");
         match(EQUALSIGN);
-        int32_t operand = atoi(tok.text.c_str());
+        int32_t operand = atoi(tok_.text.c_str());
         pushByteCode(OP_LOAD);
         pushByteCode(operand);
         consume();
@@ -277,35 +291,35 @@ private:
         match(OPERAND);
         match(NEWLINE);
 
-        while (tok.type == ID)
+        while (tok_.type == ID)
             instr();
     }
 
     void instr() {
-        assert(InstrExists(tok.text) && "unkown opcode");
-        OpCode code = OpCodeForInstr(tok.text);
+        assert(InstrExists(tok_.text) && "unkown opcode");
+        OpCode code = OpCodeForInstr(tok_.text);
         pushByteCode(code);
         consume();
 
-        if (tok.type == NEWLINE) {
+        if (tok_.type == NEWLINE) {
             match(NEWLINE);
             return;
         }
-        if (tok.type == LABEL) {
-            int32_t addr = symtab.lookup(tok.text, ip);
+        if (tok_.type == LABEL) {
+            int32_t addr = symtab_.lookup(tok_.text, ip_);
             pushByteCode(addr);
             consume();
             match(NEWLINE);
             return;
         }
-        if (tok.type == OPERAND) {
-            int32_t operand = atoi(tok.text.c_str());
+        if (tok_.type == OPERAND) {
+            int32_t operand = atoi(tok_.text.c_str());
             pushByteCode(operand);
             consume();
         }
 
-        if (tok.type == OPERAND) {
-            int32_t operand = atoi(tok.text.c_str());
+        if (tok_.type == OPERAND) {
+            int32_t operand = atoi(tok_.text.c_str());
             pushByteCode(operand);
             match(NEWLINE);
             return;
@@ -316,14 +330,15 @@ private:
     }
 
     void pushByteCode(int32_t code) {
-        bytecode.push_back(code);
-        ip++;
+        bytecode_.push_back(code);
+        ip_++;
     }
-    Lexer& lexer;
-    Token tok;                  // lookahead token
-    vector<int32_t> bytecode;   // the output
-    int ip;                     // current position in |bytecode|
-    SymbolTable symtab;         // map labels and func defs to addresses
+    Lexer& lexer_;
+    Token tok_;                  // lookahead token
+    vector<int32_t> bytecode_;   // the instruction output
+    vector<int32_t> globals_;    // the globals output
+    int ip_;                     // current position in |bytecode|
+    SymbolTable symtab_;         // map labels and func defs to addresses
 };
 
 template <int N>
