@@ -462,8 +462,8 @@ int main(int argc, char* argv[]) {
             cerr << "usage: " << argv[0]  << " assemble INFILE OUTFILE\n";
             exit(1);
         }
-        FILE* fp = fopen(argv[1], "r");
-        FILE* outfp = fopen(argv[2], "w");
+        FILE* fp = fopen(argv[2], "r");
+        FILE* outfp = fopen(argv[3], "w");
 
         assert(fp);
         assert(outfp);
