@@ -426,8 +426,13 @@ void disassemble(const char* fname) {
     FILE* fp = fopen(fname, "r");
     assert(fp);
 
-    int c = fgetc(fp);
-    while (c != EOF) {
+    int32_t c;
+    while (true) {
+
+        fread(&c, 1, sizeof(c), fp);
+        if (feof(fp))
+            return;
+        cerr << "\tc=" << c << "\n";
         switch(c) {
         // TODO(dannas): Clean up this mess
 #define macro(op, desc, nargs) \
