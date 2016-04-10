@@ -429,7 +429,7 @@ void disassemble(const char* fname) {
     int32_t c;
     while (true) {
 
-        fread(&c, 1, sizeof(c), fp);
+        fread(&c, sizeof(c), 1, fp);
         if (feof(fp))
             return;
         cerr << "\tc=" << c << "\n";
@@ -439,7 +439,7 @@ void disassemble(const char* fname) {
         case op: \
             cout << desc; \
             if (nargs) { \
-                c = fgetc(fp); \
+                fread(&c, sizeof(1), 1, fp); \
                 cout << " " << c; \
             } \
             cout << "\n"; \
@@ -449,7 +449,6 @@ void disassemble(const char* fname) {
         default:
         assert(false && "uncreachable");
         }
-        c = fgetc(fp);
     }
     fclose(fp);
 }

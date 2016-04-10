@@ -35,3 +35,6 @@ Matched argv[1] against address of string literal
 The initial feeding of the lexer token lookahead character was not done by
 consume().
     
+Read byte-by-byte in disassembler when I intended int-by-int.
+Mixed parameters to fread(3) in the disassembler.
+Forgot to change all calls from fgetc to fread.
