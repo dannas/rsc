@@ -166,7 +166,7 @@ private:
 };
 
 struct LabelSymbol {
-    LabelSymbol() : defined(false), address(0),    forwardRefs() {}
+    LabelSymbol() : defined(false), address(0), forwardRefs() {}
 
     bool defined;
     int32_t address;
@@ -177,13 +177,13 @@ class SymbolTable {
 public:
     SymbolTable() {
     }
-    int32_t lookup(const std::string& name, int32_t ip) {
+    int32_t lookup(const string& name, int32_t ip) {
         auto& l = labels_[name];
         if (!l.defined)
             l.forwardRefs.push_back(ip);
         return l.address;
     }
-    void define(const std::string& name, int32_t ip, vector<int32_t> &bytecode) {
+    void define(const string& name, int32_t ip, vector<int32_t> &bytecode) {
         auto l = labels_[name];
         assert(!l.defined && "label already defined");
 
@@ -218,13 +218,13 @@ public:
         program();
     }
 
-    std::vector<int32_t> code() {
+    vector<int32_t> code() {
         return bytecode_;
     }
 private:
     void consume() {
         tok_ = lexer_.next();
-        std::cout << tok_.type << "\t\t" << tok_.text << "\n";
+        cout << tok_.type << "\t\t" << tok_.text << "\n";
     }
 
     template <typename T>
