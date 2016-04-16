@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdint>
 #include <cassert>
+#include <vector>
 
 #include "opcodes.h"
 
@@ -164,32 +165,27 @@ void interpret(int32_t* code, int32_t* globals) {
     }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
 
-    // .start
-    //    iconst 1
-    //    iconst 2
-    //    call .hello
-    //    print
-    //    halt
-    // .hello
-    //    load -2
-    //    load -3
-    //    iadd
-    //    ret
-
-    int32_t code[] = {
-        OP_ICONST, 1,
-        OP_ICONST, 2,
-        OP_CALL,   9, 2,
-        OP_PRINT,
-        OP_HALT,
-        OP_LOAD, -2,
-        OP_LOAD, -3,
-        OP_IADD,
-        OP_RET,
-    };
+    // TODO(dannas): globals is hardcoded.
     int32_t globals[] = {};
 
-    interpret(code, globals);
+    if (argc != 2) {
+        cerr << "usage: " << argv[0] << " FILE\n";
+        exit(1);
+    }
+    vector<int32_t> code;
+    FILE* fp = fopen(argv[1], "r");
+    assert(fp);
+
+    while (!feof(fp)) {
+        int32_t d;
+        fread(&d, 1, sizeof(d), fp);
+        if (ferror(fp)) {
+            perror("fread");
+            exit(1);
+        }
+        code.push_back(d);
+    }
+    interpret(code.data(), globals);
 }
