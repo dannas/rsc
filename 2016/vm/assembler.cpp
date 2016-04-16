@@ -24,7 +24,7 @@ using namespace std;
 //      Passing the --test option, triggers a run of the internal test suite.
 //
 //      The syntax of the assembly and the organization of the bytecode is
-//      taken from Terrence Pratt's book "Language Implel mentation Patterns".
+//      taken from Terrence Pratt's book "Language Implementation Patterns".
 //      The bytecode there is inspired by Pascals p-code.
 //
 // LIMITATIONS
@@ -162,15 +162,15 @@ private:
 
     int line_;               // pos of current token
     int col_;                // pos of current token
-    friend class Parser;    // for access to line, col
+    friend class Parser;     // for access to line, col
 };
 
 struct LabelSymbol {
     LabelSymbol() : defined(false), address(0), forwardRefs() {}
 
-    bool defined;
-    int32_t address;
-    vector <int32_t> forwardRefs;
+    bool defined;					// has definition been seen?
+    int32_t address;				// address of the label
+    vector <int32_t> forwardRefs;	// offsets into the bytecode
 };
 
 class SymbolTable {
@@ -187,6 +187,7 @@ public:
         auto l = labels_[name];
         assert(!l.defined && "label already defined");
 
+        // Backpatch previous references to the symbol.
         for (auto& ref : l.forwardRefs)
             bytecode[ref] = ip;
 

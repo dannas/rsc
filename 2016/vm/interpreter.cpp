@@ -18,6 +18,8 @@ using namespace std;
 // LIMITATIONS
 //      TODO
 
+const int kMaxStackSize = 64;	// TODO(dannas): Max stack size is hardcoded
+
 class Stack {
 public:
     Stack() : sp_(0), fp_(0)  {
@@ -59,13 +61,13 @@ public:
 
 private:
     void checkRep() {
-        assert(sp_ >= 0 && sp_ < 64 && fp_ >= -1 && fp_ <= sp_);
+        assert(sp_ >= 0 && sp_ < kMaxStackSize && fp_ >= -1 && fp_ <= sp_);
     }
     friend ostream& operator<< (ostream& os, const Stack& stack);
 
-    int32_t arr_[64];
-    int sp_;
-    int fp_;
+    int32_t arr_[kMaxStackSize];	// the stack
+    int sp_;					    // stack pointer
+    int fp_;						// frame pointer
 };
 
 ostream& operator<< (ostream& os, const Stack& stack) {
@@ -81,7 +83,7 @@ ostream& operator<< (ostream& os, const Stack& stack) {
     return os;
 }
 
-// interpret the bytecode in |code| using global variables storied in |globals|.
+// Interpret the bytecode in |code| using global variables stored in |globals|.
 void interpret(int32_t* code, int32_t* globals) {
 
     Stack stack;
