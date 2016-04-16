@@ -454,34 +454,46 @@ void disassemble(const char* fname) {
     fclose(fp);
 }
 
+void assemble(const char* in, const char* out) {
+    FILE* fp = fopen(in, "r");
+    FILE* outfp = fopen(out, "w");
+
+    assert(fp);
+    assert(outfp);
+    Lexer lexer(fp);
+    Parser parser(lexer);
+    auto code = parser.code();
+
+    fwrite(code.data(), sizeof(int32_t), code.size(), outfp);
+
+    fclose(fp);
+    fclose(outfp);
+}
+
+string progname(char* s) {
+    char* p = strrchr(s, '/');
+    if (p == nullptr)
+        p = s;
+    else
+        p++;
+    return string(p);
+}
+
 int main(int argc, char* argv[]) {
-    string op = argc >= 2 ? argv[1] : "";
+    string pn = progname(argv[0]);
 
-    if (op == "test") {
+    if (pn == "assembler-test") {
         runtests();
-    } else if (op == "disassemble") {
-        disassemble(argv[2]);
-    } else if (op == "assemble") {
-
-        if (argc != 4) {
-            cerr << "usage: " << argv[0]  << " assemble INFILE OUTFILE\n";
+    } else if (pn == "disassembler") {
+        disassemble(argv[1]);
+    } else if (pn == "assembler") {
+        if (argc != 3) {
+            cerr << "usage: " << pn << " INFILE OUTFILE\n";
             exit(1);
         }
-        FILE* fp = fopen(argv[2], "r");
-        FILE* outfp = fopen(argv[3], "w");
 
-        assert(fp);
-        assert(outfp);
-        Lexer lexer(fp);
-        Parser parser(lexer);
-        auto code = parser.code();
-
-        fwrite(code.data(), sizeof(int32_t), code.size(), outfp);
-
-        fclose(fp);
-        fclose(outfp);
+        assemble(argv[1], argv[2]);
     } else {
-        cerr << "unknown operation\n";
-        exit(1);
+        assert(false && "unreachable");
     }
 }

@@ -12,7 +12,16 @@ add_executable(assembler
     assembler.cpp
     opcodes.cpp
 )
+add_executable(disassembler
+    assembler.cpp
+    opcodes.cpp
+)
+
+add_executable(assembler-test
+    assembler.cpp
+    opcodes.cpp
+)
 
 enable_testing()
 
-add_test(assembler assembler test)
+add_test(assembler-test assembler-test)
