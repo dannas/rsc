@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iosfwd>
-#include <cassert>
 #include <cstdint>
 
 #define FOR_EACH_OPCODE(macro)      \
