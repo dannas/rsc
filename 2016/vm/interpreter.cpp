@@ -5,6 +5,8 @@
 
 #include "opcodes.h"
 
+#define CASE break;case
+
 using namespace std;
 
 // NAME
@@ -100,55 +102,45 @@ void interpret(int32_t* code, int32_t* globals) {
 
         switch (op) {
             int x, y, addr, nargs, ret;
-        case OP_IADD:
+        CASE OP_IADD:
             x = stack.pop();
             y = stack.pop();
             stack.push(y + x);
-            break;
-        case OP_ISUB:
+        CASE OP_ISUB:
             x = stack.pop();
             y = stack.pop();
             stack.push(y - x);
-            break;
-        case OP_ICONST:
+        CASE OP_ICONST:
             x = code[ip++];
             stack.push(x);
-            break;
-        case OP_BRT:
+        CASE OP_BRT:
             addr = code[ip++];
             if (stack.top())
                 ip = addr;
-            break;
-        case OP_GLOAD:
+        CASE OP_GLOAD:
             x = code[ip++];
             y = globals[x];
             stack.push(y);
-            break;
-        case OP_GSTORE:
+        CASE OP_GSTORE:
             x = code[ip++];
             y = stack.pop();
             globals[x] = y;
-            break;
-        case OP_LOAD:
+        CASE OP_LOAD:
             x = code[ip++];
             stack.load(x);
-            break;
-        case OP_STORE:
+        CASE OP_STORE:
             x = code[ip++];
             stack.store(x);
-            break;
-        case OP_PRINT:
+        CASE OP_PRINT:
             cout << stack.pop() << "\n";
-            break;
-        case OP_CALL:
+        CASE OP_CALL:
             addr = code[ip++];
             nargs = code[ip++];
             stack.push(nargs);
             stack.pushfp();
             stack.push(ip);
             ip = addr;
-            break;
-        case OP_RET:
+        CASE OP_RET:
             ret = stack.pop();
             ip = stack.pop();
             stack.popfp();
@@ -156,8 +148,7 @@ void interpret(int32_t* code, int32_t* globals) {
             while (nargs--)
                 stack.pop();
             stack.push(ret);
-            break;
-        case OP_HALT:
+        CASE OP_HALT:
             return;
         default:
             assert(false && "unknown opcode");
