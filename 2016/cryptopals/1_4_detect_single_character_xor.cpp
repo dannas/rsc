@@ -1,35 +1,41 @@
-#include <iostream>
-#include <vector>
-#include <stdexcept>
+#include <algorithm>
 #include <cctype>
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
+#include <vector>
 
-// 1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736
-// has been xor'd against a single character
-// find the key, decrypt the message
-// You can do this by hand. But don't: write code to do it for you.
+// One of the 60-character strings in this file has been encrypted by single-character XOR.
+// 4.txt
 
-// How? Devise some method for "scoring" a piece of English plaintext. Character
-// frequency is a good metric. Evaluate each output and choose the one with the
-// best score. 
-
-// NOTE: Order of frequency of characters in english text
-// Etaoin shrdlu
+// Find it. 
 
 using namespace std;
 using ByteVector = vector<uint8_t>;
 using HexString = string;
 
-// Convert an ascii encoded character |c| to the corresponding hex value.
+// Convert an ascii encoded character |c| representing a hex value into a nibble.
 // Example:
-//      9 => 9
-//      a => 10
-//      b => 11
+//      '9' => 9
+//      'a' => 10
+//      'b' => 11
 int fromHex(uint8_t c) {
     if (c >= '0' && c <= '9')
         return c - '0';
     if (c >= 'a' && c <= 'f')
         return c - 'a' + 10;
     throw new domain_error("hex val outside range");
+}
+
+// Convert a nibble |c| into the corresponding hex ascii char.
+// Example:
+//      0 => '0'
+//      10 => 'a'
+//      15 => 'f'
+int toHex(uint8_t c) {
+    if (c >= 0 && c <= 9)
+        return '0' + c;
+    return 'a' + c - 10;
 }
 
 // Decode the hex encoded string |hex| as a vector of byte values.
@@ -77,8 +83,8 @@ string escapeString(const ByteVector& bytes) {
             ret.push_back('x');
             char hi = c >> 4 & 0x0f;
             char lo = c & 0x0f;
-            ret.push_back(hi + '0');
-            ret.push_back(lo + '0');
+            ret.push_back(toHex(hi));
+            ret.push_back(toHex(lo));
         }
     }
     return ret;
@@ -93,20 +99,36 @@ ByteVector operator^(const ByteVector& bytes, uint8_t c) {
     return ret;
 }
 
-int main() {
+struct PlainText {
+    ByteVector bytes;   // after applying |key| to original text
+    double score;
+    uint8_t key;
+};
 
-    ByteVector best;
-    double bestScore = 0;
-    int bestKey = 0;
-    auto bytes = decodeHex("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736");
-    for (int c = 0; c < 256; ++c) {
-        auto b = bytes ^ c;
-        double score = ratioPrintables(b);
-        if (score > bestScore) {
-            best = b;
-            bestScore = score;
-            bestKey = c;
+int main() {
+    ifstream f;
+    f.open("4.txt");
+    string s;
+    vector<PlainText> p;
+
+    // Store all combinations of N input lines and M keys.
+    while (getline(f, s)) {
+        auto bytes = decodeHex(s);
+        for (uint8_t key = 0; ; ++key) {
+            auto decoded = bytes ^ key;
+            p.push_back({decoded, ratioPrintables(decoded), key});
+            if (key == 255)
+                break;
         }
     }
-    cout << (int)bestKey << "\t" << escapeString(best) << "\n";
+
+    // Sort on ratio printables in reversed order.
+    sort(begin(p), end(p), [](auto& x, auto& y) { return x.score > y.score; });
+
+    // Print first page or so, looking for an obvious match.
+    for (size_t i = 0; i < 25; ++i) {
+        int key = p[i].key;
+        string t = escapeString(p[i].bytes);
+        cout << key << " " << t << "\n";
+    }
 }
