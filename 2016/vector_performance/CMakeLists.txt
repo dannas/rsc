@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(CMAKE_CXX_FLAGS "-O2 -fno-omit-frame-pointer - -fno-omit-frame-pointer -glag -std=c++14 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -fno-omit-frame-pointer -std=c++14 ${CMAKE_CXX_FLAGS}")
 
 add_executable(benchmark_append benchmark_append.cpp vector.cpp)
 add_executable(benchmark_construct benchmark_construct.cpp vector.cpp)
