@@ -92,9 +92,10 @@ string escapeString(const ByteVector& bytes) {
 
 // Xor |c| with each byte in |bytes|.
 ByteVector operator^(const ByteVector& bytes, uint8_t c) {
-    ByteVector ret;
+    ByteVector ret(bytes.size());
+    auto i = begin(ret);
     for (auto b : bytes) {
-        ret.push_back(b ^ c);
+        *i++ = b ^ c;
     }
     return ret;
 }
