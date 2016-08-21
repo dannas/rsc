@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <vector>
 
+#include "util.h"
+
 // One of the 60-character strings in this file has been encrypted by single-character XOR.
 // 4.txt
 
@@ -67,27 +69,6 @@ double ratioPrintables(const ByteVector& bytes) {
         }
     }
     return n / bytes.size();
-}
-
-// Encode |bytes| as a string of ascii characters, where non-printables are
-// represented on the form \xYY.
-// Example:
-//      { 0x00, 0x61, 0x62, 0x63, 0x19 } => "\x00abc\x19"
-string escapeString(const ByteVector& bytes) {
-    string ret;
-    for (auto c : bytes) {
-        if (isprint(c)) {
-            ret.push_back(c);
-        } else {
-            ret.push_back('\\');
-            ret.push_back('x');
-            char hi = c >> 4 & 0x0f;
-            char lo = c & 0x0f;
-            ret.push_back(toHex(hi));
-            ret.push_back(toHex(lo));
-        }
-    }
-    return ret;
 }
 
 // Xor |c| with each byte in |bytes|.

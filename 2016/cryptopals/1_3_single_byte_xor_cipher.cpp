@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <cctype>
 
+#include "util.h"
+
 // 1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736
 // has been xor'd against a single character
 // find the key, decrypt the message
@@ -61,27 +63,6 @@ double ratioPrintables(const ByteVector& bytes) {
         }
     }
     return n / bytes.size();
-}
-
-// Encode |bytes| as a string of ascii characters, where non-printables are
-// represented on the form \xYY.
-// Example:
-//      { 0x00, 0x61, 0x62, 0x63, 0x19 } => "\x00abc\x19"
-string escapeString(const ByteVector& bytes) {
-    string ret;
-    for (auto c : bytes) {
-        if (isprint(c)) {
-            ret.push_back(c);
-        } else {
-            ret.push_back('\\');
-            ret.push_back('x');
-            char hi = c >> 4 & 0x0f;
-            char lo = c & 0x0f;
-            ret.push_back(hi + '0');
-            ret.push_back(lo + '0');
-        }
-    }
-    return ret;
 }
 
 // Xor |c| with each byte in |bytes|.

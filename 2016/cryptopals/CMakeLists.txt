@@ -28,7 +28,7 @@ add_executables(
 	2_9_implement_pkcs7_padding.cpp
 )
 
-add_executable(util_test util_test.cpp)
+add_executable(util_test util_test.cpp util.cpp)
 target_link_libraries(util_test GTest::GTest GTest::Main)
 
 add_test(util_test util_test)

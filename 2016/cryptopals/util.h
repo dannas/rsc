@@ -2,6 +2,12 @@
 
 #include <cstddef>
 #include <cmath>
+#include <string>
+#include <vector>
+#include <cstdint>
+
+using ByteVector = std::vector<uint8_t>;
+using HexString = std::string;
 
 // Calculates a one-way chi-square test, comparing the frequencies of the |N|
 // |observed| values to the frequencies of the |N| |expected| values.
@@ -17,3 +23,9 @@ double chisquare(int (&observed)[N], int (&expected)[N]) {
     }
     return ret;
 }
+
+// Encode |bytes| as a string of ascii characters, where non-printables are
+// represented on the form \xYY.
+// Example:
+//      { 0x00, 0x61, 0x62, 0x63, 0x19 } => "\x00abc\x19"
+std::string escapeString(const ByteVector& bytes);
