@@ -1,7 +1,11 @@
 #include <gtest/gtest.h>
 
-TEST(FooTest, Example) {
-  EXPECT_EQ(1, 1);
+#include "util.h"
+
+TEST(UtilTest, ChiSquare) {
+    int observed[5] = {0, 0, 0, 0, 0}; 
+    int expected[5] = {0, 0, 0, 0, 0};
+    EXPECT_EQ(chisquare(observed, expected), 0);
 }
 
 int main(int argc, char **argv) {
