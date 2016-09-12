@@ -25,3 +25,15 @@ add_executable(assembler-test
 enable_testing()
 
 add_test(assembler-test assembler-test)
+
+set(ASSEMBLER_TEST_FILES
+    testdata/add.asm
+    testdata/call.asm
+    testdata/halt.asm
+    testdata/print.asm
+)
+
+foreach(test ${ASSEMBLER_TEST_FILES})
+    add_test(${test} 
+        python ${CMAKE_SOURCE_DIR}/testdriver.py ${CMAKE_SOURCE_DIR} ${PROJECT_BINARY_DIR} ${test})
+endforeach(test)
