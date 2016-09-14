@@ -37,13 +37,17 @@ def main():
 
     inpath = os.path.join(srcdir, fname)
     # TODO(dannas): Create the outpath in the /tmp directory
-    outpath = os.path.join(srcdir, 'testdata', bname + '.out')
-    execpath = os.path.join(bindir, 'assembler')
-    print execpath, inpath, outpath
+    outpath = os.path.join(srcdir, 'testdata', bname + '.bytecode')
+    assemblerpath = os.path.join(bindir, 'assembler')
 
-    run_test(execpath, inpath, outpath)
+    run_test(assemblerpath, inpath, outpath)
 
-    # TODO(dannas): Run interpreter
+    interpreterpath = os.path.join(bindir, 'interpreter')
+
+    proc = subprocess.Popen([interpreterpath, outpath], stdout=subprocess.PIPE)
+    stdout = proc.communicate()[0]
+
     # TODO(dannas): Verify that the output is the expected
+    print stdout
 
 main()
