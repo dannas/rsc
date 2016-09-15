@@ -433,7 +433,6 @@ void disassemble(const char* fname) {
         fread(&c, sizeof(c), 1, fp);
         if (feof(fp))
             return;
-        cerr << "\tc=" << c << "\n";
         switch(c) {
         // TODO(dannas): Clean up this mess
 #define macro(op, desc, nargs) \
