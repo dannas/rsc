@@ -7,6 +7,8 @@
 #include <cstring>
 #include <unordered_map>
 
+#include <gtest/gtest.h>
+
 #include "opcodes.h"
 
 using namespace std;
@@ -342,22 +344,18 @@ private:
     SymbolTable symtab_;         // map labels and func defs to addresses
 };
 
-template <int N>
-void checkCodeGen(char* buf, const int32_t (&expected)[N]) {
-    FILE* fp = fmemopen(buf, strlen(buf), "r");
-    assert(fp);
-    Lexer lexer(fp);
-    Parser parser(lexer);
-    auto code = parser.code();
+#define ASSEMBLE_AND_COMPARE(buf, expected) \
+    do { \
+        FILE* fp = fmemopen(buf, strlen(buf), "r"); \
+        ASSERT_TRUE(fp); \
+        Lexer lexer(fp); \
+        Parser parser(lexer); \
+        auto actual = parser.code(); \
+        ASSERT_EQ(actual, expected); \
+    } while (0)
 
-    assert(code.size() == N);
 
-    for (size_t i = 0; i < code.size(); i++)
-        assert(expected[i] == code[i]);
-    fclose(fp);
-}
-
-void testAdd() {
+TEST(Assembler, add) {
     char buf[] =
         "iconst 1"   "\n"
         "iconst 2"   "\n"
@@ -365,62 +363,58 @@ void testAdd() {
         "print"      "\n"
         "halt"       "\n";
 
-    int32_t code[] = {
+    vector<int32_t> expected = {
         OP_ICONST, 1,
         OP_ICONST, 2,
         OP_IADD,
         OP_PRINT,
         OP_HALT
     };
-    checkCodeGen(buf, code);
+
+    ASSEMBLE_AND_COMPARE(buf, expected);
 }
 
-void testJump() {
+TEST(Assembler, jump) {
     char buf[] =
         "iconst 1"   "\n"
         "brt .end"   "\n"
         ".end"       "\n"
         "halt"       "\n";
 
-    int32_t code[] = {
+    vector<int32_t> expected = {
         OP_ICONST, 1,
         OP_BRT, 4,
         OP_HALT
     };
 
-    checkCodeGen(buf, code);
+    ASSEMBLE_AND_COMPARE(buf, expected);
 }
 
-void testFunction() {
+TEST(Assembler, function) {
     char buf[] =
         "call .f"                  "\n"
         "halt"                     "\n"
         ".def .f args=0, locals=0" "\n"
         "ret"                      "\n";
 
-    int32_t code[] = {
+    vector<int32_t> expected = {
         OP_CALL, 3,
         OP_HALT,
         OP_LOAD, 0,
         OP_RET,
     };
-    checkCodeGen(buf, code);
+
+    ASSEMBLE_AND_COMPARE(buf, expected);
 }
 
-void testComment() {
+TEST(Assembler, comment) {
     char buf[] =
         "halt ; This is a comment" "\n";
-    int32_t code[] = {
+    vector<int32_t> expected = {
         OP_HALT,
     };
-    checkCodeGen(buf, code);
-}
 
-void runtests() {
-    testAdd();
-    testJump();
-    testFunction();
-    testComment();
+    ASSEMBLE_AND_COMPARE(buf, expected);
 }
 
 void disassemble(const char* fname) {
@@ -482,7 +476,8 @@ int main(int argc, char* argv[]) {
     string pn = progname(argv[0]);
 
     if (pn == "assembler-test") {
-        runtests();
+        ::testing::InitGoogleTest(&argc, argv);
+        return RUN_ALL_TESTS();
     } else if (pn == "disassembler") {
         disassemble(argv[1]);
     } else if (pn == "assembler") {

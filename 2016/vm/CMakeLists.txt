@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.8.5)
 project(vm C CXX ASM)
 
+find_package(Threads)
+enable_testing()
+find_package(GTest REQUIRED)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g3 -Wall -Wextra -Werror -Wswitch-enum -Wswitch-default -std=c++14")
 
 add_executable(interpreter
@@ -12,15 +16,20 @@ add_executable(assembler
     assembler.cpp
     opcodes.cpp
 )
+target_link_libraries(assembler GTest::GTest GTest::Main)
+
 add_executable(disassembler
     assembler.cpp
     opcodes.cpp
 )
+target_link_libraries(disassembler GTest::GTest GTest::Main)
 
 add_executable(assembler-test
     assembler.cpp
     opcodes.cpp
 )
+
+target_link_libraries(assembler-test GTest::GTest GTest::Main)
 
 enable_testing()
 
