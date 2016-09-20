@@ -158,15 +158,22 @@ void interpret(int32_t* code, int32_t* globals, ostream& out = cout) {
     }
 }
 
+#define INTERPRET_AND_COMPARE(code, expected) \
+    do { \
+        int32_t globals[] = {}; \
+        stringstream ss; \
+        interpret(code, globals, ss); \
+        ss.seekg(0); \
+        string actual = ss.str(); \
+        ASSERT_EQ(actual, expected); \
+    } while (0)
+
+
 TEST(Interpreter, halt) {
     int32_t code[] = { OP_HALT };
-    int32_t globals[] = {};
-    stringstream ss;
-    interpret(code, globals, ss);
-    ss.seekg(0);
     string expected = "";
-    string actual = ss.str();
-    ASSERT_EQ(actual, expected);
+
+    INTERPRET_AND_COMPARE(code, expected);
 }
 
 TEST(Interpreter, add) {
@@ -177,13 +184,9 @@ TEST(Interpreter, add) {
         OP_PRINT,
         OP_HALT
     };
-    int32_t globals[] = {};
-    stringstream ss;
-    interpret(code, globals, ss);
-    ss.seekg(0);
     string expected = "2\n";
-    string actual = ss.str();
-    ASSERT_EQ(actual, expected);
+
+    INTERPRET_AND_COMPARE(code, expected);
 }
 
 TEST(Interpreter, callZeroParams) {
@@ -194,13 +197,9 @@ TEST(Interpreter, callZeroParams) {
         OP_ICONST, 42,
         OP_RET
     };
-    int32_t globals[] = {};
-    stringstream ss;
-    interpret(code, globals, ss);
-    ss.seekg(0);
     string expected = "42\n";
-    string actual = ss.str();
-    ASSERT_EQ(actual, expected);
+
+    INTERPRET_AND_COMPARE(code, expected);
 }
 
 TEST(Interpreter, callOneParam) {
@@ -212,13 +211,9 @@ TEST(Interpreter, callOneParam) {
         OP_LOAD, -1,
         OP_RET
     };
-    int32_t globals[] = {};
-    stringstream ss;
-    interpret(code, globals, ss);
-    ss.seekg(0);
     string expected = "1\n";
-    string actual = ss.str();
-    ASSERT_EQ(actual, expected);
+
+    INTERPRET_AND_COMPARE(code, expected);
 }
 
 TEST(Interpreter, callTwoParams) {
@@ -233,13 +228,9 @@ TEST(Interpreter, callTwoParams) {
         OP_IADD,
         OP_RET
     };
-    int32_t globals[] = {};
-    stringstream ss;
-    interpret(code, globals, ss);
-    ss.seekg(0);
     string expected = "3\n";
-    string actual = ss.str();
-    ASSERT_EQ(actual, expected);
+
+    INTERPRET_AND_COMPARE(code, expected);
 }
 
 string progname(char* s) {
