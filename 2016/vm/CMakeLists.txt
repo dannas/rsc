@@ -11,6 +11,13 @@ add_executable(interpreter
     interpreter.cpp
     opcodes.cpp
 )
+target_link_libraries(interpreter GTest::GTest GTest::Main)
+
+add_executable(interpreter-test
+    interpreter.cpp
+    opcodes.cpp
+)
+target_link_libraries(interpreter-test GTest::GTest GTest::Main)
 
 add_executable(assembler
     assembler.cpp
@@ -34,6 +41,7 @@ target_link_libraries(assembler-test GTest::GTest GTest::Main)
 enable_testing()
 
 add_test(assembler-test assembler-test)
+add_test(interpreter-test interpreter-test)
 
 set(ASSEMBLER_TEST_FILES
     testdata/add.asm

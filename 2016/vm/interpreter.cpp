@@ -3,6 +3,8 @@
 #include <cassert>
 #include <vector>
 
+#include <gtest/gtest.h>
+
 #include "opcodes.h"
 
 #define CASE break;case
@@ -87,7 +89,7 @@ ostream& operator<< (ostream& os, const Stack& stack) {
 }
 
 // Interpret the bytecode in |code| using global variables stored in |globals|.
-void interpret(int32_t* code, int32_t* globals) {
+void interpret(int32_t* code, int32_t* globals, ostream& out = cout) {
 
     Stack stack;
 
@@ -132,7 +134,7 @@ void interpret(int32_t* code, int32_t* globals) {
             x = code[ip++];
             stack.store(x);
         CASE OP_PRINT:
-            cout << stack.pop() << "\n";
+            out << stack.pop() << "\n";
         CASE OP_CALL:
             addr = code[ip++];
             nargs = code[ip++];
@@ -156,7 +158,66 @@ void interpret(int32_t* code, int32_t* globals) {
     }
 }
 
+TEST(Interpreter, halt) {
+    int32_t code[] = { OP_HALT };
+    int32_t globals[] = {};
+    stringstream ss;
+    interpret(code, globals, ss);
+    ss.seekg(0);
+    string expected = "";
+    string actual = ss.str();
+    ASSERT_EQ(actual, expected);
+}
+
+TEST(Interpreter, add) {
+    int32_t code[] = {
+        OP_ICONST, 1,
+        OP_ICONST, 1,
+        OP_IADD,
+        OP_PRINT,
+        OP_HALT
+    };
+    int32_t globals[] = {};
+    stringstream ss;
+    interpret(code, globals, ss);
+    ss.seekg(0);
+    string expected = "2\n";
+    string actual = ss.str();
+    ASSERT_EQ(actual, expected);
+}
+
+TEST(Interpreter, call) {
+    int32_t code[] = {
+        OP_CALL, 3, 0,
+        OP_HALT,
+        OP_LOAD, 0,
+        OP_RET
+    };
+    int32_t globals[] = {};
+    stringstream ss;
+    interpret(code, globals, ss);
+    ss.seekg(0);
+    string expected = "";
+    string actual = ss.str();
+    ASSERT_EQ(actual, expected);
+}
+
+string progname(char* s) {
+    char* p = strrchr(s, '/');
+    if (p == nullptr)
+        p = s;
+    else
+        p++;
+    return string(p);
+}
 int main(int argc, char* argv[]) {
+
+    string pn = progname(argv[0]);
+
+    if (pn == "interpreter-test") {
+        ::testing::InitGoogleTest(&argc, argv);
+        return RUN_ALL_TESTS();
+    }
 
     // TODO(dannas): globals is hardcoded.
     int32_t globals[] = {};
