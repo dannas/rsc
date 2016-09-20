@@ -186,18 +186,58 @@ TEST(Interpreter, add) {
     ASSERT_EQ(actual, expected);
 }
 
-TEST(Interpreter, call) {
+TEST(Interpreter, callZeroParams) {
     int32_t code[] = {
-        OP_CALL, 3, 0,
+        OP_CALL, 5, 0,
+        OP_PRINT,
         OP_HALT,
-        OP_LOAD, 0,
+        OP_ICONST, 42,
         OP_RET
     };
     int32_t globals[] = {};
     stringstream ss;
     interpret(code, globals, ss);
     ss.seekg(0);
-    string expected = "";
+    string expected = "42\n";
+    string actual = ss.str();
+    ASSERT_EQ(actual, expected);
+}
+
+TEST(Interpreter, callOneParam) {
+    int32_t code[] = {
+        OP_ICONST, 1,
+        OP_CALL, 7, 1,
+        OP_PRINT,
+        OP_HALT,
+        OP_LOAD, -1,
+        OP_RET
+    };
+    int32_t globals[] = {};
+    stringstream ss;
+    interpret(code, globals, ss);
+    ss.seekg(0);
+    string expected = "1\n";
+    string actual = ss.str();
+    ASSERT_EQ(actual, expected);
+}
+
+TEST(Interpreter, callTwoParams) {
+    int32_t code[] = {
+        OP_ICONST, 1,
+        OP_ICONST, 2,
+        OP_CALL, 9, 2,
+        OP_PRINT,
+        OP_HALT,
+        OP_LOAD, -1,   // TODO(dannas): Bug here? Test currently fails.
+        OP_LOAD, -2,
+        OP_IADD,
+        OP_RET
+    };
+    int32_t globals[] = {};
+    stringstream ss;
+    interpret(code, globals, ss);
+    ss.seekg(0);
+    string expected = "3\n";
     string actual = ss.str();
     ASSERT_EQ(actual, expected);
 }
