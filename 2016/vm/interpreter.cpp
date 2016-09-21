@@ -208,7 +208,7 @@ TEST(Interpreter, callOneParam) {
         OP_CALL, 7, 1,
         OP_PRINT,
         OP_HALT,
-        OP_LOAD, -1,
+        OP_LOAD, -2,
         OP_RET
     };
     string expected = "1\n";
