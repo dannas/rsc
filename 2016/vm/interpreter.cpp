@@ -54,8 +54,10 @@ public:
         return arr_[sp_ - 1];
     }
 
-    void load(int offset) {
+    void load(int index) {
         checkRep();
+        int nargs = arr_[fp_-1];
+        int offset = index - nargs - 1;
         push(arr_[fp_+offset]);
     }
 
@@ -208,7 +210,7 @@ TEST(Interpreter, callOneParam) {
         OP_CALL, 7, 1,
         OP_PRINT,
         OP_HALT,
-        OP_LOAD, -2,
+        OP_LOAD, 0,
         OP_RET
     };
     string expected = "1\n";
@@ -223,8 +225,8 @@ TEST(Interpreter, callTwoParams) {
         OP_CALL, 9, 2,
         OP_PRINT,
         OP_HALT,
-        OP_LOAD, -3,
-        OP_LOAD, -2,
+        OP_LOAD, 0,
+        OP_LOAD, 1,
         OP_IADD,
         OP_RET
     };
