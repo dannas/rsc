@@ -223,7 +223,7 @@ TEST(Interpreter, callTwoParams) {
         OP_CALL, 9, 2,
         OP_PRINT,
         OP_HALT,
-        OP_LOAD, -1,   // TODO(dannas): Bug here? Test currently fails.
+        OP_LOAD, -3,
         OP_LOAD, -2,
         OP_IADD,
         OP_RET
