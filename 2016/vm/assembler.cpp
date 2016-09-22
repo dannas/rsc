@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <cstdio>
 #include <cassert>
@@ -69,7 +70,7 @@ struct Token {
 
 class Lexer {
 public:
-    Lexer(FILE* fp_) : fp_(fp_), line_(0), col_(0) {
+    Lexer(istream& in) : in_(in), line_(0), col_(0) {
         consume();
     }
     Token next() {
@@ -109,7 +110,7 @@ public:
 
 private:
     void consume() {
-        c_ = fgetc(fp_);
+        c_ = in_.get();
         if (c_ == '\n') {
             line_++;
             col_ = 0;
@@ -159,7 +160,7 @@ private:
         } while (isdigit(c_));
         return {OPERAND, text};
     }
-    FILE* fp_;
+    istream& in_;
     int c_;                  // lookahead character
 
     int line_;               // pos of current token
@@ -346,9 +347,8 @@ private:
 
 #define ASSEMBLE_AND_COMPARE(buf, expected) \
     do { \
-        FILE* fp = fmemopen(buf, strlen(buf), "r"); \
-        ASSERT_TRUE(fp); \
-        Lexer lexer(fp); \
+        stringstream ss(buf); \
+        Lexer lexer(ss); \
         Parser parser(lexer); \
         auto actual = parser.code(); \
         ASSERT_EQ(actual, expected); \
@@ -447,19 +447,19 @@ void disassemble(const char* fname) {
     fclose(fp);
 }
 
+// TODO(dannas): Replace FILE pointers with streams or vectors.
 void assemble(const char* in, const char* out) {
-    FILE* fp = fopen(in, "r");
+    ifstream fin(in);
     FILE* outfp = fopen(out, "w");
 
-    assert(fp);
+    assert(fin.is_open());
     assert(outfp);
-    Lexer lexer(fp);
+    Lexer lexer(fin);
     Parser parser(lexer);
     auto code = parser.code();
 
     fwrite(code.data(), sizeof(int32_t), code.size(), outfp);
 
-    fclose(fp);
     fclose(outfp);
 }
 
