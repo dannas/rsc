@@ -2,6 +2,7 @@
 
 #include <iosfwd>
 #include <cstdint>
+#include <vector>
 
 #define FOR_EACH_OPCODE(macro)      \
     macro(OP_IADD,    "iadd",   0)  \
@@ -28,3 +29,6 @@ bool instrExists(const std::string& instr);
 OpCode opCodeForInstr(const std::string& instr);
 
 std::ostream& operator<< (std::ostream& os, OpCode code);
+
+// Assemble the assembly code in the stream provided by |in| into bytecode.
+std::vector<int32_t> assemble(std::istream& in);

@@ -1,4 +1,4 @@
-#include "opcodes.h"
+#include "vm.h"
 
 #include <algorithm>
 #include <cassert>

@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 
-#include "opcodes.h"
+#include "vm.h"
 
 #define CASE break;case
 

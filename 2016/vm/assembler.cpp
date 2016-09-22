@@ -9,7 +9,7 @@
 #include <unordered_map>
 
 
-#include "opcodes.h"
+#include "vm.h"
 
 using namespace std;
 

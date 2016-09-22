@@ -1,5 +1,4 @@
-#include "assembler.h"
-#include "opcodes.h"
+#include "vm.h"
 
 #include <cstdint>
 #include <vector>
