@@ -345,12 +345,16 @@ private:
     SymbolTable symtab_;         // map labels and func defs to addresses
 };
 
+vector<int32_t> assemble(istream& in) {
+    Lexer lexer(in);
+    Parser parser(lexer);
+    return parser.code();
+}
+
 #define ASSEMBLE_AND_COMPARE(buf, expected) \
     do { \
         stringstream ss(buf); \
-        Lexer lexer(ss); \
-        Parser parser(lexer); \
-        auto actual = parser.code(); \
+        auto actual = assemble(ss); \
         ASSERT_EQ(actual, expected); \
     } while (0)
 
@@ -447,21 +451,6 @@ void disassemble(const char* fname) {
     fclose(fp);
 }
 
-// TODO(dannas): Replace FILE pointers with streams or vectors.
-void assemble(const char* in, const char* out) {
-    ifstream fin(in);
-    FILE* outfp = fopen(out, "w");
-
-    assert(fin.is_open());
-    assert(outfp);
-    Lexer lexer(fin);
-    Parser parser(lexer);
-    auto code = parser.code();
-
-    fwrite(code.data(), sizeof(int32_t), code.size(), outfp);
-
-    fclose(outfp);
-}
 
 string progname(char* s) {
     char* p = strrchr(s, '/');
@@ -485,8 +474,17 @@ int main(int argc, char* argv[]) {
             cerr << "usage: " << pn << " INFILE OUTFILE\n";
             exit(1);
         }
+        ifstream fin(argv[1]);
+        ofstream fout(argv[2]);
 
-        assemble(argv[1], argv[2]);
+        assert(fin.is_open());
+        assert(fout.is_open());
+
+        auto code = assemble(fin);
+        auto bytes = reinterpret_cast<char*>(code.data());
+        // TODO(dannas): How determine sizeof(T) for vector<T>?
+        size_t nbytes = code.size() * sizeof(int32_t);
+        fout.write(bytes, nbytes);
     } else {
         assert(false && "unreachable");
     }
