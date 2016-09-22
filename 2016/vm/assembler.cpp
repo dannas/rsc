@@ -8,7 +8,6 @@
 #include <cstring>
 #include <unordered_map>
 
-#include <gtest/gtest.h>
 
 #include "opcodes.h"
 
@@ -351,75 +350,6 @@ vector<int32_t> assemble(istream& in) {
     return parser.code();
 }
 
-#define ASSEMBLE_AND_COMPARE(buf, expected) \
-    do { \
-        stringstream ss(buf); \
-        auto actual = assemble(ss); \
-        ASSERT_EQ(actual, expected); \
-    } while (0)
-
-
-TEST(Assembler, add) {
-    char buf[] =
-        "iconst 1"   "\n"
-        "iconst 2"   "\n"
-        "iadd"       "\n"
-        "print"      "\n"
-        "halt"       "\n";
-
-    vector<int32_t> expected = {
-        OP_ICONST, 1,
-        OP_ICONST, 2,
-        OP_IADD,
-        OP_PRINT,
-        OP_HALT
-    };
-
-    ASSEMBLE_AND_COMPARE(buf, expected);
-}
-
-TEST(Assembler, jump) {
-    char buf[] =
-        "iconst 1"   "\n"
-        "brt .end"   "\n"
-        ".end"       "\n"
-        "halt"       "\n";
-
-    vector<int32_t> expected = {
-        OP_ICONST, 1,
-        OP_BRT, 4,
-        OP_HALT
-    };
-
-    ASSEMBLE_AND_COMPARE(buf, expected);
-}
-
-TEST(Assembler, function) {
-    char buf[] =
-        "call .f"                  "\n"
-        "halt"                     "\n"
-        ".def .f args=0, locals=0" "\n"
-        "ret"                      "\n";
-
-    vector<int32_t> expected = {
-        OP_CALL, 3,
-        OP_HALT,
-        OP_LOAD, 0,
-        OP_RET,
-    };
-
-    ASSEMBLE_AND_COMPARE(buf, expected);
-}
-
-TEST(Assembler, comment) {
-    char buf[] =
-        "halt ; This is a comment" "\n";
-    vector<int32_t> expected = {
-        OP_HALT,
-    };
-
-    ASSEMBLE_AND_COMPARE(buf, expected);
-}
 
 void disassemble(const char* fname) {
     FILE* fp = fopen(fname, "r");
@@ -449,43 +379,4 @@ void disassemble(const char* fname) {
         }
     }
     fclose(fp);
-}
-
-
-string progname(char* s) {
-    char* p = strrchr(s, '/');
-    if (p == nullptr)
-        p = s;
-    else
-        p++;
-    return string(p);
-}
-
-int main(int argc, char* argv[]) {
-    string pn = progname(argv[0]);
-
-    if (pn == "assembler-test") {
-        ::testing::InitGoogleTest(&argc, argv);
-        return RUN_ALL_TESTS();
-    } else if (pn == "disassembler") {
-        disassemble(argv[1]);
-    } else if (pn == "assembler") {
-        if (argc != 3) {
-            cerr << "usage: " << pn << " INFILE OUTFILE\n";
-            exit(1);
-        }
-        ifstream fin(argv[1]);
-        ofstream fout(argv[2]);
-
-        assert(fin.is_open());
-        assert(fout.is_open());
-
-        auto code = assemble(fin);
-        auto bytes = reinterpret_cast<char*>(code.data());
-        // TODO(dannas): How determine sizeof(T) for vector<T>?
-        size_t nbytes = code.size() * sizeof(int32_t);
-        fout.write(bytes, nbytes);
-    } else {
-        assert(false && "unreachable");
-    }
 }

@@ -22,19 +22,8 @@ add_executable(interpreter-test
 )
 target_link_libraries(interpreter-test GTest::GTest GTest::Main)
 
-add_executable(assembler
-    assembler.cpp
-    opcodes.cpp
-)
-target_link_libraries(assembler GTest::GTest GTest::Main)
-
-add_executable(disassembler
-    assembler.cpp
-    opcodes.cpp
-)
-target_link_libraries(disassembler GTest::GTest GTest::Main)
-
 add_executable(assembler-test
+    assembler_unittest.cpp
     assembler.cpp
     opcodes.cpp
 )
