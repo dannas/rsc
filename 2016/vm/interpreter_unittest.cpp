@@ -35,6 +35,19 @@ TEST(Interpreter, add) {
     INTERPRET_AND_COMPARE(code, expected);
 }
 
+TEST(Interpreter, jump) {
+    int32_t code[] = {
+        OP_ICONST, 3,
+        OP_ICONST, 1,
+        OP_ISUB,
+        OP_BRT, 2,
+        OP_HALT
+    };
+    string expected = "";
+
+    INTERPRET_AND_COMPARE(code, expected);
+}
+
 TEST(Interpreter, callZeroParams) {
     int32_t code[] = {
         OP_CALL, 5, 0,
