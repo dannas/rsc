@@ -16,12 +16,13 @@ using namespace std;
 
 
 TEST(Assembler, add) {
-    char buf[] =
-        "iconst 1"   "\n"
-        "iconst 2"   "\n"
-        "iadd"       "\n"
-        "print"      "\n"
-        "halt"       "\n";
+    char buf[] = R"(
+        iconst 1
+        iconst 2
+        iadd
+        print
+        halt
+    )";
 
     vector<int32_t> expected = {
         OP_ICONST, 1,
@@ -35,11 +36,12 @@ TEST(Assembler, add) {
 }
 
 TEST(Assembler, jump) {
-    char buf[] =
-        "iconst 1"   "\n"
-        "brt .end"   "\n"
-        ".end"       "\n"
-        "halt"       "\n";
+    char buf[] = R"(
+        iconst 1
+        brt .end
+        .end
+        halt
+    )";
 
     vector<int32_t> expected = {
         OP_ICONST, 1,
@@ -51,11 +53,12 @@ TEST(Assembler, jump) {
 }
 
 TEST(Assembler, function) {
-    char buf[] =
-        "call .f"                  "\n"
-        "halt"                     "\n"
-        ".def .f args=0, locals=0" "\n"
-        "ret"                      "\n";
+    char buf[] = R"(
+        call .f
+        halt
+        .def .f args=0, locals=0
+        ret
+    )";
 
     vector<int32_t> expected = {
         OP_CALL, 3,
@@ -68,8 +71,9 @@ TEST(Assembler, function) {
 }
 
 TEST(Assembler, comment) {
-    char buf[] =
-        "halt ; This is a comment" "\n";
+    char buf[] = R"(
+        halt ; This is a comment
+    )";
     vector<int32_t> expected = {
         OP_HALT,
     };
