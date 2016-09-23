@@ -32,3 +32,6 @@ std::ostream& operator<< (std::ostream& os, OpCode code);
 
 // Assemble the assembly code in the stream provided by |in| into bytecode.
 std::vector<int32_t> assemble(std::istream& in);
+
+// Interpret the bytecode in |code| using global variables stored in |globals|.
+void interpret(int32_t* code, int32_t* globals, std::ostream& out);

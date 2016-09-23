@@ -3,8 +3,6 @@
 #include <cassert>
 #include <vector>
 
-#include <gtest/gtest.h>
-
 #include "vm.h"
 
 #define CASE break;case
@@ -93,8 +91,7 @@ ostream& operator<< (ostream& os, const Stack& stack) {
     return os;
 }
 
-// Interpret the bytecode in |code| using global variables stored in |globals|.
-void interpret(int32_t* code, int32_t* globals, ostream& out = cout) {
+void interpret(int32_t* code, int32_t* globals, ostream& out) {
 
     Stack stack;
 
@@ -161,119 +158,4 @@ void interpret(int32_t* code, int32_t* globals, ostream& out = cout) {
             assert(false && "unknown opcode");
         }
     }
-}
-
-#define INTERPRET_AND_COMPARE(code, expected) \
-    do { \
-        int32_t globals[] = {}; \
-        stringstream ss; \
-        interpret(code, globals, ss); \
-        ss.seekg(0); \
-        string actual = ss.str(); \
-        ASSERT_EQ(actual, expected); \
-    } while (0)
-
-
-TEST(Interpreter, halt) {
-    int32_t code[] = { OP_HALT };
-    string expected = "";
-
-    INTERPRET_AND_COMPARE(code, expected);
-}
-
-TEST(Interpreter, add) {
-    int32_t code[] = {
-        OP_ICONST, 1,
-        OP_ICONST, 1,
-        OP_IADD,
-        OP_PRINT,
-        OP_HALT
-    };
-    string expected = "2\n";
-
-    INTERPRET_AND_COMPARE(code, expected);
-}
-
-TEST(Interpreter, callZeroParams) {
-    int32_t code[] = {
-        OP_CALL, 5, 0,
-        OP_PRINT,
-        OP_HALT,
-        OP_ICONST, 42,
-        OP_RET
-    };
-    string expected = "42\n";
-
-    INTERPRET_AND_COMPARE(code, expected);
-}
-
-TEST(Interpreter, callOneParam) {
-    int32_t code[] = {
-        OP_ICONST, 1,
-        OP_CALL, 7, 1,
-        OP_PRINT,
-        OP_HALT,
-        OP_LOAD, 0,
-        OP_RET
-    };
-    string expected = "1\n";
-
-    INTERPRET_AND_COMPARE(code, expected);
-}
-
-TEST(Interpreter, callTwoParams) {
-    int32_t code[] = {
-        OP_ICONST, 1,
-        OP_ICONST, 2,
-        OP_CALL, 9, 2,
-        OP_PRINT,
-        OP_HALT,
-        OP_LOAD, 0,
-        OP_LOAD, 1,
-        OP_IADD,
-        OP_RET
-    };
-    string expected = "3\n";
-
-    INTERPRET_AND_COMPARE(code, expected);
-}
-
-string progname(char* s) {
-    char* p = strrchr(s, '/');
-    if (p == nullptr)
-        p = s;
-    else
-        p++;
-    return string(p);
-}
-int main(int argc, char* argv[]) {
-
-    string pn = progname(argv[0]);
-
-    if (pn == "interpreter-test") {
-        ::testing::InitGoogleTest(&argc, argv);
-        return RUN_ALL_TESTS();
-    }
-
-    // TODO(dannas): globals is hardcoded.
-    int32_t globals[] = {};
-
-    if (argc != 2) {
-        cerr << "usage: " << argv[0] << " FILE\n";
-        exit(1);
-    }
-    vector<int32_t> code;
-    FILE* fp = fopen(argv[1], "r");
-    assert(fp);
-
-    while (!feof(fp)) {
-        int32_t d;
-        fread(&d, 1, sizeof(d), fp);
-        if (ferror(fp)) {
-            perror("fread");
-            exit(1);
-        }
-        code.push_back(d);
-    }
-    interpret(code.data(), globals);
 }
