@@ -8,31 +8,9 @@
 #include <cstring>
 #include <unordered_map>
 
-
 #include "vm.h"
 
 using namespace std;
-
-// NAME
-//      assembler - simple p-code assembler
-//
-// SYNOPSIS
-//      assembler [--test] [INPUTFILE] [OUTPUTFILE]
-//
-// DESCRIPTION
-//      Translates assembly statements found in INPUTFILE into bytecode that is
-//      stored in OUTPUTFILE.
-//
-//      Passing the --test option, triggers a run of the internal test suite.
-//
-//      The syntax of the assembly and the organization of the bytecode is
-//      taken from Terrence Pratt's book "Language Implementation Patterns".
-//      The bytecode there is inspired by Pascals p-code.
-//
-// LIMITATIONS
-//      Only 32 bit integers as operands.
-//      No macro functionality.
-//      Error reporting is incomplete and inconsistent.
 
 #define FOR_EACH_TOKEN(macro) \
     macro(LABEL)              \
@@ -67,6 +45,7 @@ struct Token {
     string text;
 };
 
+// A LL(1) recursive-decent Lexer.
 class Lexer {
 public:
     Lexer(istream& in) : in_(in), line_(0), col_(0) {
@@ -175,6 +154,14 @@ struct LabelSymbol {
     vector <int32_t> forwardRefs;	// offsets into the bytecode
 };
 
+// SymbolTable for a monolithic scope.
+//
+// When a definition is found, record the (symbol, ip) in the table.
+// When the symbol is referenced, replace it with ip from the table.
+//
+// But symbols can be referenced before they're defined. We solve that
+// by keeping track of those forward references and backpatch them upon
+// encountering the symbol definition.
 class SymbolTable {
 public:
     SymbolTable() {
@@ -201,17 +188,9 @@ private:
     unordered_map<string, LabelSymbol> labels_;
 };
 
-
-// Grammar for the assembly syntax.
+// A LL(1) recursive-decent Parser.
 //
-// program              => globaldeclaration functiondeclaration*
-// globalsdeclaration   => NEWLINE* '.globals'
-// functiondeclaration  => NEWLINE* '.def' ID 'args' '=' OPERAND ',' 'locals' '=' OPERAND NEWLINE instr*
-// labeldeclaration     => NEWLINE* LABEL
-// instr                => ID NEWLINE
-//                      => ID OPERAND NEWLINE
-//                      => ID LABEL NEWLINE
-//                      => ID OPERAND ',' OPERAND NEWLINE
+// See vm.h for a description of the grammar.
 //
 // TODO(dannas): Parse .globals.
 class Parser {

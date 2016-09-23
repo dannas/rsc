@@ -9,20 +9,9 @@
 
 using namespace std;
 
-// NAME
-//      stackvm4 - minimal stackbased bytecode interpreter
-//
-// SYNOPSIS
-//      TODO
-//
-// DESCRIPTION
-//      TODO
-//
-// LIMITATIONS
-//      TODO
-
 const int kMaxStackSize = 64;	// TODO(dannas): Max stack size is hardcoded
 
+// This class represents the operand stack.
 class Stack {
 public:
     Stack() : sp_(0), fp_(0)  {
