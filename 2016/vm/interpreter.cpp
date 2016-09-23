@@ -37,7 +37,7 @@ public:
     void pushfp() {
         int oldfp = fp_;
         fp_ = sp_;
-        arr_[sp_++] = oldfp;
+        push(oldfp);
     }
 
     void popfp() {
@@ -68,7 +68,10 @@ public:
 
 private:
     void checkRep() {
-        assert(sp_ >= 0 && sp_ < kMaxStackSize && fp_ >= -1 && fp_ <= sp_);
+        assert(sp_ >= 0);
+        assert(sp_ < kMaxStackSize);
+        assert(fp_ >= -1);
+        assert(fp_ <= sp_);
     }
     friend ostream& operator<< (ostream& os, const Stack& stack);
 
