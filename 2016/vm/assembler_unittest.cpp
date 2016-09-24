@@ -72,7 +72,9 @@ TEST(Assembler, function) {
 
 TEST(Assembler, comment) {
     char buf[] = R"(
-        halt ; This is a comment
+        ; The first comment
+        halt ; The second  comment
+        ; The third comment
     )";
     vector<int32_t> expected = {
         OP_HALT,
