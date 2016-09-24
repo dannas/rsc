@@ -106,6 +106,10 @@ void interpret(int32_t* code, int32_t* globals, ostream& out) {
         CASE OP_ICONST:
             x = code[ip++];
             stack.push(x);
+        CASE OP_ILT:
+            x = stack.pop();
+            y = stack.pop();
+            stack.push(y < x);
         CASE OP_BRT:
             addr = code[ip++];
             if (stack.top())

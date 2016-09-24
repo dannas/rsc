@@ -34,6 +34,7 @@ void interpret(int32_t* code, int32_t* globals, std::ostream& out);
     macro(OP_IADD,    "iadd",   0)  \
     macro(OP_ISUB,    "isub",   0)  \
     macro(OP_ICONST,  "iconst", 1)  \
+    macro(OP_ILT,     "ilt",    0)  \
     macro(OP_BRT,     "brt",    1)  \
     macro(OP_GLOAD,   "gload",  1)  \
     macro(OP_GSTORE,  "gstore", 1)  \
