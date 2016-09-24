@@ -6,7 +6,9 @@
 #include <vector>
 #include <cstdlib>
 #include <cstring>
+#include <sstream>
 #include <unordered_map>
+#include <stdexcept>
 
 #include "vm.h"
 
@@ -211,9 +213,10 @@ private:
 
     template <typename T>
     void die(T actual, T expected) {
-        cerr << "<function>:" << lexer_.line_ << ":" << lexer_.col_
+        stringstream ss;
+        ss << "function>:" << lexer_.line_ << ":" << lexer_.col_
             << " expected '" << expected << "' but got '" << actual << "'\n";
-        exit(1);
+        throw invalid_argument(ss.str());
     }
 
     void match(TokenType type, const string& text = "") {
