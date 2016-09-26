@@ -103,6 +103,14 @@ void interpret(int32_t* code, int32_t* globals, ostream& out) {
             x = stack.pop();
             y = stack.pop();
             stack.push(y - x);
+        CASE OP_IMULT:
+            x = stack.pop();
+            y = stack.pop();
+            stack.push(y * x);
+        CASE OP_IDIV:
+            x = stack.pop();
+            y = stack.pop();
+            stack.push(y / x);
         CASE OP_ICONST:
             x = code[ip++];
             stack.push(x);

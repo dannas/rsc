@@ -57,6 +57,8 @@ void interpret(int32_t* code, int32_t* globals, std::ostream& out);
 #define FOR_EACH_OPCODE(macro)      \
     macro(OP_IADD,    "iadd",   0)  \
     macro(OP_ISUB,    "isub",   0)  \
+    macro(OP_IMULT,   "imult",  0)  \
+    macro(OP_IDIV,    "idiv",   0)  \
     macro(OP_ICONST,  "iconst", 1)  \
     macro(OP_ILT,     "ilt",    0)  \
     macro(OP_BRT,     "brt",    1)  \
