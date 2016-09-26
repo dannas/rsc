@@ -38,3 +38,15 @@ consume().
 Read byte-by-byte in disassembler when I intended int-by-int.
 Mixed parameters to fread(3) in the disassembler.
 Forgot to change all calls from fgetc to fread.
+
+Mixed up the calling convention, causing asserts that were hard for me to
+diagnose. Found the problem quickly when I added unit tests to the byte
+interpreter.
+
+Switching from cstdio to iostream caused a lot of needless churn.
+    Should have just sticked to iostream from the beginning.
+
+Wasted a lot of time debugging some example programs. I should have used unit
+tests from the beginning.
+
+
