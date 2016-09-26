@@ -24,9 +24,19 @@ add_executable(assembler-test
     vm.h
 )
 
+add_executable(exec-test
+    exec_integrationtest.cpp
+    interpreter.cpp
+    assembler.cpp
+    opcodes.cpp
+    vm.h
+)
+
 target_link_libraries(interpreter-test GTest::GTest GTest::Main)
 target_link_libraries(assembler-test GTest::GTest GTest::Main)
+target_link_libraries(exec-test GTest::GTest GTest::Main)
 
 add_test(assembler-test assembler-test)
 add_test(interpreter-test interpreter-test)
+add_test(exec-test interpreter-test)
 
