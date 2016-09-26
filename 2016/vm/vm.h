@@ -4,9 +4,7 @@
 #include <cstdint>
 #include <vector>
 
-// Assemble the assembly code in the stream provided by |in| into bytecode.
-//
-// Grammar:
+// GRAMMAR ===
 //
 // program              => globaldeclaration functiondeclaration*
 // globalsdeclaration   => NEWLINE* '.globals'
@@ -16,6 +14,32 @@
 //                      => ID OPERAND NEWLINE
 //                      => ID LABEL NEWLINE
 //                      => ID OPERAND ',' OPERAND NEWLINE
+// ENVIRONMENT ===
+//
+// One stack is used both as operand stack and for keeping track of stack frames.
+// Two of the machines registers points into the stack (which grows upwards):
+//
+//  SP points to the top of the stack (the stack pointer)
+//  FP marks the beginning of the active stack frame (the frame pointer)
+//
+// TODO(dannas): What about a constant pool?
+// TODO(dannas): What about memory?
+//
+//
+// CALLING CONVENTION ===
+//
+// This is the layout of a stack frame:
+//
+//  SP =>
+//         local stack
+//         locals
+//         parameters
+//         return address
+//  FP =>  previous frame pointer
+//         nargs
+//
+
+// Assemble the assembly code in the stream provided by |in| into bytecode.
 //
 std::vector<int32_t> assemble(std::istream& in);
 
