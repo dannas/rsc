@@ -33,6 +33,24 @@ TEST(Integration, simplePrint) {
     EXEC_AND_COMPARE(buf, expected);
 }
 
+TEST(Integration, addFunction) {
+    char buf[] = R"(
+        iconst 1
+        iconst 2
+        call .f 2
+        print
+        halt
+        .def .f args=2, locals=0
+        load 0
+        load 1
+        iadd
+        ret
+    )";
+    string expected = "3\n";
+
+    EXEC_AND_COMPARE(buf, expected);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

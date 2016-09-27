@@ -265,9 +265,9 @@ private:
         consume();
         match(ID, "args");
         match(EQUALSIGN);
-        int32_t operand = atoi(tok_.text.c_str());
-        pushByteCode(OP_LOAD);
-        pushByteCode(operand);
+        // TODO(dannas): Do we need number of args?
+        // The call instruction takes an nargs parameter.
+        // Is that enough?
         consume();
         match(COMMA);
         match(ID, "locals");
@@ -294,6 +294,11 @@ private:
             int32_t addr = symtab_.lookup(tok_.text, ip_);
             pushByteCode(addr);
             consume();
+            if (tok_.type == OPERAND) {
+                int32_t operand = atoi(tok_.text.c_str());
+                pushByteCode(operand);
+                consume();
+            }
             match(NEWLINE);
             return;
         }
