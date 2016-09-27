@@ -11,7 +11,7 @@ using namespace std;
     do { \
         stringstream ss(buf); \
         auto actual = assemble(ss); \
-        ASSERT_EQ(actual, expected); \
+        ASSERT_EQ(expected, actual); \
     } while (0)
 
 

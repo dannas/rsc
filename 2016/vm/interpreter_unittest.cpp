@@ -11,7 +11,7 @@ using namespace std;
         interpret(code, globals, ss); \
         ss.seekg(0); \
         string actual = ss.str(); \
-        ASSERT_EQ(actual, expected); \
+        ASSERT_EQ(expected, actual); \
     } while (0)
 
 
