@@ -175,7 +175,7 @@ public:
         return l.address;
     }
     void define(const string& name, int32_t ip, vector<int32_t> &bytecode) {
-        auto l = labels_[name];
+        auto& l = labels_[name];
         assert(!l.defined && "label already defined");
 
         // Backpatch previous references to the symbol.
