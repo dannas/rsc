@@ -55,20 +55,78 @@ void interpret(int32_t* code, int32_t* globals, std::ostream& out);
 // List of available bytecodes on the form
 //  enum-value   string-name   num-arguments
 #define FOR_EACH_OPCODE(macro)      \
+    \
+    /* Pops the two values 'lval' and 'rval' from the stack, then pushes
+     * the result of applying the arithmetic operation to them.
+     * Stack: lval, rval => (lval OP rval)
+     */ \
     macro(OP_IADD,    "iadd",   0)  \
     macro(OP_ISUB,    "isub",   0)  \
     macro(OP_IMULT,   "imult",  0)  \
     macro(OP_IDIV,    "idiv",   0)  \
+    \
+    /* Pushes a constant onto the stack.
+     * Stack: => constant
+     */ \
     macro(OP_ICONST,  "iconst", 1)  \
+    \
+    /* Pops the top two values from the stack and pushes the result of
+     * comparing them.
+     * Stack: lval, rval => (lval OP rval)
+     */ \
     macro(OP_ILT,     "ilt",    0)  \
+    \
+    /* Jumps to an absolute address if top value on stack evaluates to true.
+     * Operands: int32_t absolute address
+     * Stack: =>
+     */ \
     macro(OP_BRT,     "brt",    1)  \
+    \
+    /* Pushes the global value 'gval' onto the stack.
+     * Operands: int32_t index into globals memory space.
+     * Stack: => gval
+     */ \
     macro(OP_GLOAD,   "gload",  1)  \
+    \
+    /* Pops the top value from the stack and stores it at the supplied index.
+     * Operands: int32_t index into globals memory space.
+     * Stack: val =>
+     */ \
     macro(OP_GSTORE,  "gstore", 1)  \
+    \
+    /* Pushes the parameter 'param' onto the stack.
+     * Operands: int32_t index into parameters further down the stack.
+     * Stack: param1, param2, ..., val => param1, param2, ..., val, param1
+     */ \
     macro(OP_LOAD,    "load",   1)  \
+    \
+    /* Pops the topmost stack value and stores it in the parameter stack area.
+     * Operands: int32_t index into parameters further down the stack.
+     * Stack: param1, param2, ..., v1, v2 => v2, param2, ..., v1
+     */ \
     macro(OP_STORE,   "store",  1)  \
+    \
+    /* Pops the top value from the stack and prints it to stdout.
+     * Stack: v1 =>
+     */ \
     macro(OP_PRINT,   "print",  0)  \
+    \
+    /* Invokes 'callee' with arguments previously pushed onto the stack. See
+     * Calling convention paragraph at top of this file.
+     * Stack: TODO
+     */ \
     macro(OP_CALL,    "call",   1)  \
+    \
+    /* Pops the topmost val of the stack, then pops 'locals', 'parameters',
+     * 'nargs', 'fp' and 'retaddr' before pushing the stored val. Sets the ip
+     * to 'retaddr'
+     * Stack: nargs, retaddr, fp, parameters, locals, val => val
+     */ \
     macro(OP_RET,     "ret",    0)  \
+    \
+    /* Stops the execution of the script.
+     * Stack: =>
+     */ \
     macro(OP_HALT,    "halt",   0)  \
 
 enum OpCode : int32_t {
