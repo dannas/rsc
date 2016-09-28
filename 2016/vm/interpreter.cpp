@@ -48,8 +48,10 @@ public:
         push(arr_[fp_+offset]);
     }
 
-    void store(int offset) {
+    void store(int index) {
         checkRep();
+        int nargs = arr_[fp_-1];
+        int offset = index - nargs - 1;
         arr_[fp_+offset] = pop();
     }
 
@@ -95,6 +97,8 @@ void interpret(int32_t* code, int32_t* globals, ostream& out) {
 
         switch (op) {
             int x, y, addr, nargs, ret;
+        CASE OP_POP:
+            stack.pop();
         CASE OP_IADD:
             x = stack.pop();
             y = stack.pop();
@@ -118,6 +122,13 @@ void interpret(int32_t* code, int32_t* globals, ostream& out) {
             x = stack.pop();
             y = stack.pop();
             stack.push(y < x);
+        CASE OP_IEQ:
+            x = stack.pop();
+            y = stack.pop();
+            stack.push(y == x);
+        CASE OP_BR:
+            addr = code[ip++];
+            ip = addr;
         CASE OP_BRT:
             addr = code[ip++];
             if (stack.top())

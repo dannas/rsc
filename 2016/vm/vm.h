@@ -56,6 +56,11 @@ void interpret(int32_t* code, int32_t* globals, std::ostream& out);
 //  enum-value   string-name   num-arguments
 #define FOR_EACH_OPCODE(macro)      \
     \
+    /* Pops the topmost value from the stack.
+     * Stack: val =>
+     */ \
+    macro(OP_POP,    "pop",     0)  \
+    \
     /* Pops the two values 'lval' and 'rval' from the stack, then pushes
      * the result of applying the arithmetic operation to them.
      * Stack: lval, rval => (lval OP rval)
@@ -75,6 +80,12 @@ void interpret(int32_t* code, int32_t* globals, std::ostream& out);
      * Stack: lval, rval => (lval OP rval)
      */ \
     macro(OP_ILT,     "ilt",    0)  \
+    macro(OP_IEQ,     "ieq",    0)  \
+    \
+    /* Jumps to an absolute address unconditionally.
+     * Stack: =>
+     */ \
+    macro(OP_BR,      "br",     1)  \
     \
     /* Jumps to an absolute address if top value on stack evaluates to true.
      * Operands: int32_t absolute address
