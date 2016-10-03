@@ -69,6 +69,7 @@ void interpret(int32_t* code, int32_t* globals, std::ostream& out);
     macro(OP_ISUB,    "isub",   0)  \
     macro(OP_IMULT,   "imult",  0)  \
     macro(OP_IDIV,    "idiv",   0)  \
+    macro(OP_IMOD,    "imod",   0)  \
     \
     /* Pushes a constant onto the stack.
      * Stack: => constant

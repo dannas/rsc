@@ -88,6 +88,50 @@ TEST(Integration, pow) {
     EXEC_AND_COMPARE(buf, expected);
 }
 
+TEST(Integration, gcd) {
+    // TODO(dannas): Replace gcd(x,y,z) with gcd(x,y) once we have support
+    // for locals in place.
+    char buf[] = R"(
+    iconst 25484848
+    iconst 1448
+    iconst 0
+    call .gcd 3
+    print
+    halt
+
+    .def .gcd args=3, locals=0   ; .gcd x, y, r
+        load 0
+        load 1
+        imod
+        store 2                  ; r = x % y
+    .start
+        load 2
+        iconst 0
+        ieq
+        brt .end                ; if r == 0 goto .end
+        pop
+        load 1
+        store 0                 ; x = y
+
+        load 2
+        store 1                 ; y = r
+
+        load 0
+        load 1
+        imod
+        store 2                 ; r = x % y
+
+        br .start
+    .end
+        pop
+        load 1
+        ret                     ; return y
+    )";
+    string expected = "8\n";
+
+    EXEC_AND_COMPARE(buf, expected);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
