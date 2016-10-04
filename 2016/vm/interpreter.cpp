@@ -96,7 +96,7 @@ void interpret(int32_t* code, int32_t* globals, ostream& out) {
         ip++; // Move to next opcode or operand
 
         switch (op) {
-            int x, y, addr, nargs, ret;
+            int x, y, addr, nargs, nlocals, ret;
         CASE OP_POP:
             stack.pop();
         CASE OP_IADD:
@@ -156,7 +156,10 @@ void interpret(int32_t* code, int32_t* globals, ostream& out) {
         CASE OP_CALL:
             addr = code[ip++];
             nargs = code[ip++];
-            stack.push(nargs);
+            nlocals = code[ip++];
+            for (int i = 0; i < nlocals; i++)
+                stack.push(0);
+            stack.push(nargs+nlocals);
             stack.pushfp();
             stack.push(ip);
             ip = addr;

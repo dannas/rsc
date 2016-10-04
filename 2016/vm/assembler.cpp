@@ -149,12 +149,21 @@ private:
 };
 
 struct LabelSymbol {
-    LabelSymbol() : defined(false), address(0), forwardRefs() {}
+    LabelSymbol()
+        : defined(false)
+        , address(0)
+        , forwardRefs()
+        , nargs(-1)
+        , nlocals(-1) {}
 
     bool defined;					// has definition been seen?
     int32_t address;				// address of the label
     vector <int32_t> forwardRefs;	// offsets into the bytecode
+    int32_t nargs;                  // number of parameters for funcdef
+    int32_t nlocals;                // number of locals for funcdef
 };
+
+
 
 // SymbolTable for a monolithic scope.
 //
@@ -168,13 +177,15 @@ class SymbolTable {
 public:
     SymbolTable() {
     }
-    int32_t lookup(const string& name, int32_t ip) {
+    LabelSymbol lookup(const string& name, int32_t ip) {
         auto& l = labels_[name];
         if (!l.defined)
             l.forwardRefs.push_back(ip);
-        return l.address;
+        return l;
     }
-    void define(const string& name, int32_t ip, vector<int32_t> &bytecode) {
+
+    void defineLabel(const string& name, int32_t ip,
+                     vector<int32_t> &bytecode) {
         auto& l = labels_[name];
         assert(!l.defined && "label already defined");
 
@@ -184,6 +195,25 @@ public:
 
         l.defined = true;
         l.address = ip;
+        l.forwardRefs.clear();
+    }
+
+    void defineFunction(const string& name, int32_t ip,
+                        int32_t nargs, int32_t nlocals,
+                        vector<int32_t> &bytecode) {
+        auto& l = labels_[name];
+        assert(!l.defined && "label already defined");
+
+        // Backpatch previous references to the symbol.
+        for (auto& ref : l.forwardRefs) {
+            bytecode[ref] = ip;
+            bytecode[ref+1] = nargs;
+            bytecode[ref+2] = nlocals;
+        }
+
+        l.defined = true;
+        l.address = ip;
+        l.nargs = nargs;
         l.forwardRefs.clear();
     }
 private:
@@ -211,6 +241,7 @@ private:
         cout << tok_.type << "\t\t" << tok_.text << "\n";
     }
 
+
     template <typename T>
     void die(T actual, T expected) {
         stringstream ss;
@@ -218,6 +249,7 @@ private:
             << " expected '" << expected << "' but got '" << actual << "'\n";
         throw invalid_argument(ss.str());
     }
+
 
     void match(TokenType type, const string& text = "") {
         if (type != tok_.type)
@@ -244,7 +276,7 @@ private:
         }
     }
     void label() {
-        symtab_.define(tok_.text, ip_, bytecode_);
+        symtab_.defineLabel(tok_.text, ip_, bytecode_);
         consume();
         match(NEWLINE);
     }
@@ -261,20 +293,20 @@ private:
 
     void funcdef() {
         match(FUNCDEF);
-        symtab_.define(tok_.text, ip_, bytecode_);
+        string text = tok_.text;
+        int32_t ip = ip_;
         consume();
         match(ID, "args");
         match(EQUALSIGN);
-        // TODO(dannas): Do we need number of args?
-        // The call instruction takes an nargs parameter.
-        // Is that enough?
+        int32_t nargs = atoi(tok_.text.c_str());
         consume();
         match(COMMA);
         match(ID, "locals");
         match(EQUALSIGN);
-        // TODO(dannas): Store number of locals.
+        int32_t nlocals = atoi(tok_.text.c_str());
         match(OPERAND);
         match(NEWLINE);
+        symtab_.defineFunction(text, ip, nargs, nlocals, bytecode_);
 
         while (tok_.type == ID)
             instr();
@@ -291,13 +323,15 @@ private:
             return;
         }
         if (tok_.type == LABEL) {
-            int32_t addr = symtab_.lookup(tok_.text, ip_);
-            pushByteCode(addr);
+            auto l = symtab_.lookup(tok_.text, ip_);
+            pushByteCode(l.address);
             consume();
-            if (tok_.type == OPERAND) {
-                int32_t operand = atoi(tok_.text.c_str());
-                pushByteCode(operand);
-                consume();
+
+            // if the symbol is a reference to a function
+            // insert nargs and nlocals as well
+            if (code == OP_CALL) {
+                pushByteCode(l.nargs);
+                pushByteCode(l.nlocals);
             }
             match(NEWLINE);
             return;
@@ -317,6 +351,9 @@ private:
 
         match(NEWLINE);
         return;
+    }
+
+    void callInstr() {
     }
 
     void pushByteCode(int32_t code) {

@@ -50,7 +50,7 @@ TEST(Interpreter, jump) {
 
 TEST(Interpreter, callZeroParams) {
     int32_t code[] = {
-        OP_CALL, 5, 0,
+        OP_CALL, 6, 0, 0,
         OP_PRINT,
         OP_HALT,
         OP_ICONST, 42,
@@ -64,7 +64,7 @@ TEST(Interpreter, callZeroParams) {
 TEST(Interpreter, callOneParam) {
     int32_t code[] = {
         OP_ICONST, 1,
-        OP_CALL, 7, 1,
+        OP_CALL, 8, 1, 0,
         OP_PRINT,
         OP_HALT,
         OP_LOAD, 0,
@@ -79,7 +79,7 @@ TEST(Interpreter, callTwoParams) {
     int32_t code[] = {
         OP_ICONST, 1,
         OP_ICONST, 2,
-        OP_CALL, 9, 2,
+        OP_CALL, 10, 2, 0,
         OP_PRINT,
         OP_HALT,
         OP_LOAD, 0,

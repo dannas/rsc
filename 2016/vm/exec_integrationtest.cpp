@@ -37,7 +37,7 @@ TEST(Integration, addFunction) {
     char buf[] = R"(
         iconst 1
         iconst 2
-        call .f 2
+        call .f
         print
         halt
         .def .f args=2, locals=0
@@ -55,7 +55,7 @@ TEST(Integration, pow) {
     char buf[] = R"(
          iconst 2
          iconst 2
-         call .pow 2
+         call .pow
          print
          halt
 
@@ -95,7 +95,7 @@ TEST(Integration, gcd) {
     iconst 25484848
     iconst 1448
     iconst 0
-    call .gcd 3
+    call .gcd
     print
     halt
 
