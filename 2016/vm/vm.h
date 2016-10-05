@@ -132,7 +132,7 @@ std::string disassemble(std::istream& in);
      * Calling convention paragraph at top of this file.
      * Stack: TODO
      */ \
-    macro(OP_CALL,    "call",   2)  \
+    macro(OP_CALL,    "call",   3)  \
     \
     /* Pops the topmost val of the stack, then pops 'locals', 'parameters',
      * 'nargs', 'fp' and 'retaddr' before pushing the stored val. Sets the ip

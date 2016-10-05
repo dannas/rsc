@@ -109,6 +109,36 @@ TEST(Disassembler, add) {
     DISASSEMBLE_AND_COMPARE(buf, expected);
 }
 
+TEST(Disassembler, addFunction) {
+    vector<int32_t> buf = {
+        OP_ICONST, 1,
+        OP_ICONST, 2,
+        OP_CALL, 7, 2, 1,
+        OP_PRINT,
+        OP_HALT,
+        OP_LOAD, 0,
+        OP_LOAD, 1,
+        OP_IADD,
+        OP_STORE, 2,    // just for exercising the store instruction
+        OP_LOAD,  2,
+        OP_RET
+    };
+    string expected =
+        "iconst 1\n"
+        "iconst 2\n"
+        "call 7 2 1\n"
+        "print\n"
+        "halt\n"
+        "load 0\n"
+        "load 1\n"
+        "iadd\n"
+        "store 2\n"
+        "load 2\n"
+        "ret\n";
+
+    DISASSEMBLE_AND_COMPARE(buf, expected);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
