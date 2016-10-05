@@ -82,6 +82,33 @@ TEST(Assembler, comment) {
     ASSEMBLE_AND_COMPARE(buf, expected);
 }
 
+#define DISASSEMBLE_AND_COMPARE(buf, expected) \
+    do { \
+        stringstream ss; \
+        ss.write(reinterpret_cast<char*>(buf.data()), buf.size() * sizeof(buf[0])); \
+        ss.seekg(0); \
+        auto actual = disassemble(ss); \
+        ASSERT_EQ(expected, actual); \
+    } while (0)
+
+
+TEST(Disassembler, add) {
+    vector<int32_t> buf = {
+        OP_ICONST, 1,
+        OP_ICONST, 2,
+        OP_IADD,
+        OP_PRINT,
+        OP_HALT
+    };
+    string expected =
+        "iconst 1\n"
+        "iconst 2\n"
+        "iadd\n"
+        "print\n"
+        "halt\n";
+    DISASSEMBLE_AND_COMPARE(buf, expected);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

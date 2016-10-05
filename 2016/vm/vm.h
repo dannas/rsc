@@ -50,6 +50,11 @@ std::vector<int32_t> assemble(std::istream& in);
 // to |out|.
 void interpret(int32_t* code, int32_t* globals, std::ostream& out);
 
+// Disassemble the bytecode pointed to by |in|.
+//
+// Return a string containing the disassembled bytecode.
+std::string disassemble(std::istream& in);
+
 // PRIVATE INTERFACE
 
 // List of available bytecodes on the form

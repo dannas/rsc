@@ -1,11 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <cstdio>
 #include <cassert>
 #include <vector>
-#include <cstdlib>
-#include <cstring>
 #include <sstream>
 #include <unordered_map>
 #include <stdexcept>
@@ -374,27 +371,30 @@ vector<int32_t> assemble(istream& in) {
     return parser.code();
 }
 
+static int32_t readInt(istream& in) {
+    int32_t val;
+    in.read(reinterpret_cast<char*>(&val), sizeof(val));
+    return val;
+}
 
-void disassemble(const char* fname) {
-    FILE* fp = fopen(fname, "r");
-    assert(fp);
+string disassemble(istream& in) {
 
-    int32_t c;
+    int32_t opcode;
+    stringstream ss;
+
     while (true) {
+        opcode = readInt(in);
+        if (!in)
+            goto out;
 
-        fread(&c, sizeof(c), 1, fp);
-        if (feof(fp))
-            return;
-        switch(c) {
-        // TODO(dannas): Clean up this mess
-#define macro(op, desc, nargs) \
-        case op: \
-            cout << desc; \
-            if (nargs) { \
-                fread(&c, sizeof(1), 1, fp); \
-                cout << " " << c; \
-            } \
-            cout << "\n"; \
+        switch(opcode) {
+#define macro(op, desc, nargs)                  \
+        case op:                                \
+            ss << desc;                         \
+            for (int i = 0; i < nargs; ++i) {   \
+                ss << " " << readInt(in);       \
+            }                                   \
+            ss << "\n";                         \
             break;
         FOR_EACH_OPCODE(macro);
 #undef macro
@@ -402,5 +402,7 @@ void disassemble(const char* fname) {
         assert(false && "uncreachable");
         }
     }
-    fclose(fp);
+
+out:
+    return ss.str();
 }
