@@ -89,17 +89,14 @@ TEST(Integration, pow) {
 }
 
 TEST(Integration, gcd) {
-    // TODO(dannas): Replace gcd(x,y,z) with gcd(x,y) once we have support
-    // for locals in place.
     char buf[] = R"(
     iconst 25484848
     iconst 1448
-    iconst 0
     call .gcd
     print
     halt
 
-    .def .gcd args=3, locals=0   ; .gcd x, y, r
+    .def .gcd args=2, locals=1   ; .gcd x, y
         load 0
         load 1
         imod
