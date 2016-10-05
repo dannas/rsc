@@ -156,9 +156,9 @@ struct LabelSymbol {
         , nargs(-1)
         , nlocals(-1) {}
 
-    bool defined;					// has definition been seen?
-    int32_t address;				// address of the label
-    vector <int32_t> forwardRefs;	// offsets into the bytecode
+    bool defined;                   // has definition been seen?
+    int32_t address;                // address of the label
+    vector <int32_t> forwardRefs;   // offsets into the bytecode
     int32_t nargs;                  // number of parameters for funcdef
     int32_t nlocals;                // number of locals for funcdef
 };
