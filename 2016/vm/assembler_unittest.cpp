@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <algorithm>
 
 #include <gtest/gtest.h>
 
@@ -82,13 +83,48 @@ TEST(Assembler, comment) {
     ASSEMBLE_AND_COMPARE(buf, expected);
 }
 
+
+template <typename T>
+string trim(T b, T e) {
+
+    while (b != e && isspace(*b)) {
+        b++;
+    }
+
+    while (b != e && isspace(*(e-1))) {
+        e--;
+    }
+    return string(b, e);
+}
+
+// Returns trimmed lines. Empty lines are stripped.
+string trimLines(const string& lines) {
+    string trimmed;
+    auto b = begin(lines);
+    auto eos = end(lines);
+
+    auto e = find(b, eos, '\n');
+
+    while (e != eos) {
+        auto s = trim(b, e);
+        if (!s.empty())
+            trimmed += s + '\n';
+        b = e + 1;
+        e = find(b, eos, '\n');
+    }
+
+    trimmed += trim(b, e);
+    return trimmed;
+}
+
 #define DISASSEMBLE_AND_COMPARE(buf, expected) \
     do { \
         stringstream ss; \
         ss.write(reinterpret_cast<char*>(buf.data()), buf.size() * sizeof(buf[0])); \
         ss.seekg(0); \
         auto actual = disassemble(ss); \
-        ASSERT_EQ(expected, actual); \
+        auto trimmedExpected = trimLines(expected); \
+        ASSERT_EQ(trimmedExpected, actual); \
     } while (0)
 
 
@@ -100,12 +136,14 @@ TEST(Disassembler, add) {
         OP_PRINT,
         OP_HALT
     };
-    string expected =
-        "iconst 1\n"
-        "iconst 2\n"
-        "iadd\n"
-        "print\n"
-        "halt\n";
+
+    string expected = R"(
+        iconst 1
+        iconst 2
+        iadd
+        print
+        halt
+    )";
     DISASSEMBLE_AND_COMPARE(buf, expected);
 }
 
@@ -123,18 +161,19 @@ TEST(Disassembler, addFunction) {
         OP_LOAD,  2,
         OP_RET
     };
-    string expected =
-        "iconst 1\n"
-        "iconst 2\n"
-        "call 7 2 1\n"
-        "print\n"
-        "halt\n"
-        "load 0\n"
-        "load 1\n"
-        "iadd\n"
-        "store 2\n"
-        "load 2\n"
-        "ret\n";
+    string expected = R"(
+        iconst 1
+        iconst 2
+        call 7 2 1
+        print
+        halt
+        load 0
+        load 1
+        iadd
+        store 2
+        load 2
+        ret
+    )";
 
     DISASSEMBLE_AND_COMPARE(buf, expected);
 }
