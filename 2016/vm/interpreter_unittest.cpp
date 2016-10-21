@@ -16,14 +16,14 @@ using namespace std;
 
 
 TEST(Interpreter, halt) {
-    int32_t code[] = { OP_HALT };
+    vector<int32_t> code = { OP_HALT };
     string expected = "";
 
     INTERPRET_AND_COMPARE(code, expected);
 }
 
 TEST(Interpreter, add) {
-    int32_t code[] = {
+    vector<int32_t> code = {
         OP_ICONST, 1,
         OP_ICONST, 1,
         OP_IADD,
@@ -36,7 +36,7 @@ TEST(Interpreter, add) {
 }
 
 TEST(Interpreter, jump) {
-    int32_t code[] = {
+    vector<int32_t> code = {
         OP_ICONST, 3,
         OP_ICONST, 1,
         OP_ISUB,
@@ -49,7 +49,7 @@ TEST(Interpreter, jump) {
 }
 
 TEST(Interpreter, callZeroParams) {
-    int32_t code[] = {
+    vector<int32_t> code = {
         OP_CALL, 6, 0, 0,
         OP_PRINT,
         OP_HALT,
@@ -62,7 +62,7 @@ TEST(Interpreter, callZeroParams) {
 }
 
 TEST(Interpreter, callOneParam) {
-    int32_t code[] = {
+    vector<int32_t> code = {
         OP_ICONST, 1,
         OP_CALL, 8, 1, 0,
         OP_PRINT,
@@ -76,7 +76,7 @@ TEST(Interpreter, callOneParam) {
 }
 
 TEST(Interpreter, callTwoParams) {
-    int32_t code[] = {
+    vector<int32_t> code = {
         OP_ICONST, 1,
         OP_ICONST, 2,
         OP_CALL, 10, 2, 0,

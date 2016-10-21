@@ -48,7 +48,7 @@ std::vector<int32_t> assemble(std::istream& in);
 // |code| must be well formed bytecode - as produced by the assembler step.
 // The executing bytecode can interact with the outside by printing stdout
 // to |out|.
-void interpret(int32_t* code, int32_t* globals, std::ostream& out);
+void interpret(const std::vector<int32_t> &code, int32_t* globals, std::ostream& out);
 
 std::vector<int32_t> optimize(int32_t* code);
 

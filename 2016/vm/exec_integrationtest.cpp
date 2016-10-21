@@ -14,7 +14,7 @@ using namespace std;
         auto code = assemble(as); \
         int32_t globals[] = {}; \
         stringstream ss; \
-        interpret(code.data(), globals, ss); \
+        interpret(code, globals, ss); \
         ss.seekg(0); \
         string actual = ss.str(); \
         ASSERT_EQ(expected, actual); \

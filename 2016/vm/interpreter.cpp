@@ -82,7 +82,7 @@ ostream& operator<< (ostream& os, const Stack& stack) {
     return os;
 }
 
-void interpret(int32_t* code, int32_t* globals, ostream& out) {
+void interpret(const vector<int32_t>& code, int32_t* globals, ostream& out) {
 
     Stack stack;
 
