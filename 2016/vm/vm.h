@@ -50,6 +50,8 @@ std::vector<int32_t> assemble(std::istream& in);
 // to |out|.
 void interpret(int32_t* code, int32_t* globals, std::ostream& out);
 
+std::vector<int32_t> optimize(int32_t* code);
+
 // Disassemble the bytecode pointed to by |in|.
 //
 // Return a string containing the disassembled bytecode.

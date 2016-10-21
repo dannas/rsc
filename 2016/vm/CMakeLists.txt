@@ -14,6 +14,7 @@ add_executable(interpreter-test
     interpreter_unittest.cpp
     interpreter.cpp
     opcodes.cpp
+    optimizer.cpp
     vm.h
 )
 
@@ -21,6 +22,7 @@ add_executable(assembler-test
     assembler_unittest.cpp
     assembler.cpp
     opcodes.cpp
+    optimizer.cpp
     vm.h
 )
 
@@ -29,6 +31,7 @@ add_executable(exec-test
     interpreter.cpp
     assembler.cpp
     opcodes.cpp
+    optimizer.cpp
     vm.h
 )
 
