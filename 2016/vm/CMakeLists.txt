@@ -35,11 +35,21 @@ add_executable(exec-test
     vm.h
 )
 
+add_executable(optimizer-test
+    optimizer_unittest.cpp
+    assembler.cpp
+    opcodes.cpp
+    optimizer.cpp
+    vm.h
+)
+
 target_link_libraries(interpreter-test GTest::GTest GTest::Main)
 target_link_libraries(assembler-test GTest::GTest GTest::Main)
 target_link_libraries(exec-test GTest::GTest GTest::Main)
+target_link_libraries(optimizer-test GTest::GTest GTest::Main)
 
 add_test(assembler-test assembler-test)
 add_test(interpreter-test interpreter-test)
 add_test(exec-test interpreter-test)
+add_test(optimizer-test optimizer-test)
 
