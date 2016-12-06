@@ -9,7 +9,7 @@
 //
 //  BUGS
 //      Should take a commandline parameter for wast file
-//      Add  arrows for jumps
+//      Add  arrows for jumps.
 //
 // SEE ALSO
 //      https://github.com/mbebenita/WasmExplorer/blob/gh-pages/explorer.js#L342
