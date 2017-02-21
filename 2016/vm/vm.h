@@ -50,8 +50,6 @@ std::vector<int32_t> assemble(std::istream& in);
 // to |out|.
 void interpret(const std::vector<int32_t> &code, int32_t* globals, std::ostream& out);
 
-std::vector<int32_t> foldConstants(std::vector<int32_t> code);
-
 // Disassemble the bytecode pointed to by |in|.
 //
 // Return a string containing the disassembled bytecode.
