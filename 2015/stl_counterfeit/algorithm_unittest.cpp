@@ -205,6 +205,44 @@ TEST(Algorithm, copy_backward_All) {
     ASSERT_EQ(i, begin(dst));
 }
 
+class NonCopyable {
+public:
+    NonCopyable() : x_(0) {}
+    NonCopyable(int x) : x_(x) {}
+    NonCopyable(NonCopyable&& other) {
+        x_ = std::move(other.x_);
+    }
+    NonCopyable& operator=(NonCopyable&& other) {
+        x_ = std::move(other.x_);
+        return *this;
+    }
+    bool operator==(const NonCopyable& other) const {
+        return other.x_ == x_;
+    }
+    NonCopyable(const NonCopyable&) = delete;
+    NonCopyable& operator=(const NonCopyable&) = delete;
+private:
+    int x_;
+};
+
+TEST(Algorithm, move_Empty) {
+    vector<NonCopyable> src;
+    vector<NonCopyable> dst;
+    counterfeit::move(begin(src), end(src), begin(dst));
+    ASSERT_TRUE(dst.empty());
+}
+
+TEST(Algorithm, move_All) {
+    vector<NonCopyable> src;
+    src.emplace_back(1);
+    src.emplace_back(2);
+    vector<NonCopyable> dst(src.size());
+    auto i = counterfeit::move(begin(src), end(src), begin(dst));
+    ASSERT_EQ(i, end(dst));
+    ASSERT_EQ(src, dst);
+}
+
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

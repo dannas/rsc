@@ -178,15 +178,6 @@ IT search_n(IT b, IT e, Size size, const T& val) {
 }
 
 // Modifying sequence operations
-// TODO: Add these
-// move
-// move_backward
-// fill
-// fill_n
-// transform
-// generate
-// generate_n
-// ...
 
 template <typename I, typename O>
 O copy(I b, I e, O d_b) {
@@ -220,6 +211,49 @@ O move(I b, I e, O d_b) {
     return d_b;
 }
 
+template <typename I, typename O>
+O move_backward(I b, I e, O d_b, O d_e) {
+    while (b != e && d_b != d_e) {
+        *--d_e = *--e;
+    }
+    return d_e;
+}
+
+template <typename I, typename T>
+void fill(I b, I e, T val) {
+    for (; b != e; ++b)
+        *b = val;
+}
+
+template <typename I, typename Size, typename T>
+void fill_n(I b, I e, Size n, T val) {
+    for (; b != e && n > 0; ++b, --n) {
+        *b = val;
+    }
+}
+
+template <typename I, typename O, typename F>
+O transform(I b, I e, O d_b, F f) {
+    for (; b != e; ++b) {
+        *d_b++ = f(*b);
+    }
+    return d_b;
+}
+
+template <typename I, typename F>
+void generate(I b, I e, F f) {
+    for (; b != e; ++b) {
+        *b = f();
+    }
+}
+
+template <typename I, typename Size, typename F>
+void generate_n(I b, I e, Size n, F f) {
+    for (; b != e && n > 0; ++b, --n) {
+        *b = f();
+    }
+}
+
 template <typename T, typename Predicate>
 T remove_if(T b, T e, Predicate p) {
     b = find_if(b, e, p);
@@ -237,6 +271,34 @@ T remove_if(T b, T e, Predicate p) {
         }
     }
     return result;
+}
+
+template <typename I, typename O, typename T>
+O remove_copy(I b, I e, O d_b, const T& val) {
+    for (; b != e; ++b) {
+        if (*b != val)
+            *d_b++ = *b;
+    }
+    return d_b;
+}
+
+template <typename I, typename T>
+void replace(I b, I e, const T& old, const T& val) {
+    for (; b != e; ++b) {
+        if (*b == old)
+            *b = val;
+    }
+}
+
+template <typename I, typename O, typename T>
+O replace_copy(I b, I e, O d_b, const T& old, const T& val) {
+    for (; b != e; ++b) {
+        if (*b == old)
+            *d_b++ = val;
+        else
+            *d_b++ = *b;
+    }
+    return d_b;
 }
 
 
