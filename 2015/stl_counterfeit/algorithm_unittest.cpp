@@ -220,6 +220,11 @@ public:
     bool operator==(const NonCopyable& other) const {
         return other.x_ == x_;
     }
+
+    operator int() {
+        return x_;
+    }
+
     NonCopyable(const NonCopyable&) = delete;
     NonCopyable& operator=(const NonCopyable&) = delete;
 private:
@@ -241,6 +246,87 @@ TEST(Algorithm, move_All) {
     auto i = counterfeit::move(begin(src), end(src), begin(dst));
     ASSERT_EQ(i, end(dst));
     ASSERT_EQ(src, dst);
+ }
+
+// TODO(dannas): Add tests for:
+// move_backward
+// fill
+// fill_n
+// transform
+// generate
+// generate_n
+// remove_if
+// remove_copy
+// replace
+// replace_copy
+
+TEST(Algorithm, swap_NotCopyable) {
+    int x = 1;
+    int y = 2;
+    NonCopyable nx(x);
+    NonCopyable ny(y);
+    swap(nx, ny);
+    ASSERT_EQ(nx, y);
+    ASSERT_EQ(ny, x);
+}
+
+// TODO(dannas): Add tests for
+// iter_swap
+// swap_ranges
+
+TEST(Algorithm, reverse_Empty) {
+    Vector v;
+    reverse(begin(v), end(v));
+    ASSERT_TRUE(v.empty());
+}
+
+TEST(Algorithm, reverse_OneElement) {
+    Vector v = {1};
+    Vector r = {1};
+    reverse(begin(v), end(v));
+    ASSERT_EQ(v, r);
+}
+
+TEST(Algorithm, reverse_TwoElements) {
+    Vector v = {1, 2};
+    Vector r = {2, 1};
+    reverse(begin(v), end(v));
+    ASSERT_EQ(v, r);
+}
+
+
+TEST(Algorithm, reverse_ThreeElements) {
+    Vector v = {1, 2, 3};
+    Vector r = {3, 2, 1};
+    reverse(begin(v), end(v));
+    ASSERT_EQ(v, r);
+}
+
+TEST(Algorithm, reverse_copy_OneElement) {
+    Vector src = {1};
+    Vector dst(src.size());
+    Vector r = {1};
+    auto i = reverse_copy(begin(src), end(src), begin(dst));
+    ASSERT_EQ(i, end(dst));
+    ASSERT_EQ(dst, r);
+}
+
+TEST(Algorithm, reverse_copy_TwoElements) {
+    Vector src = {1, 2};
+    Vector dst(src.size());
+    Vector r = {2, 1};
+    auto i = reverse_copy(begin(src), end(src), begin(dst));
+    ASSERT_EQ(i, end(dst));
+    ASSERT_EQ(dst, r);
+}
+
+TEST(Algorithm, reverse_copy_ThreeElements) {
+    Vector src = {1, 2, 3};
+    Vector dst(src.size());
+    Vector r = {3, 2, 1};
+    auto i = reverse_copy(begin(src), end(src), begin(dst));
+    ASSERT_EQ(i, end(dst));
+    ASSERT_EQ(dst, r);
 }
 
 

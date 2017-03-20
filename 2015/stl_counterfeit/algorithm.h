@@ -8,8 +8,8 @@ namespace counterfeit {
 
 // Non modifying sequence operations
 
-template <typename IT, typename T>
-IT find(IT b, IT e, T val) {
+template <typename I, typename T>
+I find(I b, I e, T val) {
     for (; b != e; ++b) {
         if (*b == val)
             return b;
@@ -17,8 +17,8 @@ IT find(IT b, IT e, T val) {
     return e;
 }
 
-template <typename T, typename Predicate>
-T find_if(T b, T e, Predicate p) {
+template <typename I, typename Predicate>
+I find_if(I b, I e, Predicate p) {
     for (; b != e; ++b) {
         if (p(*b))
             return b;
@@ -26,8 +26,8 @@ T find_if(T b, T e, Predicate p) {
     return e;
 }
 
-template <typename T, typename Predicate>
-T find_if_not(T b, T e, Predicate p) {
+template <typename I, typename Predicate>
+I find_if_not(I b, I e, Predicate p) {
     for (; b != e; ++b) {
         if (!p(*b))
             return b;
@@ -35,40 +35,40 @@ T find_if_not(T b, T e, Predicate p) {
     return e;
 }
 
-template <typename T, typename Predicate>
-bool all_of(T b, T e, Predicate p) {
+template <typename I, typename Predicate>
+bool all_of(I b, I e, Predicate p) {
     return find_if_not(b, e, p) == e;
 } 
 
-template <typename T, typename Predicate>
-bool any_of(T b, T e, Predicate p) {
+template <typename I, typename Predicate>
+bool any_of(I b, I e, Predicate p) {
     return find_if(b, e, p) != e;
 }
 
-template <typename T, typename Predicate>
-bool none_of(T b, T e, Predicate p) {
+template <typename I, typename Predicate>
+bool none_of(I b, I e, Predicate p) {
     return find_if(b, e, p) == e;
 }
 
-template <typename T, typename Function>
-Function for_each(T b, T e, Function f) {
+template <typename I, typename Function>
+Function for_each(I b, I e, Function f) {
     for (; b != e; ++b)
         f(*b);
     return f;
 }
 
-template <typename T, typename Size, typename Function>
-Function for_each_n(T b, Size n, Function f) {
+template <typename I, typename Size, typename Function>
+Function for_each_n(I b, Size n, Function f) {
     auto e = b + n;
     for (; b != e; ++b)
         f(*b);
     return f;
 }
 
-template <typename T, typename V>
-typename std::iterator_traits<T>::difference_type
-count(T b, T e, V value) {
-    typename std::iterator_traits<T>::difference_type n = 0;
+template <typename I, typename T>
+typename std::iterator_traits<I>::difference_type
+count(I b, I e, T value) {
+    typename std::iterator_traits<I>::difference_type n = 0;
     for (; b != e; ++b) {
         if (value == *b)
             ++n;
@@ -76,10 +76,10 @@ count(T b, T e, V value) {
     return n;
 }
 
-template <typename T, typename Predicate>
-typename std::iterator_traits<T>::difference_type
-count_if(T b, T e, Predicate p) {
-    typename std::iterator_traits<T>::difference_type n = 0;
+template <typename I, typename Predicate>
+typename std::iterator_traits<I>::difference_type
+count_if(I b, I e, Predicate p) {
+    typename std::iterator_traits<I>::difference_type n = 0;
     for (; b != e; ++b) {
         if (p(*b))
             ++n;
@@ -145,11 +145,11 @@ T1 find_first_of(T1 b, T1 e, T2 s_b, T2 s_e) {
     return e;
 }
 
-template <typename T>
-T adjacent_find(T b, T e) {
+template <typename I>
+I adjacent_find(I b, I e) {
     if (b == e)
         return e;
-    T prev = b;
+    I prev = b;
     ++b;
     for (; b != e; ++b) {
         if (*b == *prev)
@@ -159,10 +159,10 @@ T adjacent_find(T b, T e) {
     return e;
 }
 
-template <typename IT, typename Size, typename T>
-IT search_n(IT b, IT e, Size size, const T& val) {
+template <typename I, typename Size, typename T>
+I search_n(I b, I e, Size size, const T& val) {
     Size n = 0;
-    IT i = e;
+    I i = e;
     for (; b != e; ++b) {
         if (*b == val) {
             if (n == 0)
@@ -254,8 +254,8 @@ void generate_n(I b, I e, Size n, F f) {
     }
 }
 
-template <typename T, typename Predicate>
-T remove_if(T b, T e, Predicate p) {
+template <typename I, typename Predicate>
+I remove_if(I b, I e, Predicate p) {
     b = find_if(b, e, p);
     if (b == e)
         return b;
@@ -300,6 +300,51 @@ O replace_copy(I b, I e, O d_b, const T& old, const T& val) {
     }
     return d_b;
 }
+
+template <typename T>
+void swap(T& a, T& b) {
+    T temp = std::move(a);
+    a = std::move(b);
+    b = std::move(temp);
+}
+
+template <typename I>
+void iter_swap(I a, I b) {
+    using std::swap;
+    swap(*a, *b);
+}
+
+template <typename I, typename O>
+O swap_ranges(I b1, I e1, O b2, O e2) {
+    for (; b1 != e1 && b2 != e2; ++b1, ++b2) {
+        iter_swap(b1, b2);
+    }
+    return b2;
+}
+
+template <typename I>
+void reverse(I b, I e) {
+    while (b != e && b != --e) {
+        iter_swap(b++, e);
+    }
+}
+
+template <typename I, typename O>
+O reverse_copy(I b, I e, O d_b) {
+    while (b != e) {
+        *d_b++ = *--e;
+    }
+    return d_b;
+}
+
+// TODO(dannas): Add
+// rotate
+// rotate_copy
+// shuffle
+// unique
+// unique_copy
+//
+//
 
 
 } // namespace counterfeit
