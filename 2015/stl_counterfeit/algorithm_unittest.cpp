@@ -329,6 +329,76 @@ TEST(Algorithm, reverse_copy_ThreeElements) {
     ASSERT_EQ(dst, r);
 }
 
+TEST(Algorithm, unique_Empty) {
+    Vector v;
+    auto i = unique(begin(v), end(v));
+    ASSERT_EQ(i, end(v));
+    ASSERT_TRUE(v.empty());
+}
+
+TEST(Algorithm, unique_OneElement) {
+    Vector v = {1};
+    Vector expected = {1};
+    auto i = unique(begin(v), end(v));
+    ASSERT_EQ(i, end(v));
+    ASSERT_EQ(v, expected);
+}
+
+TEST(Algorithm, unique_DuplicateAtBegin) {
+    Vector v = {1, 1, 2};
+    Vector expected = {1, 2};
+    auto i = unique(begin(v), end(v));
+    Vector actual(begin(v), i);
+    ASSERT_EQ(i, begin(v)+2);
+    ASSERT_EQ(actual, expected);
+}
+
+TEST(Algorithm, unique_DuplicateAtEnd) {
+    Vector v = {1, 2, 2};
+    Vector expected = {1, 2};
+    auto i = unique(begin(v), end(v));
+    Vector actual(begin(v), i);
+    ASSERT_EQ(i, begin(v)+2);
+    ASSERT_EQ(actual, expected);
+}
+
+TEST(Algorithm, unique_copy_Empty) {
+    Vector src;
+    Vector dst;
+    auto i = unique_copy(begin(src), end(src), begin(dst));
+    ASSERT_EQ(i, end(dst));
+    ASSERT_TRUE(dst.empty());
+}
+
+TEST(Algorithm, unique_copy_OneElement) {
+    Vector src = {1};
+    Vector dst(src.size());
+    Vector expected = {1};
+    auto i = unique_copy(begin(src), end(src), begin(dst));
+    ASSERT_EQ(i, end(dst));
+    ASSERT_EQ(dst, expected);
+}
+
+TEST(Algorithm, unique_copy_DuplicateAtBegin) {
+    Vector src = {1, 1, 2};
+    Vector dst(src.size());
+    Vector expected = {1, 2};
+    auto i = unique_copy(begin(src), end(src), begin(dst));
+    ASSERT_EQ(i, begin(dst)+2);
+    Vector actual(begin(dst), i);
+    ASSERT_EQ(actual, expected);
+}
+
+TEST(Algorithm, unique_copy_DuplicateAtEnd) {
+    Vector src = {1, 2, 2};
+    Vector dst(src.size());
+    Vector expected = {1, 2};
+    auto i = unique_copy(begin(src), end(src), begin(dst));
+    ASSERT_EQ(i, begin(dst)+2);
+    Vector actual(begin(dst), i);
+    ASSERT_EQ(actual, expected);
+}
+
 
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);

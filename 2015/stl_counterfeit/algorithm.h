@@ -341,10 +341,37 @@ O reverse_copy(I b, I e, O d_b) {
 // rotate
 // rotate_copy
 // shuffle
-// unique
-// unique_copy
-//
-//
+
+template <typename I>
+I unique(I b, I e) {
+    if (b == e)
+        return e;
+
+    I r = b;
+    while (++b != e) {
+        if (*r != *b && ++r != b) {
+            *r = std::move(*b);
+        }
+    }
+    return ++r;
+}
+
+template <typename I, typename O>
+O unique_copy(I b, I e, O d_b) {
+   if (b == e)
+       return e;
+
+   auto prev = *b;
+   *d_b++ = *b++;
+
+   for(; b != e; ++b) {
+       if (*b != prev)
+           *d_b++ = *b;
+       prev = *b;
+   }
+   return d_b;
+}
+
 
 
 } // namespace counterfeit
