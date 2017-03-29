@@ -399,6 +399,69 @@ TEST(Algorithm, unique_copy_DuplicateAtEnd) {
     ASSERT_EQ(actual, expected);
 }
 
+struct IsZero {
+    bool operator()(int x) {
+        return x == 0;
+    }
+};
+
+TEST(Algorithm, is_paritioned_empty) {
+    Vector v;
+    bool r = is_partitioned(begin(v), end(v), IsZero());
+    ASSERT_TRUE(r);
+}
+
+TEST(Algorithm, is_partitioned_OnPartionedArray) {
+    Vector v = {0, 1};
+    bool r = is_partitioned(begin(v), end(v), IsZero());
+    ASSERT_TRUE(r);
+}
+
+TEST(Algorithm, is_partitioned_OnNotPartionedArray) {
+    Vector v = {1, 0, 1};
+    bool r = is_partitioned(begin(v), end(v), IsZero());
+    ASSERT_FALSE(r);
+}
+
+TEST(Algorithm, partition_copy_empty) {
+    Vector v;
+    Vector vTrue;
+    Vector vFalse;
+
+    auto i = partition_copy(begin(v), end(v), begin(vTrue), begin(vFalse), IsZero());
+    ASSERT_EQ(i.first, end(vTrue));
+    ASSERT_EQ(i.second, end(vFalse));
+}
+
+TEST(Algorithm, partition_copy_AlreadyPartitioned) {
+    Vector v = {0, 0, 1, 1};
+    Vector vTrue(2);
+    Vector vFalse(2);
+
+    Vector vTrueExpected = {0, 0};
+    Vector vFalseExpected = {1, 1};
+
+    auto i = partition_copy(begin(v), end(v), begin(vTrue), begin(vFalse), IsZero());
+    ASSERT_EQ(i.first, end(vTrue));
+    ASSERT_EQ(i.second, end(vFalse));
+    ASSERT_EQ(vTrue, vTrueExpected);
+    ASSERT_EQ(vFalse, vFalseExpected);
+}
+
+TEST(Algorithm, partition_copy_NotPartitioned) {
+    Vector v = {0, 1, 0, 1};
+    Vector vTrue(2);
+    Vector vFalse(2);
+
+    Vector vTrueExpected = {0, 0};
+    Vector vFalseExpected = {1, 1};
+
+    auto i = partition_copy(begin(v), end(v), begin(vTrue), begin(vFalse), IsZero());
+    ASSERT_EQ(i.first, end(vTrue));
+    ASSERT_EQ(i.second, end(vFalse));
+    ASSERT_EQ(vTrue, vTrueExpected);
+    ASSERT_EQ(vFalse, vFalseExpected);
+}
 
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);

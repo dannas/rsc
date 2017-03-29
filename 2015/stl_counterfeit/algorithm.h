@@ -372,6 +372,85 @@ O unique_copy(I b, I e, O d_b) {
    return d_b;
 }
 
+// Partitioning operations
 
+template <typename I, typename F>
+bool is_partitioned(I b, I e, F f) {
+    bool seen = false;
+
+    for (; b != e; ++b) {
+        bool r = f(*b);
+        if (seen && r)
+            return false;
+        if (!r)
+            seen = true;
+    }
+    return true;
+}
+
+template <typename I, typename O1, typename O2, typename F>
+std::pair<O1, O2> partition_copy(I b, I e, O1 d_true, O2 d_false, F f) {
+    for (; b != e; ++b) {
+        if (f(*b))
+            *d_true++ = *b;
+        else
+            *d_false++ = *b;
+    }
+    return make_pair(d_true, d_false);
+}
+
+// TODO(dannas): Add
+// stable_partion
+// partition_point
+//
+// Sorting operations
+// is_sorted
+// is_sorted_until
+// sort
+// partial_sort
+// partial_sort_copy
+// stable_sort
+// nth_element
+//
+// Binary search operations
+// lower_bound
+// upper_bound
+// binary_search
+// equal_range
+//
+// Set operations
+// merge
+// inplace_merge
+// includes
+// set_difference
+// set_intersection
+// set_symmetric_intersection
+// set_union
+//
+// Heap operations
+// is_heap
+// is_heap_until
+// make_heap
+// push_heap
+// pop_heap
+// sort_heap
+//
+// Minimum/maximum operations
+// max
+// max_element
+// min
+// min_element
+// minmax_element
+// lexiographical_compare
+// is_permutation
+// next_permutation
+// prev_permutation
+//
+// Numeric operations
+// iota
+// accumulate
+// inner_product
+// adjacent_difference
+// partial_sum
 
 } // namespace counterfeit
