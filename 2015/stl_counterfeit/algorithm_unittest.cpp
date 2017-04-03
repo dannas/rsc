@@ -463,6 +463,19 @@ TEST(Algorithm, partition_copy_NotPartitioned) {
     ASSERT_EQ(vFalse, vFalseExpected);
 }
 
+TEST(Algorithm, partion_empty) {
+    Vector v;
+    auto i = partion(begin(v), end(v), IsZero());
+    ASSERT_EQ(i, end(v));
+    ASSERT_TRUE(v.empty());
+}
+
+TEST(Algorithm, partion_AlreadyPartitioned) {
+    Vector v = {0, 0, 1, 1};
+    auto i = partion(begin(v), end(v), IsZero());
+    ASSERT_EQ(i, begin(v)+2);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

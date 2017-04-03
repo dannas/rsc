@@ -399,6 +399,20 @@ std::pair<O1, O2> partition_copy(I b, I e, O1 d_true, O2 d_false, F f) {
     return make_pair(d_true, d_false);
 }
 
+template <typename I, typename F>
+I partion(I b, I e, F f) {
+    auto i = b;
+    for (; b != e; ++b) {
+        // Invariant: [0,i) is true for f
+        // Invariant: [i,b) is false for f
+        if (f(*b))
+            iter_swap(b, i);
+        if (f(*i))
+            ++i;
+    }
+    return i;
+}
+
 // TODO(dannas): Add
 // stable_partion
 // partition_point
