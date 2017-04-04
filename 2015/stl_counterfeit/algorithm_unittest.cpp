@@ -476,6 +476,30 @@ TEST(Algorithm, partion_AlreadyPartitioned) {
     ASSERT_EQ(i, begin(v)+2);
 }
 
+TEST(Algorithm, partition_point_Empty) {
+    Vector v;
+    auto i = partition_point(begin(v), end(v), IsZero());
+    ASSERT_EQ(i, end(v));
+}
+
+TEST(Algorithm, partition_point_TwoElements) {
+    Vector v = {0, 1};
+    auto i = partition_point(begin(v), end(v), IsZero());
+    ASSERT_EQ(i, begin(v) + 1);
+}
+
+TEST(Algorithm, partition_point_ThreeElements) {
+    Vector v = {0, 1, 1};
+    auto i = partition_point(begin(v), end(v), IsZero());
+    ASSERT_EQ(1, std::distance(begin(v), i));
+    v = {0, 0, 1};
+    i = partition_point(begin(v), end(v), IsZero());
+    ASSERT_EQ(i, begin(v) + 2);
+    v = {0, 0, 0};
+    i = partition_point(begin(v), end(v), IsZero());
+    ASSERT_EQ(i, end(v));
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -413,9 +413,21 @@ I partion(I b, I e, F f) {
     return i;
 }
 
+template <typename I, typename F>
+I partition_point(I b, I e, F f) {
+    while (b != e) {
+        I m = b + (e - b) / 2;
+        if (f(*m)) {
+            b = m + 1;
+        } else {
+            e = m + (e - m) / 2;
+        }
+    }
+    return b;
+}
+
 // TODO(dannas): Add
 // stable_partion
-// partition_point
 //
 // Sorting operations
 // is_sorted
