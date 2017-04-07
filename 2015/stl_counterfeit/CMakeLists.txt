@@ -18,7 +18,7 @@ set(SOURCES
 
 add_executable(algorithm-test
     algorithm_unittest.cpp
-    ${VM_SOURCES}
+    algorithm.h
 )
 
 target_link_libraries(algorithm-test GTest::GTest GTest::Main)
