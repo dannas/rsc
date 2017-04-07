@@ -500,6 +500,46 @@ TEST(Algorithm, partition_point_ThreeElements) {
     ASSERT_EQ(i, end(v));
 }
 
+TEST(Algorithm, is_sorted_until_Empty) {
+    Vector v;
+    auto i = is_sorted_until(begin(v), end(v));
+    ASSERT_EQ(end(v), i);
+}
+
+TEST(Algorithm, is_sorted_until_OneElement) {
+    Vector v = {1};
+    auto i = is_sorted_until(begin(v), end(v));
+    ASSERT_EQ(1, i - begin(v));
+}
+
+TEST(Algorithm, is_sorted_until_TwoElements) {
+    Vector v = {1, 2};
+    auto i = is_sorted_until(begin(v), end(v));
+    ASSERT_EQ(2, i - begin(v));
+
+    v = {2, 1};
+    i = is_sorted_until(begin(v), end(v));
+    ASSERT_EQ(1, i - begin(v));
+}
+
+TEST(Algorithm, is_sorted_Empty) {
+    Vector v;
+    bool ret = is_sorted(begin(v), end(v));
+    ASSERT_TRUE(ret);
+}
+
+TEST(Algorithm, is_sorted_Sorted) {
+    Vector v = {1, 2, 3, 4};
+    bool ret = is_sorted(begin(v), end(v));
+    ASSERT_TRUE(ret);
+}
+
+TEST(Algorithm, is_sorted_UnSorted) {
+    Vector v = {1, 5, 3, 4};
+    bool ret = is_sorted(begin(v), end(v));
+    ASSERT_FALSE(ret);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

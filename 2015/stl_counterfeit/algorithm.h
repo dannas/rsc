@@ -428,10 +428,31 @@ I partition_point(I b, I e, F f) {
 
 // TODO(dannas): Add
 // stable_partion
-//
+
 // Sorting operations
+
+template <typename I>
+I is_sorted_until(I b, I e) {
+    if (b == e)
+        return e;
+    auto prev = b;
+    ++b;
+    while (b != e) {
+        // Invariant: [0, b) is sorted
+        if (*b < *prev)
+            return b;
+        prev = b;
+        ++b;
+    }
+    return b;
+}
+
+template <typename I>
+bool is_sorted(I b, I e) {
+    return is_sorted_until(b, e) == e;
+}
+
 // is_sorted
-// is_sorted_until
 // sort
 // partial_sort
 // partial_sort_copy
