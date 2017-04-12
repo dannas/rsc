@@ -609,6 +609,17 @@ TEST(Algorithm, nth_element_TenElements) {
     ASSERT_GT(5, v[4]);
 }
 
+TEST(Algorithm, partial_sort_TenElements) {
+    Vector v = {8, 7, 2, 5, 4, 3, 6, 1, 0, 9};
+    partial_sort(begin(v), begin(v) + 5, end(v));
+    ASSERT_EQ(v[5], 5);
+    ASSERT_EQ(0, v[0]);
+    ASSERT_EQ(1, v[1]);
+    ASSERT_EQ(2, v[2]);
+    ASSERT_EQ(3, v[3]);
+    ASSERT_EQ(4, v[4]);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

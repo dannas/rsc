@@ -484,10 +484,14 @@ void nth_element(I b, I m, I e) {
         sort(mid, e);
 }
 
-// partial_sort
+template <typename I>
+void partial_sort(I b, I m, I e) {
+    nth_element(b, m, e);
+    sort(b, m);
+}
+
 // partial_sort_copy
 // stable_sort
-// nth_element
 //
 // Binary search operations
 // lower_bound
