@@ -583,6 +583,32 @@ TEST(Algorithm, sort_TenUnsortedElements) {
     ASSERT_EQ(expected, v);
 }
 
+TEST(Algorithm, nth_element_Empty) {
+    Vector expected;
+    Vector v = expected;
+    nth_element(begin(v), begin(v), end(v));
+    ASSERT_EQ(expected, v);
+
+}
+
+TEST(Algorithm, nth_element_ThreeElements) {
+    Vector expected = {1, 2, 3};
+    Vector v = {3, 2, 1};
+    nth_element(begin(v), begin(v), end(v));
+    ASSERT_EQ(expected, v);
+}
+
+TEST(Algorithm, nth_element_TenElements) {
+    Vector v = {8, 7, 2, 5, 4, 3, 6, 1, 0, 9};
+    nth_element(begin(v), begin(v) + 5, end(v));
+    ASSERT_EQ(v[5], 5);
+    ASSERT_GT(5, v[0]);
+    ASSERT_GT(5, v[1]);
+    ASSERT_GT(5, v[2]);
+    ASSERT_GT(5, v[3]);
+    ASSERT_GT(5, v[4]);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

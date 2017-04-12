@@ -467,6 +467,23 @@ void sort(I b, I e) {
     sort(mid, e);
 }
 
+template <typename I>
+void nth_element(I b, I m, I e) {
+    if (std::distance(b, e) <= 1)
+        return;
+    auto mid = b + (e - b) / 2;
+    auto pivot= *mid;
+
+    iter_swap(mid, e-1);
+    mid = partition(b, e-1, [pivot] (auto& x) { return x < pivot;});
+    iter_swap(e-1, mid);
+
+    if (m < mid)
+        sort(b, mid);
+    else
+        sort(mid, e);
+}
+
 // partial_sort
 // partial_sort_copy
 // stable_sort
