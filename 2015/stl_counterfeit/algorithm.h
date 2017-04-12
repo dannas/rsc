@@ -400,7 +400,7 @@ std::pair<O1, O2> partition_copy(I b, I e, O1 d_true, O2 d_false, F f) {
 }
 
 template <typename I, typename F>
-I partion(I b, I e, F f) {
+I partition(I b, I e, F f) {
     auto i = b;
     for (; b != e; ++b) {
         // Invariant: [0,i) is true for f
@@ -452,8 +452,21 @@ bool is_sorted(I b, I e) {
     return is_sorted_until(b, e) == e;
 }
 
-// is_sorted
-// sort
+template <typename I>
+void sort(I b, I e) {
+    if (std::distance(b, e) <= 1)
+        return;
+    auto mid = b + (e - b) / 2;
+    auto pivot= *mid;
+
+    iter_swap(mid, e-1);
+    mid = partition(b, e-1, [pivot] (auto& x) { return x < pivot;});
+    iter_swap(e-1, mid);
+
+    sort(b, mid);
+    sort(mid, e);
+}
+
 // partial_sort
 // partial_sort_copy
 // stable_sort

@@ -463,16 +463,16 @@ TEST(Algorithm, partition_copy_NotPartitioned) {
     ASSERT_EQ(vFalse, vFalseExpected);
 }
 
-TEST(Algorithm, partion_empty) {
+TEST(Algorithm, partition_empty) {
     Vector v;
-    auto i = partion(begin(v), end(v), IsZero());
+    auto i = partition(begin(v), end(v), IsZero());
     ASSERT_EQ(i, end(v));
     ASSERT_TRUE(v.empty());
 }
 
-TEST(Algorithm, partion_AlreadyPartitioned) {
+TEST(Algorithm, partition_AlreadyPartitioned) {
     Vector v = {0, 0, 1, 1};
-    auto i = partion(begin(v), end(v), IsZero());
+    auto i = partition(begin(v), end(v), IsZero());
     ASSERT_EQ(i, begin(v)+2);
 }
 
@@ -538,6 +538,49 @@ TEST(Algorithm, is_sorted_UnSorted) {
     Vector v = {1, 5, 3, 4};
     bool ret = is_sorted(begin(v), end(v));
     ASSERT_FALSE(ret);
+}
+
+TEST(Algorithm, sort_Empty) {
+    Vector expected;
+    Vector v = expected;
+    sort(begin(v), end(v));
+    ASSERT_EQ(expected, v);
+}
+
+TEST(Algorithm, sort_OneElement) {
+    Vector expected = {1};
+    Vector v = expected;
+    sort(begin(v), end(v));
+    ASSERT_EQ(expected, v);
+}
+
+TEST(Algorithm, sort_TwoSortedElements) {
+    Vector expected = {1, 2};
+    Vector v = expected;
+    sort(begin(v), end(v));
+    ASSERT_EQ(expected, v);
+}
+
+TEST(Algorithm, sort_TwoUnsortedElements) {
+    Vector expected = {1, 2};
+    Vector v = {2, 1};
+    sort(begin(v), end(v));
+    ASSERT_EQ(expected, v);
+}
+
+TEST(Algorithm, sort_ThreeUnsortedElements) {
+    Vector expected = {1, 2, 3};
+    Vector v = {3, 2, 1};
+    sort(begin(v), end(v));
+    ASSERT_EQ(expected, v);
+
+}
+
+TEST(Algorithm, sort_TenUnsortedElements) {
+    Vector expected = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    Vector v = {9, 8, 10, 7, 4, 3, 2, 5, 1, 6};
+    sort(begin(v), end(v));
+    ASSERT_EQ(expected, v);
 }
 
 int main(int argc, char* argv[]) {
