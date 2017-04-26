@@ -4,7 +4,7 @@
 #include <iterator>
 #include <utility>
 
-namespace counterfeit {
+namespace danstd {
 
 // Non modifying sequence operations
 
@@ -88,7 +88,7 @@ count_if(I b, I e, Predicate p) {
 }
 
 template <typename T1, typename T2>
-std::pair<T1, T2> mismatch(T1 b1, T1 e1, T1 b2) {
+std::pair<T1, T2> mismatch(T1 b1, T1 e1, T2 b2) {
     while (b1 != e1 && *b1 == *b2) {
         ++b1;
         ++b2;
@@ -127,7 +127,7 @@ template <typename T1, typename T2>
 T1 find_end(T1 b, T1 e, T2 s_b, T2 s_e) {
     auto r = e;
     for (; b != e; ++b) {
-        auto i = search(b, e, s_b, s_e);
+        auto i = danstd::search(b, e, s_b, s_e);
         if (i != e)
             r = i;
     }
@@ -449,7 +449,7 @@ I is_sorted_until(I b, I e) {
 
 template <typename I>
 bool is_sorted(I b, I e) {
-    return is_sorted_until(b, e) == e;
+    return danstd::is_sorted_until(b, e) == e;
 }
 
 template <typename I>
@@ -459,12 +459,12 @@ void sort(I b, I e) {
     auto mid = b + (e - b) / 2;
     auto pivot= *mid;
 
-    iter_swap(mid, e-1);
-    mid = partition(b, e-1, [pivot] (auto& x) { return x < pivot;});
-    iter_swap(e-1, mid);
+    danstd::iter_swap(mid, e-1);
+    mid = danstd::partition(b, e-1, [pivot] (auto& x) { return x < pivot;});
+    danstd::iter_swap(e-1, mid);
 
-    sort(b, mid);
-    sort(mid, e);
+    danstd::sort(b, mid);
+    danstd::sort(mid, e);
 }
 
 template <typename I>
@@ -474,20 +474,20 @@ void nth_element(I b, I m, I e) {
     auto mid = b + (e - b) / 2;
     auto pivot= *mid;
 
-    iter_swap(mid, e-1);
-    mid = partition(b, e-1, [pivot] (auto& x) { return x < pivot;});
-    iter_swap(e-1, mid);
+    danstd::iter_swap(mid, e-1);
+    mid = danstd::partition(b, e-1, [pivot] (auto& x) { return x < pivot;});
+    danstd::iter_swap(e-1, mid);
 
     if (m < mid)
-        sort(b, mid);
+        danstd::sort(b, mid);
     else
-        sort(mid, e);
+        danstd::sort(mid, e);
 }
 
 template <typename I>
 void partial_sort(I b, I m, I e) {
-    nth_element(b, m, e);
-    sort(b, m);
+    danstd::nth_element(b, m, e);
+    danstd::sort(b, m);
 }
 
 // partial_sort_copy

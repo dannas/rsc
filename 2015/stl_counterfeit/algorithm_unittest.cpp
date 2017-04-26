@@ -3,49 +3,49 @@
 
 #include <gtest/gtest.h>
 
-using namespace counterfeit;
+using namespace danstd;
 
 using Vector = std::vector<int>;
 
 TEST(Algorithm, find_MatchAtStart) {
     Vector v = {0, 1, 2, 3, 4};
-    auto i = find(begin(v), end(v), 0);
+    auto i = danstd::find(begin(v), end(v), 0);
     ASSERT_EQ(i, begin(v));
 }
 
 TEST(Algorithm, find_if_MatchExists) {
     Vector v = {0, 1, 2, 3, 4};
-    auto i = find_if(begin(v), end(v), [] (int x) { return x == 3;});
+    auto i = danstd::find_if(begin(v), end(v), [] (int x) { return x == 3;});
     ASSERT_EQ(i, begin(v) + 3);
 }
 
 TEST(Algorithm, find_if_NoMatch) {
     Vector v = {0, 1, 2, 3, 4};
-    auto i = find_if(begin(v), end(v), [] (int x) { return x == -1;});
+    auto i = danstd::find_if(begin(v), end(v), [] (int x) { return x == -1;});
     ASSERT_EQ(i, end(v));
 }
 
 TEST(Algorithm, find_if_ContainerEmpty) {
     Vector v;
-    auto i = find_if(begin(v), end(v), [] (int x) { return x == 3;});
+    auto i = danstd::find_if(begin(v), end(v), [] (int x) { return x == 3;});
     ASSERT_EQ(i, end(v));
 }
 
 TEST(Algorithm, find_if_not_MatchExists) {
     Vector v = {0, 1, 2, 3, 4};
-    auto i = find_if_not(begin(v), end(v), [] (int x) { return x == 3;});
+    auto i = danstd::find_if_not(begin(v), end(v), [] (int x) { return x == 3;});
     ASSERT_EQ(i, begin(v));
 }
 
 TEST(Algorithm, find_if_not_NoMatch) {
     Vector v = {1, 1, 1, 1, 1};
-    auto i = find_if_not(begin(v), end(v), [] (int x) { return x == 1;});
+    auto i = danstd::find_if_not(begin(v), end(v), [] (int x) { return x == 1;});
     ASSERT_EQ(i, end(v));
 }
 
 TEST(Algorithm, find_if_not_ContainerEmpty) {
     Vector v;
-    auto i = find_if_not(begin(v), end(v), [] (int x) { return x == 3;});
+    auto i = danstd::find_if_not(begin(v), end(v), [] (int x) { return x == 3;});
     ASSERT_EQ(i, end(v));
 }
 
@@ -54,7 +54,7 @@ TEST(Algorithm, find_if_not_ContainerEmpty) {
 TEST(Algorithm, mismatch_MismatchExists) {
     Vector v1 = {0, 1, 2};
     Vector v2 = {0, 1, 0};
-    auto p = mismatch(begin(v1), end(v1), begin(v2));
+    auto p = danstd::mismatch(begin(v1), end(v1), begin(v2));
     ASSERT_EQ(p.first, begin(v1) + 2);
     ASSERT_EQ(p.second, begin(v2) + 2);
 }
@@ -62,7 +62,7 @@ TEST(Algorithm, mismatch_MismatchExists) {
 TEST(Algorithm, mismatch_NoMismatch) {
     Vector v1 = {0, 1, 2};
     Vector v2 = {0, 1, 2};
-    auto p = mismatch(begin(v1), end(v1), begin(v2));
+    auto p = danstd::mismatch(begin(v1), end(v1), begin(v2));
     ASSERT_EQ(p.first, end(v1));
     ASSERT_EQ(p.second, end(v2));
 }
@@ -70,98 +70,98 @@ TEST(Algorithm, mismatch_NoMismatch) {
 TEST(Algorithm, equal_Equal) {
     Vector v1 = {0, 1, 2};
     Vector v2 = {0, 1, 2};
-    bool ret = counterfeit::equal(begin(v1), end(v1), begin(v2));
+    bool ret = danstd::equal(begin(v1), end(v1), begin(v2));
     ASSERT_TRUE(ret);
 }
 
 TEST(Algorithm, search_MatchAtStart) {
     Vector v = {0, 1, 2, 3, 4};
     Vector s = {0, 1, 2};
-    auto i = search(begin(v), end(v), begin(s), end(s));
+    auto i = danstd::search(begin(v), end(v), begin(s), end(s));
     ASSERT_EQ(i, begin(v));
 }
 
 TEST(Algorithm, search_MatchAtEnd) {
     Vector v = {0, 0, 0, 1, 2};
     Vector s = {0, 1, 2};
-    auto i = search(begin(v), end(v), begin(s), end(s));
+    auto i = danstd::search(begin(v), end(v), begin(s), end(s));
     ASSERT_EQ(i, begin(v) + 2);
 }
 
 TEST(Algorithm, find_end_MatchAtStart) {
     Vector v = {1, 1, 1, 0, 0};
     Vector s = {1, 1, 1};
-    auto i = find_end(begin(v), end(v), begin(s), end(s));
+    auto i = danstd::find_end(begin(v), end(v), begin(s), end(s));
     ASSERT_EQ(i, begin(v));
 }
 
 TEST(Algorithm, find_end_MatchAtEnd) {
     Vector v = {1, 1, 0, 0, 1, 1};
     Vector s = {1, 1 };
-    auto i = find_end(begin(v), end(v), begin(s), end(s));
+    auto i = danstd::find_end(begin(v), end(v), begin(s), end(s));
     ASSERT_EQ(i, begin(v) + 4);
 }
 
 TEST(Algorithm, find_first_of_MatchAtStart) {
     Vector v = {1, 1, 1, 1};
     Vector s = {1, 2, 3, 4};
-    auto i = find_first_of(begin(v), end(v), begin(s), end(s));
+    auto i = danstd::find_first_of(begin(v), end(v), begin(s), end(s));
     ASSERT_EQ(i, begin(v));
 }
 
 TEST(Algorithm, find_first_of_MatchAtEnd) {
     Vector v = {0, 0, 0, 1};
     Vector s = {1, 2, 3, 4};
-    auto i = find_first_of(begin(v), end(v), begin(s), end(s));
+    auto i = danstd::find_first_of(begin(v), end(v), begin(s), end(s));
     ASSERT_EQ(i, begin(v) + 3);
 }
 
 TEST(Algorithm, adjacent_find_MatchAtStart) {
     Vector v = {0, 0, 1, 1};
-    auto i = adjacent_find(begin(v), end(v));
+    auto i = danstd::adjacent_find(begin(v), end(v));
     ASSERT_EQ(i, begin(v));
 }
 
 TEST(Algorithm, adjacent_find_MatchAtMiddle) {
     Vector v = {1, 2, 2, 3};
-    auto i = adjacent_find(begin(v), end(v));
+    auto i = danstd::adjacent_find(begin(v), end(v));
     ASSERT_EQ(i, begin(v) + 1);
 }
 
 TEST(Algorithm, adjacent_find_MatchAtEnd) {
     Vector v = {1, 2, 3, 3};
-    auto i = adjacent_find(begin(v), end(v));
+    auto i = danstd::adjacent_find(begin(v), end(v));
     ASSERT_EQ(i, begin(v) + 2);
 }
 
 TEST(Algorithm, adjacent_find_NoMatch) {
     Vector v = {1, 2, 3, 4};
-    auto i = adjacent_find(begin(v), end(v));
+    auto i = danstd::adjacent_find(begin(v), end(v));
     ASSERT_EQ(i, end(v));
 }
 
 TEST(Algorithm, search_n_MatchAtStart) {
     Vector v = {1, 1, 1, 2, 3};
-    auto i = search_n(begin(v), end(v), 3, 1);
+    auto i = danstd::search_n(begin(v), end(v), 3, 1);
     ASSERT_EQ(i, begin(v));
 }
 
 TEST(Algorithm, search_n_MatchAtEnd) {
     Vector v = {1, 1, 1, 2, 2};
-    auto i = search_n(begin(v), end(v), 2, 2);
+    auto i = danstd::search_n(begin(v), end(v), 2, 2);
     ASSERT_EQ(i, begin(v) + 3);
 }
 
 TEST(Algorithm, search_n_NoMatch) {
     Vector v = {1, 1, 1, 2, 2};
-    auto i = search_n(begin(v), end(v), 2, 3);
+    auto i = danstd::search_n(begin(v), end(v), 2, 3);
     ASSERT_EQ(i, end(v));
 }
 
 TEST(Algorithm, copy_Empty) {
     Vector src;
     Vector dst;
-    auto i = counterfeit::copy(begin(src), end(src), begin(dst));
+    auto i = danstd::copy(begin(src), end(src), begin(dst));
     ASSERT_TRUE(dst.empty());
     ASSERT_EQ(i, end(dst));
 }
@@ -169,7 +169,7 @@ TEST(Algorithm, copy_Empty) {
 TEST(Algorithm, copy_All) {
     Vector src = {1, 2, 3, 4};
     Vector dst(src.size());
-    auto i = counterfeit::copy(begin(src), end(src), begin(dst));
+    auto i = danstd::copy(begin(src), end(src), begin(dst));
     ASSERT_EQ(src, dst);
     ASSERT_EQ(i, end(dst));
 }
@@ -177,7 +177,7 @@ TEST(Algorithm, copy_All) {
 TEST(Algorithm, copy_n_Empty) {
     Vector src;
     Vector dst;
-    auto i = counterfeit::copy_n(begin(src), end(src), 4, begin(dst));
+    auto i = danstd::copy_n(begin(src), end(src), 4, begin(dst));
     ASSERT_TRUE(dst.empty());
     ASSERT_EQ(i, end(dst));
 }
@@ -185,7 +185,7 @@ TEST(Algorithm, copy_n_Empty) {
 TEST(Algorithm, copy_n_All) {
     Vector src = {1, 2, 3, 4};
     Vector dst(src.size());
-    auto i = counterfeit::copy_n(begin(src), end(src), 4, begin(dst));
+    auto i = danstd::copy_n(begin(src), end(src), 4, begin(dst));
     ASSERT_EQ(src, dst);
     ASSERT_EQ(i, end(dst));
 }
@@ -193,7 +193,7 @@ TEST(Algorithm, copy_n_All) {
 TEST(Algorithm, copy_backward_Empty) {
     Vector src;
     Vector dst;
-    auto i = counterfeit::copy_backward(begin(src), end(src), begin(dst));
+    auto i = danstd::copy_backward(begin(src), end(src), begin(dst));
     ASSERT_TRUE(dst.empty());
     ASSERT_EQ(i, end(dst));
 }
@@ -201,7 +201,7 @@ TEST(Algorithm, copy_backward_Empty) {
 TEST(Algorithm, copy_backward_All) {
     Vector src = {1, 2, 3, 4};
     Vector dst(src.size());
-    auto i = counterfeit::copy_backward(begin(src), end(src), end(dst));
+    auto i = danstd::copy_backward(begin(src), end(src), end(dst));
     ASSERT_EQ(src, dst);
     ASSERT_EQ(i, begin(dst));
 }
@@ -234,7 +234,7 @@ private:
 TEST(Algorithm, move_Empty) {
     std::vector<NonCopyable> src;
     std::vector<NonCopyable> dst;
-    counterfeit::move(begin(src), end(src), begin(dst));
+    danstd::move(begin(src), end(src), begin(dst));
     ASSERT_TRUE(dst.empty());
 }
 
@@ -243,7 +243,7 @@ TEST(Algorithm, move_All) {
     src.emplace_back(1);
     src.emplace_back(2);
     std::vector<NonCopyable> dst(src.size());
-    auto i = counterfeit::move(begin(src), end(src), begin(dst));
+    auto i = danstd::move(begin(src), end(src), begin(dst));
     ASSERT_EQ(i, end(dst));
     ASSERT_EQ(src, dst);
  }
@@ -265,7 +265,7 @@ TEST(Algorithm, swap_NotCopyable) {
     int y = 2;
     NonCopyable nx(x);
     NonCopyable ny(y);
-    swap(nx, ny);
+    danstd::swap(nx, ny);
     ASSERT_EQ(nx, y);
     ASSERT_EQ(ny, x);
 }
@@ -276,21 +276,21 @@ TEST(Algorithm, swap_NotCopyable) {
 
 TEST(Algorithm, reverse_Empty) {
     Vector v;
-    reverse(begin(v), end(v));
+    danstd::reverse(begin(v), end(v));
     ASSERT_TRUE(v.empty());
 }
 
 TEST(Algorithm, reverse_OneElement) {
     Vector v = {1};
     Vector r = {1};
-    reverse(begin(v), end(v));
+    danstd::reverse(begin(v), end(v));
     ASSERT_EQ(v, r);
 }
 
 TEST(Algorithm, reverse_TwoElements) {
     Vector v = {1, 2};
     Vector r = {2, 1};
-    reverse(begin(v), end(v));
+    danstd::reverse(begin(v), end(v));
     ASSERT_EQ(v, r);
 }
 
@@ -298,7 +298,7 @@ TEST(Algorithm, reverse_TwoElements) {
 TEST(Algorithm, reverse_ThreeElements) {
     Vector v = {1, 2, 3};
     Vector r = {3, 2, 1};
-    reverse(begin(v), end(v));
+    danstd::reverse(begin(v), end(v));
     ASSERT_EQ(v, r);
 }
 
@@ -306,7 +306,7 @@ TEST(Algorithm, reverse_copy_OneElement) {
     Vector src = {1};
     Vector dst(src.size());
     Vector r = {1};
-    auto i = reverse_copy(begin(src), end(src), begin(dst));
+    auto i = danstd::reverse_copy(begin(src), end(src), begin(dst));
     ASSERT_EQ(i, end(dst));
     ASSERT_EQ(dst, r);
 }
@@ -315,7 +315,7 @@ TEST(Algorithm, reverse_copy_TwoElements) {
     Vector src = {1, 2};
     Vector dst(src.size());
     Vector r = {2, 1};
-    auto i = reverse_copy(begin(src), end(src), begin(dst));
+    auto i = danstd::reverse_copy(begin(src), end(src), begin(dst));
     ASSERT_EQ(i, end(dst));
     ASSERT_EQ(dst, r);
 }
@@ -324,14 +324,14 @@ TEST(Algorithm, reverse_copy_ThreeElements) {
     Vector src = {1, 2, 3};
     Vector dst(src.size());
     Vector r = {3, 2, 1};
-    auto i = reverse_copy(begin(src), end(src), begin(dst));
+    auto i = danstd::reverse_copy(begin(src), end(src), begin(dst));
     ASSERT_EQ(i, end(dst));
     ASSERT_EQ(dst, r);
 }
 
 TEST(Algorithm, unique_Empty) {
     Vector v;
-    auto i = unique(begin(v), end(v));
+    auto i = danstd::unique(begin(v), end(v));
     ASSERT_EQ(i, end(v));
     ASSERT_TRUE(v.empty());
 }
@@ -339,7 +339,7 @@ TEST(Algorithm, unique_Empty) {
 TEST(Algorithm, unique_OneElement) {
     Vector v = {1};
     Vector expected = {1};
-    auto i = unique(begin(v), end(v));
+    auto i = danstd::unique(begin(v), end(v));
     ASSERT_EQ(i, end(v));
     ASSERT_EQ(v, expected);
 }
@@ -347,7 +347,7 @@ TEST(Algorithm, unique_OneElement) {
 TEST(Algorithm, unique_DuplicateAtBegin) {
     Vector v = {1, 1, 2};
     Vector expected = {1, 2};
-    auto i = unique(begin(v), end(v));
+    auto i = danstd::unique(begin(v), end(v));
     Vector actual(begin(v), i);
     ASSERT_EQ(i, begin(v)+2);
     ASSERT_EQ(actual, expected);
@@ -356,7 +356,7 @@ TEST(Algorithm, unique_DuplicateAtBegin) {
 TEST(Algorithm, unique_DuplicateAtEnd) {
     Vector v = {1, 2, 2};
     Vector expected = {1, 2};
-    auto i = unique(begin(v), end(v));
+    auto i = danstd::unique(begin(v), end(v));
     Vector actual(begin(v), i);
     ASSERT_EQ(i, begin(v)+2);
     ASSERT_EQ(actual, expected);
@@ -365,7 +365,7 @@ TEST(Algorithm, unique_DuplicateAtEnd) {
 TEST(Algorithm, unique_copy_Empty) {
     Vector src;
     Vector dst;
-    auto i = unique_copy(begin(src), end(src), begin(dst));
+    auto i = danstd::unique_copy(begin(src), end(src), begin(dst));
     ASSERT_EQ(i, end(dst));
     ASSERT_TRUE(dst.empty());
 }
@@ -374,7 +374,7 @@ TEST(Algorithm, unique_copy_OneElement) {
     Vector src = {1};
     Vector dst(src.size());
     Vector expected = {1};
-    auto i = unique_copy(begin(src), end(src), begin(dst));
+    auto i = danstd::unique_copy(begin(src), end(src), begin(dst));
     ASSERT_EQ(i, end(dst));
     ASSERT_EQ(dst, expected);
 }
@@ -383,7 +383,7 @@ TEST(Algorithm, unique_copy_DuplicateAtBegin) {
     Vector src = {1, 1, 2};
     Vector dst(src.size());
     Vector expected = {1, 2};
-    auto i = unique_copy(begin(src), end(src), begin(dst));
+    auto i = danstd::unique_copy(begin(src), end(src), begin(dst));
     ASSERT_EQ(i, begin(dst)+2);
     Vector actual(begin(dst), i);
     ASSERT_EQ(actual, expected);
@@ -393,7 +393,7 @@ TEST(Algorithm, unique_copy_DuplicateAtEnd) {
     Vector src = {1, 2, 2};
     Vector dst(src.size());
     Vector expected = {1, 2};
-    auto i = unique_copy(begin(src), end(src), begin(dst));
+    auto i = danstd::unique_copy(begin(src), end(src), begin(dst));
     ASSERT_EQ(i, begin(dst)+2);
     Vector actual(begin(dst), i);
     ASSERT_EQ(actual, expected);
@@ -407,19 +407,19 @@ struct IsZero {
 
 TEST(Algorithm, is_paritioned_empty) {
     Vector v;
-    bool r = is_partitioned(begin(v), end(v), IsZero());
+    bool r = danstd::is_partitioned(begin(v), end(v), IsZero());
     ASSERT_TRUE(r);
 }
 
 TEST(Algorithm, is_partitioned_OnPartionedArray) {
     Vector v = {0, 1};
-    bool r = is_partitioned(begin(v), end(v), IsZero());
+    bool r = danstd::is_partitioned(begin(v), end(v), IsZero());
     ASSERT_TRUE(r);
 }
 
 TEST(Algorithm, is_partitioned_OnNotPartionedArray) {
     Vector v = {1, 0, 1};
-    bool r = is_partitioned(begin(v), end(v), IsZero());
+    bool r = danstd::is_partitioned(begin(v), end(v), IsZero());
     ASSERT_FALSE(r);
 }
 
@@ -428,7 +428,7 @@ TEST(Algorithm, partition_copy_empty) {
     Vector vTrue;
     Vector vFalse;
 
-    auto i = partition_copy(begin(v), end(v), begin(vTrue), begin(vFalse), IsZero());
+    auto i = danstd::partition_copy(begin(v), end(v), begin(vTrue), begin(vFalse), IsZero());
     ASSERT_EQ(i.first, end(vTrue));
     ASSERT_EQ(i.second, end(vFalse));
 }
@@ -441,7 +441,7 @@ TEST(Algorithm, partition_copy_AlreadyPartitioned) {
     Vector vTrueExpected = {0, 0};
     Vector vFalseExpected = {1, 1};
 
-    auto i = partition_copy(begin(v), end(v), begin(vTrue), begin(vFalse), IsZero());
+    auto i = danstd::partition_copy(begin(v), end(v), begin(vTrue), begin(vFalse), IsZero());
     ASSERT_EQ(i.first, end(vTrue));
     ASSERT_EQ(i.second, end(vFalse));
     ASSERT_EQ(vTrue, vTrueExpected);
@@ -456,7 +456,7 @@ TEST(Algorithm, partition_copy_NotPartitioned) {
     Vector vTrueExpected = {0, 0};
     Vector vFalseExpected = {1, 1};
 
-    auto i = partition_copy(begin(v), end(v), begin(vTrue), begin(vFalse), IsZero());
+    auto i = danstd::partition_copy(begin(v), end(v), begin(vTrue), begin(vFalse), IsZero());
     ASSERT_EQ(i.first, end(vTrue));
     ASSERT_EQ(i.second, end(vFalse));
     ASSERT_EQ(vTrue, vTrueExpected);
@@ -465,113 +465,113 @@ TEST(Algorithm, partition_copy_NotPartitioned) {
 
 TEST(Algorithm, partition_empty) {
     Vector v;
-    auto i = partition(begin(v), end(v), IsZero());
+    auto i = danstd::partition(begin(v), end(v), IsZero());
     ASSERT_EQ(i, end(v));
     ASSERT_TRUE(v.empty());
 }
 
 TEST(Algorithm, partition_AlreadyPartitioned) {
     Vector v = {0, 0, 1, 1};
-    auto i = partition(begin(v), end(v), IsZero());
+    auto i = danstd::partition(begin(v), end(v), IsZero());
     ASSERT_EQ(i, begin(v)+2);
 }
 
 TEST(Algorithm, partition_point_Empty) {
     Vector v;
-    auto i = partition_point(begin(v), end(v), IsZero());
+    auto i = danstd::partition_point(begin(v), end(v), IsZero());
     ASSERT_EQ(i, end(v));
 }
 
 TEST(Algorithm, partition_point_TwoElements) {
     Vector v = {0, 1};
-    auto i = partition_point(begin(v), end(v), IsZero());
+    auto i = danstd::partition_point(begin(v), end(v), IsZero());
     ASSERT_EQ(i, begin(v) + 1);
 }
 
 TEST(Algorithm, partition_point_ThreeElements) {
     Vector v = {0, 1, 1};
-    auto i = partition_point(begin(v), end(v), IsZero());
+    auto i = danstd::partition_point(begin(v), end(v), IsZero());
     ASSERT_EQ(1, std::distance(begin(v), i));
     v = {0, 0, 1};
-    i = partition_point(begin(v), end(v), IsZero());
+    i = danstd::partition_point(begin(v), end(v), IsZero());
     ASSERT_EQ(i, begin(v) + 2);
     v = {0, 0, 0};
-    i = partition_point(begin(v), end(v), IsZero());
+    i = danstd::partition_point(begin(v), end(v), IsZero());
     ASSERT_EQ(i, end(v));
 }
 
 TEST(Algorithm, is_sorted_until_Empty) {
     Vector v;
-    auto i = is_sorted_until(begin(v), end(v));
+    auto i = danstd::is_sorted_until(begin(v), end(v));
     ASSERT_EQ(end(v), i);
 }
 
 TEST(Algorithm, is_sorted_until_OneElement) {
     Vector v = {1};
-    auto i = is_sorted_until(begin(v), end(v));
+    auto i = danstd::is_sorted_until(begin(v), end(v));
     ASSERT_EQ(1, i - begin(v));
 }
 
 TEST(Algorithm, is_sorted_until_TwoElements) {
     Vector v = {1, 2};
-    auto i = is_sorted_until(begin(v), end(v));
+    auto i = danstd::is_sorted_until(begin(v), end(v));
     ASSERT_EQ(2, i - begin(v));
 
     v = {2, 1};
-    i = is_sorted_until(begin(v), end(v));
+    i = danstd::is_sorted_until(begin(v), end(v));
     ASSERT_EQ(1, i - begin(v));
 }
 
 TEST(Algorithm, is_sorted_Empty) {
     Vector v;
-    bool ret = is_sorted(begin(v), end(v));
+    bool ret = danstd::is_sorted(begin(v), end(v));
     ASSERT_TRUE(ret);
 }
 
 TEST(Algorithm, is_sorted_Sorted) {
     Vector v = {1, 2, 3, 4};
-    bool ret = is_sorted(begin(v), end(v));
+    bool ret = danstd::is_sorted(begin(v), end(v));
     ASSERT_TRUE(ret);
 }
 
 TEST(Algorithm, is_sorted_UnSorted) {
     Vector v = {1, 5, 3, 4};
-    bool ret = is_sorted(begin(v), end(v));
+    bool ret = danstd::is_sorted(begin(v), end(v));
     ASSERT_FALSE(ret);
 }
 
 TEST(Algorithm, sort_Empty) {
     Vector expected;
     Vector v = expected;
-    sort(begin(v), end(v));
+    danstd::sort(begin(v), end(v));
     ASSERT_EQ(expected, v);
 }
 
 TEST(Algorithm, sort_OneElement) {
     Vector expected = {1};
     Vector v = expected;
-    sort(begin(v), end(v));
+    danstd::sort(begin(v), end(v));
     ASSERT_EQ(expected, v);
 }
 
 TEST(Algorithm, sort_TwoSortedElements) {
     Vector expected = {1, 2};
     Vector v = expected;
-    sort(begin(v), end(v));
+    danstd::sort(begin(v), end(v));
     ASSERT_EQ(expected, v);
 }
 
 TEST(Algorithm, sort_TwoUnsortedElements) {
     Vector expected = {1, 2};
     Vector v = {2, 1};
-    sort(begin(v), end(v));
+    danstd::sort(begin(v), end(v));
     ASSERT_EQ(expected, v);
 }
 
 TEST(Algorithm, sort_ThreeUnsortedElements) {
     Vector expected = {1, 2, 3};
     Vector v = {3, 2, 1};
-    sort(begin(v), end(v));
+    danstd::sort(begin(v), end(v));
     ASSERT_EQ(expected, v);
 
 }
@@ -579,14 +579,14 @@ TEST(Algorithm, sort_ThreeUnsortedElements) {
 TEST(Algorithm, sort_TenUnsortedElements) {
     Vector expected = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     Vector v = {9, 8, 10, 7, 4, 3, 2, 5, 1, 6};
-    sort(begin(v), end(v));
+    danstd::sort(begin(v), end(v));
     ASSERT_EQ(expected, v);
 }
 
 TEST(Algorithm, nth_element_Empty) {
     Vector expected;
     Vector v = expected;
-    nth_element(begin(v), begin(v), end(v));
+    danstd::nth_element(begin(v), begin(v), end(v));
     ASSERT_EQ(expected, v);
 
 }
@@ -594,13 +594,13 @@ TEST(Algorithm, nth_element_Empty) {
 TEST(Algorithm, nth_element_ThreeElements) {
     Vector expected = {1, 2, 3};
     Vector v = {3, 2, 1};
-    nth_element(begin(v), begin(v), end(v));
+    danstd::nth_element(begin(v), begin(v), end(v));
     ASSERT_EQ(expected, v);
 }
 
 TEST(Algorithm, nth_element_TenElements) {
     Vector v = {8, 7, 2, 5, 4, 3, 6, 1, 0, 9};
-    nth_element(begin(v), begin(v) + 5, end(v));
+    danstd::nth_element(begin(v), begin(v) + 5, end(v));
     ASSERT_EQ(v[5], 5);
     ASSERT_GT(5, v[0]);
     ASSERT_GT(5, v[1]);
@@ -611,7 +611,7 @@ TEST(Algorithm, nth_element_TenElements) {
 
 TEST(Algorithm, partial_sort_TenElements) {
     Vector v = {8, 7, 2, 5, 4, 3, 6, 1, 0, 9};
-    partial_sort(begin(v), begin(v) + 5, end(v));
+    danstd::partial_sort(begin(v), begin(v) + 5, end(v));
     ASSERT_EQ(v[5], 5);
     ASSERT_EQ(0, v[0]);
     ASSERT_EQ(1, v[1]);
