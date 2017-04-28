@@ -490,8 +490,13 @@ void partial_sort(I b, I m, I e) {
     danstd::sort(b, m);
 }
 
+template <typename I>
+void stable_sort(I b, I e) {
+
+}
+
+// TODO(dannas): Add
 // partial_sort_copy
-// stable_sort
 //
 // Binary search operations
 // lower_bound
@@ -500,7 +505,68 @@ void partial_sort(I b, I m, I e) {
 // equal_range
 //
 // Set operations
-// merge
+
+template <typename I1, typename I2, typename O>
+O merge(I1 b1, I1 e1, I2 b2, I2 e2, O d_b) {
+    // Pre: Two sorted lists L1 and L2
+    // Post: The merged list M has length len(L1) + len(L2)
+    //       M is sorted
+    //       Elements copied from L1 and L2 maintains their relative positions
+    // Basic steps: Move an index finger along each list. Copy the smallest
+    //       element to the position of your thumb in the destination list.
+    // Measure of progress: The measure of progress is how far along each list
+    //       your index fingers have moved.
+    // The loop invariant:
+    //       The numbers left of your thumb are sorted
+    //       The relative order of the numbers left of the index finger in L1 is preserved
+    //       The relative order of the numbers left of the index finger in L2 is preserved
+    // Main steps: Each iteration, you compare the numbers at your index fingers. The smallest
+    //       number is copied and that index finger is moved to the next number. The thumb is
+    //       is moved one position on each iteration.
+    // Make progress: You make progress because one index finger moves each iteration.
+    // Maintain loop invariant: For each step, the old thumb numbers is larger or equal to the
+    //      old index finger numbers.
+    // Establishing the loop invariant: You establish the loop invariant by pointing your index fingers
+    //      to the first elements inn the list and your thumb to the beginning of the destination list.
+    // Exit condition: You are done when both your index fingers have reached the end of their lists.
+    // Ending: By the exit condition, all elements have been visitied. By the loop invariant, all numbers
+    //      in the destination list are stable sorted.
+    // Termination and running time: The time required is proortional to the length of the two lists.
+    // Special cases: What happens when there are duplicates or when one of the lists are empty?
+    //
+    //  algorithm: Merge (L1, L2) into O
+    //
+    //      { pre-cond:  L1 and L2 are sorted }
+    //      { post-cond: O is stable sorted }
+    //      i = 0   % first index finger
+    //      j = 0   % second index finger
+    //      k = 0   % thumb position
+    //      loop:
+    //          { loop-invariant: O[0,k) is sorted }
+    //          exit when i = len(L1) and j = len(L2)
+    //          % Make progress while maintaining the loop invariant
+    //          if L1 is done then copy a number from L2 and increment j
+    //          elif L2 is done then copy a number from L1 and increment i
+    //          else compare and copy the larger number
+    //          increment k
+    //      end loop
+    //  end algorithm
+
+    while (b1 != e1 || b2 != e2) {
+        if (b1 == e1)
+            *d_b++ = *b2++;
+        else if (b2 == e2)
+            *d_b++ = *b1++;
+        else {
+            if (*b1 < *b2)
+                *d_b++ = *b1++;
+            else
+                *d_b++ = *b2++;
+        }
+    }
+    return d_b;
+}
+
 // inplace_merge
 // includes
 // set_difference

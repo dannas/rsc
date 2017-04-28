@@ -620,6 +620,74 @@ TEST(Algorithm, partial_sort_TenElements) {
     ASSERT_EQ(4, v[4]);
 }
 
+class StableInt {
+public:
+    StableInt() {
+        StableInt(0);
+    }
+    StableInt(int val) : val_(val), order_(kSequenceNumber++) {}
+    bool operator<(const StableInt& other) {
+        return val_ < other.val_;
+    }
+
+    bool operator==(const StableInt& other) const {
+        return val_ == other.val_;
+    }
+
+
+    int operator()() {
+        return val_;
+    }
+
+    int order() {
+        return order_;
+    }
+
+    friend  std::ostream& operator<<(std::ostream& os, const StableInt& s);
+
+private:
+    int val_;
+    int order_;
+    static int kSequenceNumber;
+};
+
+std::ostream& operator<<(std::ostream& os, const StableInt& s) {
+    os << s.val_;
+    return os;
+}
+
+int StableInt::kSequenceNumber = 0;
+
+TEST(Algorithm, merge_Empty) {
+    std::vector<StableInt> a;
+    std::vector<StableInt> b;
+    std::vector<StableInt> dest(a.size() + b.size());
+    auto i = danstd::merge(begin(a), end(a), begin(b), end(b), begin(dest));
+    ASSERT_EQ(0, std::distance(begin(dest), i));
+}
+
+TEST(Algorithm, merge_OneElement) {
+    std::vector<StableInt> a = {0};
+    std::vector<StableInt> b = {1};
+    std::vector<StableInt> dest(a.size() + b.size());
+    std::vector<StableInt> expected = {0, 1};
+    auto i = danstd::merge(begin(a), end(a), begin(b), end(b), begin(dest));
+    ASSERT_EQ(expected, dest);
+    ASSERT_EQ(2, std::distance(begin(dest), i));
+
+}
+
+TEST(Algorithm, merge_ThreeElementsTwoIdentical) {
+    std::vector<StableInt> a = {0, 0};
+    std::vector<StableInt> b = {1};
+    std::vector<StableInt> dest(a.size() + b.size());
+    std::vector<StableInt> expected = {0, 0, 1};
+    auto i = danstd::merge(begin(a), end(a), begin(b), end(b), begin(dest));
+    ASSERT_EQ(expected, dest);
+    ASSERT_EQ(3, std::distance(begin(dest), i));
+    ASSERT_LT(dest[0].order(), dest[1].order());
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
