@@ -498,6 +498,65 @@ void partial_sort(I b, I m, I e) {
 // lower_bound
 // upper_bound
 // binary_search
+
+template <typename I, typename T>
+bool binary_search(I b, I e, T val) {
+    // Pre: A sorted list L
+    // Post: Return value is true if val exists in L
+    // Basic steps: Keep track of uninspected elements with your index fingers.
+    //      Move the fingers closer until you've either found a match or run out
+    //      of elements to inspect.
+    // Measure of progress: How many elements remains between your index fingers?
+    // The loop invariant: The elements left of your left index finger is less than val.
+    //      The elements to the right of your right index fingers is larger than val.
+    // Main steps: Put your index fingers at the first and last element.
+    //      Put your thumb at the middle element
+    //      Compare the element at your thumb with val.
+    //      We're done if the element equals val
+    //      Else move one of the index fingers to the thumb position,
+    //      which depends on whether the element is larger or smaller than
+    //      val.
+    // Make progress: You make progress, because on each iteration the distance between your fingers is halved
+    // Maintain loop invariant: For each iteration, the left index finger is larger or equal to all left of it.
+    //      The right index fingers is smaller or equal to all elements right of it.
+    // Establishing the loop invariant: You establish the loop invariant by pointing your fingers to the outermost
+    //      elements.
+    // Exit condition: You are done when your fingers have crossed or you've found a matching element
+    // Ending: By the exit condition and loop invariant, all elements have been inspected or an element matching val has
+    //      been found.
+    // Termination and running time: The time is proportional to successive halving of L.
+    // Special cases: What if L is empty?
+    //
+    //  algorithm: BinarySearch (L, n) into R
+    //      { pre-cond: L is sorted }
+    //      { post-cond: All intervals has been inspected or element has been found }
+    //      lo = 0      % left index finger position
+    //      hi = n-1    % right index finger position
+    //      mid = lo + (hi-lo) / 2
+    //      loop:
+    //          { loop-invariant: L[lo] >= L[0..lo) and L[hi] <= L[hi+1...n) }
+    //          exit when lo > hi or L[mid] = val
+    //          % Make progress while maintaining the loop invariant
+    //          if L[mid] < val then continue with the upper interval
+    //          elif L[mid] > val then continue with the lower interval
+    //      end loop
+    //  end algorithm
+
+    if (b == e)
+        return false;
+    e--;
+    while (b <= e)  {
+        auto mid = b + (e - b) / 2;
+        if (*mid == val)
+            return true;
+        else if (*mid < val)
+            b = mid + 1;
+        else
+            e = mid - 1;
+    }
+    return false;
+}
+
 // equal_range
 //
 // Set operations

@@ -620,6 +620,48 @@ TEST(Algorithm, partial_sort_TenElements) {
     ASSERT_EQ(4, v[4]);
 }
 
+TEST(Algorithm, binary_search_Empty) {
+    Vector v;
+    bool found = danstd::binary_search(begin(v), end(v), 0);
+    ASSERT_EQ(false, found);
+}
+
+TEST(Algorithm, binary_search_OneElement) {
+    Vector v = {1};
+    bool found = danstd::binary_search(begin(v), end(v), 0);
+    ASSERT_EQ(false, found);
+    found = danstd::binary_search(begin(v), end(v), 1);
+    ASSERT_EQ(true, found);
+    found = danstd::binary_search(begin(v), end(v), 2);
+    ASSERT_EQ(false, found);
+}
+
+TEST(Algorithm, binary_search_TwoElements) {
+    Vector v = {1, 2};
+    bool found = danstd::binary_search(begin(v), end(v), 0);
+    ASSERT_EQ(false, found);
+    found = danstd::binary_search(begin(v), end(v), 1);
+    ASSERT_EQ(true, found);
+    found = danstd::binary_search(begin(v), end(v), 2);
+    ASSERT_EQ(true, found);
+    found = danstd::binary_search(begin(v), end(v), 3);
+    ASSERT_EQ(false, found);
+}
+
+TEST(Algorithm, binary_search_ThreeElements) {
+    Vector v = {1, 2, 3};
+    bool found = danstd::binary_search(begin(v), end(v), 0);
+    ASSERT_EQ(false, found);
+    found = danstd::binary_search(begin(v), end(v), 1);
+    ASSERT_EQ(true, found);
+    found = danstd::binary_search(begin(v), end(v), 2);
+    ASSERT_EQ(true, found);
+    found = danstd::binary_search(begin(v), end(v), 3);
+    ASSERT_EQ(true, found);
+    found = danstd::binary_search(begin(v), end(v), 4);
+    ASSERT_EQ(false, found);
+}
+
 class StableInt {
 public:
     StableInt() {
