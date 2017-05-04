@@ -490,12 +490,8 @@ void partial_sort(I b, I m, I e) {
     danstd::sort(b, m);
 }
 
-template <typename I>
-void stable_sort(I b, I e) {
-
-}
-
 // TODO(dannas): Add
+// stable_sort
 // partial_sort_copy
 //
 // Binary search operations
