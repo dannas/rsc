@@ -662,6 +662,30 @@ TEST(Algorithm, binary_search_ThreeElements) {
     ASSERT_EQ(false, found);
 }
 
+TEST(Algorithm, lower_bound_Empty) {
+    Vector v;
+    auto i = danstd::lower_bound(begin(v), end(v), 42);
+    ASSERT_EQ(end(v), i);
+}
+
+TEST(Algorithm, lower_bound_OneElement) {
+    Vector v = {1};
+    auto i = danstd::lower_bound(begin(v), end(v), 0);
+    ASSERT_EQ(end(v), i);
+    i = danstd::lower_bound(begin(v), end(v), 1);
+    ASSERT_EQ(0, std::distance(begin(v), i));
+}
+
+TEST(Algorithm, lower_bound_TwoElements) {
+    Vector v = {1, 2};
+    auto i = danstd::lower_bound(begin(v), end(v), 0);
+    ASSERT_EQ(0, std::distance(end(v), i));
+    i = danstd::lower_bound(begin(v), end(v), 1);
+    ASSERT_EQ(0, std::distance(begin(v), i));
+    i = danstd::lower_bound(begin(v), end(v), 2);
+    ASSERT_EQ(1, std::distance(begin(v), i));
+}
+
 class StableInt {
 public:
     StableInt() {

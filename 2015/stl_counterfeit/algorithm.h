@@ -495,7 +495,68 @@ void partial_sort(I b, I m, I e) {
 // partial_sort_copy
 //
 // Binary search operations
-// lower_bound
+
+template <typename I, typename T>
+I lower_bound(I b, I e, T val) {
+    // Pre: A sorted list L
+    // Post: The return value points to the leftmost element not less than val
+    // Basic steps: Keep track of range with your index fingers. Halv or decrease
+    //      by one depending on in which half to look.
+    // Measure of progress: How many elements remains between your index fingers
+    // The loop invariant: The searched element is between your index fingers or
+    //      is not found in the range. All elements to the left of the left index
+    //      fingers is smaller than the searched value.
+    // Main steps: Keep track of uninspected elements with your index fingers.
+    //      Place thumb at element in the middle. If larger, move left index
+    //      finger to the thumb position + 1. If smaller or equal, move right
+    //      index finger one single position.
+    // Make progress: You make progress, because on each iteration the range is halved
+    //      or decreased by one.
+    // Maintain loop invariant: For each iteration, no elements equal to val is on the left
+    //      of the left index finger; no elements less than val are on the right of the right
+    //      index finger.
+    // Establishing the loop invariant: Place your index fingers at the first and last element
+    // Exit condition: You are done when your fingers points to the same element
+    // Ending: If the element remaining is equal to val, then return the position; else return
+    //      not found.
+    // Termination and running time: The time is proportional to successive halving in the best case,
+    //      and linear in the worst case.
+    // Special cases: What if L is empty
+    //
+    //  algorithm: LowerBound(L, n) into r
+    //      { pre-cond: L is sorted }
+    //      { post-cond: L[r] is the leftmost element or L[r] is nil }
+    //      lo = 0
+    //      hi = n-1
+    //      loop:
+    //          { loop-invariant: ... }
+    //          mid = lo + (hi - lo) / 2
+    //          exit when lo = hi
+    //          % Make progress while maintaining the loop invariant
+    //          if L[mid] < val, then continue with the upper range
+    //          elif L[mid] > val, then continue with the lower range
+    //          elif L[mid] = val, then snag the smallest element from the range.
+    //      end loop
+    //      if L[mid] = val return pos, else return 'not found'
+    //  end algorithm
+    if (b == e)
+        return e;
+    auto notFound = e;
+
+    while (b < e) {
+        auto mid = b + (e - b) / 2;
+        if (*mid < val)
+            b = mid + 1;
+        else
+            e = mid;
+    }
+
+    if (*e == val)
+        return e;
+    return notFound;
+}
+
+// TODO(dannas): Add
 // upper_bound
 // binary_search
 
@@ -532,9 +593,9 @@ bool binary_search(I b, I e, T val) {
     //      { post-cond: All intervals has been inspected or element has been found }
     //      lo = 0      % left index finger position
     //      hi = n-1    % right index finger position
-    //      mid = lo + (hi-lo) / 2
     //      loop:
     //          { loop-invariant: L[lo] >= L[0..lo) and L[hi] <= L[hi+1...n) }
+    //          mid = lo + (hi-lo) / 2
     //          exit when lo > hi or L[mid] = val
     //          % Make progress while maintaining the loop invariant
     //          if L[mid] < val then continue with the upper interval
