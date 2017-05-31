@@ -21,7 +21,14 @@ add_executable(algorithm-test
     algorithm.h
 )
 
+add_executable(unique_ptr-test
+    unique_ptr_unittest.cpp
+    unique_ptr.h
+)
+
 target_link_libraries(algorithm-test GTest::GTest GTest::Main)
+target_link_libraries(unique_ptr-test GTest::GTest GTest::Main)
 
 add_test(algorithm-test   algorithm-test)
+add_test(unique_ptr-test   unique_ptr-test)
 

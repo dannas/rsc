@@ -4,6 +4,8 @@
 #include <iostream>
 #include <vector>
 
+namespace danstd {
+
 // A bare minimum smart pointer for exclusive ownership. Modelled on Chromiums
 // scoped_ptr and std::unique_ptr. Do NOT use in production; for educational
 // purpose only.
@@ -105,3 +107,4 @@ unique_ptr<T> make_unique(Args&&... args) {
     return unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
+}
