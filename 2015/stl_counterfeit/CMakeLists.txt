@@ -13,8 +13,8 @@ set(CMAKE_BUILD_TYPE "Debug")
 set(SOURCES
     algorithm.h
     unique_ptr.h
+    string.h
 )
-
 
 add_executable(algorithm-test
     algorithm_unittest.cpp
@@ -26,9 +26,16 @@ add_executable(unique_ptr-test
     unique_ptr.h
 )
 
+add_executable(string-test
+    string_unittest.cpp
+    string.h
+)
+
 target_link_libraries(algorithm-test GTest::GTest GTest::Main)
 target_link_libraries(unique_ptr-test GTest::GTest GTest::Main)
+target_link_libraries(string-test GTest::GTest GTest::Main)
 
 add_test(algorithm-test   algorithm-test)
 add_test(unique_ptr-test   unique_ptr-test)
+add_test(string-test   unique_ptr-test)
 
