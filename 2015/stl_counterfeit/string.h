@@ -111,6 +111,13 @@ public:
         return buf_[i];
     }
 
+    string& operator+=(const string& other) {
+        for (size_t i = 0; i < other.size(); ++i) {
+            push_back(other[i]);
+        }
+        return *this;
+    }
+
 private:
 
     void checkRep() {
@@ -123,16 +130,9 @@ private:
     size_t cap_;    // Number of bytes allocated.
 };
 
-string operator+(const string& lhs, const string& rhs) {
-    string s;
-    s.reserve(lhs.size());
-    for (size_t i = 0; i < lhs.size(); ++i) {
-        s.push_back(lhs[i]);
-    }
-    for (size_t i = 0; i < rhs.size(); ++i) {
-        s.push_back(rhs[i]);
-    }
-    return s;
+string operator+(string lhs, const string& rhs) {
+    lhs += rhs;
+    return lhs;
 }
 
 }
