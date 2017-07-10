@@ -26,6 +26,37 @@ public:
         checkRep();
     }
 
+    string(const string& other) {
+        // TODO(dannas): How guarentee exception safety?
+        buf_ = new char[other.cap_ + 1];
+        for (size_t i = 0; i < other.len_; ++i) {
+            buf_[i] = other.buf_[i];
+        }
+        len_ = other.len_;
+        cap_ = other.cap_;
+    }
+
+    string& operator=(const string& other) {
+        // TODO(dannas): How guarentee exception safety? copy-swap?
+        if (this == &other)
+            return *this;
+
+        char* temp = new char[other.cap_ + 1];
+        for (size_t i = 0; i < other.len_; ++i) {
+            temp[i] = other.buf_[i];
+        }
+        len_ = other.len_;
+        cap_ = other.cap_;
+        delete[] buf_;
+        buf_ = temp;
+
+        return *this;
+    }
+
+    ~string() {
+        delete[] buf_;
+    }
+
     void reserve(size_t newCap) {
         if (newCap < capacity())
             return;

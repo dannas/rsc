@@ -5,7 +5,7 @@ find_package(Threads)
 enable_testing()
 find_package(GTest REQUIRED)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g3 -Wall -Wextra -Werror -Wswitch-enum -Wswitch-default -std=c++14")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g3 -Wall -Wextra -Werror -Wswitch-enum -Wswitch-default  -std=c++14")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 set(CMAKE_BUILD_TYPE "Debug")
