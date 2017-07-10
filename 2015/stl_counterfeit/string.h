@@ -13,7 +13,6 @@ namespace danstd {
 // find_first_not_of
 // find
 // rfind
-// operator[]
 // operator+
 // comparison operators
 class string {
@@ -83,11 +82,11 @@ public:
         checkRep();
     }
 
-    size_t capacity() {
+    size_t capacity() const {
         return cap_;
     }
 
-    size_t size() {
+    size_t size() const {
         return len_;
     }
 
@@ -123,5 +122,17 @@ private:
     size_t len_;    // Number of bytes occupied, excluding trailing '\0' character.
     size_t cap_;    // Number of bytes allocated.
 };
+
+string operator+(const string& lhs, const string& rhs) {
+    string s;
+    s.reserve(lhs.size());
+    for (size_t i = 0; i < lhs.size(); ++i) {
+        s.push_back(lhs[i]);
+    }
+    for (size_t i = 0; i < rhs.size(); ++i) {
+        s.push_back(rhs[i]);
+    }
+    return s;
+}
 
 }
