@@ -13,7 +13,6 @@ namespace danstd {
 // find_first_not_of
 // find
 // rfind
-// operator+
 // comparison operators
 class string {
 public:
@@ -107,7 +106,7 @@ public:
         return buf_[i];
     }
 
-    char& operator[](size_t i) const {
+    const char& operator[](size_t i) const {
         return buf_[i];
     }
 
@@ -115,6 +114,15 @@ public:
         for (size_t i = 0; i < other.size(); ++i) {
             push_back(other[i]);
         }
+        checkRep();
+        return *this;
+    }
+
+    string& operator+=(const char* str) {
+        for (const char *p = str; *p != '\0'; ++p) {
+            push_back(*p);
+        }
+        checkRep();
         return *this;
     }
 
@@ -132,6 +140,11 @@ private:
 
 string operator+(string lhs, const string& rhs) {
     lhs += rhs;
+    return lhs;
+}
+
+string operator+(string lhs, const char* str) {
+    lhs += str;
     return lhs;
 }
 

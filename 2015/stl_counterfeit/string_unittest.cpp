@@ -75,6 +75,19 @@ TEST(String, operatorBinaryPlusEquals_AddTwoThreeCharStrings) {
     ASSERT_STREQ("abcdef", s.data());
 }
 
+TEST(String, operatorBinaryPlusEquals_AppendCharString) {
+    danstd::string s = "abc";
+    s += "def";
+    ASSERT_STREQ("abcdef", s.data());
+}
+
+TEST(String, operatorBinaryPlus_AddCharString) {
+    danstd::string s;
+    danstd::string b = "def";
+    s = "abc" + b;
+    ASSERT_STREQ("abcdef", s.data());
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
