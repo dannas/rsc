@@ -47,6 +47,20 @@ TEST(String, push_back_AppendOneCharToEmptyString) {
     ASSERT_STREQ("xyz", s.data());
 }
 
+TEST(String, operatorBrackets_ThreeCharsString) {
+    danstd::string s("abc");
+    ASSERT_EQ('a', s[0]);
+    ASSERT_EQ('b', s[1]);
+    ASSERT_EQ('c', s[2]);
+}
+
+TEST(String, operatorBrackets_ThreeCharsConstString) {
+    const danstd::string s("abc");
+    ASSERT_EQ('a', s[0]);
+    ASSERT_EQ('b', s[1]);
+    ASSERT_EQ('c', s[2]);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -6,6 +6,16 @@
 
 namespace danstd {
 
+// TODO(dannas): Add these methods:
+// move constructor
+// move assignment operator
+// find_first_of
+// find_first_not_of
+// find
+// rfind
+// operator[]
+// operator+
+// comparison operators
 class string {
 public:
     static const int kDefaultCapacity = 1;
@@ -92,6 +102,14 @@ public:
         }
         buf_[len_++] = c;
         checkRep();
+    }
+
+    char& operator[](size_t i) {
+        return buf_[i];
+    }
+
+    char& operator[](size_t i) const {
+        return buf_[i];
     }
 
 private:
