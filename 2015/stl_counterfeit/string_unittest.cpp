@@ -88,6 +88,16 @@ TEST(String, operatorBinaryPlus_AddCharString) {
     ASSERT_STREQ("abcdef", s.data());
 }
 
+TEST(String, operatorLessThan_SmallStrings) {
+    using S = danstd::string;
+
+    ASSERT_FALSE(S("") < S(""));
+    ASSERT_TRUE(S("") < S("a"));
+    ASSERT_TRUE(S("a") < S("b"));
+    ASSERT_FALSE(S("b") < S("a"));
+    ASSERT_TRUE(S("abcdefg") < S("hijklmnop"));
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

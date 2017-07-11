@@ -3,17 +3,20 @@
 #include <stddef.h>
 
 #include <cassert>
+#include <cstring>
 
 namespace danstd {
 
 // TODO(dannas): Add these methods:
 // move constructor
 // move assignment operator
+// swap
 // find_first_of
 // find_first_not_of
 // find
 // rfind
-// comparison operators
+// iterators
+// begin and end
 class string {
 public:
     static const int kDefaultCapacity = 1;
@@ -89,7 +92,7 @@ public:
         return len_;
     }
 
-    char* data() {
+    const char* data() const {
         buf_[len_] = '\0';
         return buf_;
     }
@@ -147,5 +150,30 @@ string operator+(string lhs, const char* str) {
     lhs += str;
     return lhs;
 }
+
+bool operator<(const string &lhs, const string &rhs) {
+    return strcmp(lhs.data(), rhs.data()) < 0;
+}
+
+bool operator==(const string &lhs, const string &rhs) {
+    return strcmp(lhs.data(), rhs.data()) == 0;
+}
+
+bool operator!=(const string &lhs, const string &rhs) {
+    return !(lhs == rhs);
+}
+
+bool operator<=(const string &lhs, const string &rhs) {
+    return lhs < rhs || lhs == rhs;
+}
+
+bool operator>(const string &lhs, const string &rhs) {
+    return ! (lhs < rhs) && ! (lhs == rhs);
+}
+
+bool operator>=(const string &lhs, const string &rhs) {
+    return lhs > rhs || lhs == rhs;
+}
+
 
 }
