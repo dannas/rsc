@@ -19,6 +19,7 @@ class string {
 public:
     static const int kDefaultCapacity = 1;
 
+    // Construct an empty string.
     string()
         : buf_(nullptr)
         , len_(0)
@@ -27,6 +28,7 @@ public:
         checkRep();
     }
 
+    // Construct a string equal to |str|.
     string(const char* str)
         : string() {
         for (const char *p = str; *p != '\0'; ++p) {
@@ -35,8 +37,8 @@ public:
         checkRep();
     }
 
+    // Copy construct a string from |other|.
     string(const string& other) {
-        // TODO(dannas): How guarentee exception safety?
         buf_ = new char[other.cap_ + 1];
         for (size_t i = 0; i < other.len_; ++i) {
             buf_[i] = other.buf_[i];
@@ -45,6 +47,7 @@ public:
         cap_ = other.cap_;
     }
 
+    // Move construct a string from |other|.
     string(string&& other) noexcept
         : buf_(other.buf_)
         , len_(other.len_)
@@ -54,8 +57,8 @@ public:
         other.cap_ = 0;
     }
 
-    string& operator=(string&& other) {
-        // TODO(dannas): How guarentee exception safety?
+    // Move assign the content from |other|.
+    string& operator=(string&& other) noexcept {
         if (this == &other)
             return *this;
 
@@ -71,8 +74,8 @@ public:
         return *this;
     }
 
+    // Copy assign the content of |other|.
     string& operator=(const string& other) {
-        // TODO(dannas): How guarentee exception safety? copy-swap?
         if (this == &other)
             return *this;
 
@@ -88,10 +91,12 @@ public:
         return *this;
     }
 
+    // Destruct the string.
     ~string() {
         delete[] buf_;
     }
 
+    // Reserve |newCap| bytes.
     void reserve(size_t newCap) {
         if (newCap < capacity())
             return;
@@ -108,19 +113,23 @@ public:
         checkRep();
     }
 
+    // Return the current number of allocated bytes.
     size_t capacity() const {
         return cap_;
     }
 
+    // Return the size of the string, excluding the '\0' byte.
     size_t size() const {
         return len_;
     }
 
+    // Return the internal null-terminated char array.
     const char* data() const {
         buf_[len_] = '\0';
         return buf_;
     }
 
+    // Add character |c| to the end of the string.
     void push_back(char c) {
         if (size() == capacity()) {
             reserve(2 * capacity());
@@ -129,10 +138,12 @@ public:
         checkRep();
     }
 
-    char& operator[](size_t i) {
-        return buf_[i];
+    // Return the character at |index|.
+    char& operator[](size_t index) {
+        return buf_[index];
     }
 
+    // Return the character at |index|.
     const char& operator[](size_t i) const {
         return buf_[i];
     }
