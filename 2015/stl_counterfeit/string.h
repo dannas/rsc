@@ -8,8 +8,6 @@
 namespace danstd {
 
 // TODO(dannas): Add these methods:
-// move constructor
-// move assignment operator
 // swap
 // find_first_of
 // find_first_not_of
@@ -45,6 +43,32 @@ public:
         }
         len_ = other.len_;
         cap_ = other.cap_;
+    }
+
+    string(string&& other) noexcept
+        : buf_(other.buf_)
+        , len_(other.len_)
+        , cap_(other.len_) {
+        other.buf_ = nullptr;
+        other.len_ = 0;
+        other.cap_ = 0;
+    }
+
+    string& operator=(string&& other) {
+        // TODO(dannas): How guarentee exception safety?
+        if (this == &other)
+            return *this;
+
+        delete[] buf_;
+
+        buf_ = other.buf_;
+        len_ = other.len_;;
+        cap_ = other.cap_;
+
+        other.buf_ = nullptr;
+        other.len_ = 0;
+        other.cap_ = 0;
+        return *this;
     }
 
     string& operator=(const string& other) {
@@ -160,19 +184,19 @@ bool operator==(const string &lhs, const string &rhs) {
 }
 
 bool operator!=(const string &lhs, const string &rhs) {
-    return !(lhs == rhs);
+    return strcmp(lhs.data(), rhs.data()) != 0;
 }
 
 bool operator<=(const string &lhs, const string &rhs) {
-    return lhs < rhs || lhs == rhs;
+    return strcmp(lhs.data(), rhs.data()) <= 0;
 }
 
 bool operator>(const string &lhs, const string &rhs) {
-    return ! (lhs < rhs) && ! (lhs == rhs);
+    return strcmp(lhs.data(), rhs.data()) > 0;
 }
 
 bool operator>=(const string &lhs, const string &rhs) {
-    return lhs > rhs || lhs == rhs;
+    return strcmp(lhs.data(), rhs.data()) >= 0;
 }
 
 

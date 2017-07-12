@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <cstring>
+#include <utility>
 
 #include "string.h"
 
@@ -96,6 +97,30 @@ TEST(String, operatorLessThan_SmallStrings) {
     ASSERT_TRUE(S("a") < S("b"));
     ASSERT_FALSE(S("b") < S("a"));
     ASSERT_TRUE(S("abcdefg") < S("hijklmnop"));
+}
+
+TEST(String, moveConstructor_MoveTemporaries) {
+    danstd::string s = "abc";
+
+    danstd::string t = std::move(s);
+
+    ASSERT_EQ(0, s.size());
+    ASSERT_EQ(0, s.capacity());
+    ASSERT_STREQ("abc", t.data());
+}
+
+TEST(String, moveAssignOperator_MoveTemporaries) {
+    danstd::string s = "";
+    danstd::string t = "abc";
+    size_t cap = t.capacity();
+
+    s = std::move(t);
+
+    ASSERT_EQ(3, s.size());
+    ASSERT_EQ(cap, s.capacity());
+    ASSERT_STREQ("abc", s.data());
+    ASSERT_EQ(0, t.size());
+    ASSERT_EQ(0, t.capacity());
 }
 
 int main(int argc, char* argv[]) {
