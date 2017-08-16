@@ -4,20 +4,74 @@
 
 #include <cassert>
 #include <cstring>
+#include <iterator>
 
 namespace danstd {
 
+//
+// This class only provides bidirectional iterators to simplify the code.
+
 // TODO(dannas): Add these methods:
 // swap
-// find_first_of
-// find_first_not_of
-// find
-// rfind
 // iterators
 // begin and end
 class string {
 public:
     static const int kDefaultCapacity = 1;
+
+    class iterator {
+    public:
+        using difference_type = size_t;
+        using value_type = char;
+        using reference = char&;
+        using pointer = char*;
+        using iterator_category = std::bidirectional_iterator_tag;
+
+        iterator(char *ptr)
+            : ptr_(ptr) {
+
+        }
+
+        iterator& operator++() {
+            ++ptr_;
+            return *this;
+        }
+
+        iterator operator++(int) {
+            iterator temp(*this);
+            operator++();
+            return temp;
+        }
+
+        iterator& operator--() {
+            --ptr_;
+            return *this;
+        }
+
+        iterator operator--(int) {
+            iterator temp(*this);
+            operator--();
+            return temp;
+        }
+
+        char operator*() {
+            return *ptr_;
+        }
+
+        bool operator==(const iterator &other) const {
+            return ptr_ == other.ptr_;
+        }
+        bool operator!=(const iterator &other) const {
+            return ptr_ != other.ptr_;
+        }
+
+        // increment/decrement operators
+        // comparison operators
+
+    private:
+        char *ptr_;
+
+    };
 
     // Construct an empty string.
     string()
@@ -162,6 +216,14 @@ public:
         }
         checkRep();
         return *this;
+    }
+
+    iterator begin() {
+        return buf_;
+    }
+
+    iterator end() {
+        return buf_ + len_;
     }
 
 private:

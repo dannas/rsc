@@ -123,6 +123,23 @@ TEST(String, moveAssignOperator_MoveTemporaries) {
     ASSERT_EQ(0, t.capacity());
 }
 
+TEST(String, iterator_BeginPointsToFirstElement) {
+    danstd::string s = "abc";
+    auto b = s.begin();
+    ASSERT_EQ('a', *b);
+}
+
+TEST(String, iterator_OperatorPlusAdvancesIterator) {
+    danstd::string s = "abc";
+    auto b = s.begin();
+    b++;
+    ASSERT_EQ('b', *b);
+    b++;
+    ASSERT_EQ('c', *b);
+    b++;
+    ASSERT_EQ(s.end(), b);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
