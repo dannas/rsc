@@ -337,6 +337,13 @@ O reverse_copy(I b, I e, O d_b) {
     return d_b;
 }
 
+template <typename I>
+void rotate(I b, I m, I e) {
+    danstd::reverse(b, m);
+    danstd::reverse(m, e);
+    danstd::reverse(b, e);
+}
+
 // TODO(dannas): Add
 // rotate
 // rotate_copy

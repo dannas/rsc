@@ -329,6 +329,33 @@ TEST(Algorithm, reverse_copy_ThreeElements) {
     ASSERT_EQ(dst, r);
 }
 
+TEST(Algorithm, rotate_Empty) {
+    Vector v;
+    danstd::rotate(begin(v), begin(v), end(v));
+    ASSERT_TRUE(v.empty());
+}
+
+TEST(Algorithm, rotate_Even) {
+    Vector v = {1, 2, 3, 4};
+    Vector expected = {3, 4, 1, 2};
+    danstd::rotate(begin(v), begin(v) + 2, end(v));
+    ASSERT_EQ(expected, v);
+}
+
+TEST(Algorithm, rotate_FirstHalfLarger) {
+    Vector v = {1, 2, 3, 4, 5};
+    Vector expected = {4, 5, 1, 2, 3};
+    danstd::rotate(begin(v), begin(v) + 3, end(v));
+    ASSERT_EQ(expected, v);
+}
+
+TEST(Algorithm, rotate_SecondHalfLarger) {
+    Vector v = {1, 2, 3, 4, 5};
+    Vector expected = {3, 4, 5, 1, 2};
+    danstd::rotate(begin(v), begin(v) + 2, end(v));
+    ASSERT_EQ(expected, v);
+}
+
 TEST(Algorithm, unique_Empty) {
     Vector v;
     auto i = danstd::unique(begin(v), end(v));
