@@ -65,8 +65,6 @@ public:
             return ptr_ != other.ptr_;
         }
 
-        // increment/decrement operators
-        // comparison operators
 
     private:
         char *ptr_;

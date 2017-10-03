@@ -345,7 +345,6 @@ void rotate(I b, I m, I e) {
 }
 
 // TODO(dannas): Add
-// rotate
 // rotate_copy
 // shuffle
 
@@ -505,47 +504,6 @@ void partial_sort(I b, I m, I e) {
 
 template <typename I, typename T>
 I lower_bound(I b, I e, T val) {
-    // Pre: A sorted list L
-    // Post: The return value points to the leftmost element not less than val
-    // Basic steps: Keep track of range with your index fingers. Halv or decrease
-    //      by one depending on in which half to look.
-    // Measure of progress: How many elements remains between your index fingers
-    // The loop invariant: The searched element is between your index fingers or
-    //      is not found in the range. All elements to the left of the left index
-    //      fingers is smaller than the searched value.
-    // Main steps: Keep track of uninspected elements with your index fingers.
-    //      Place thumb at element in the middle. If larger, move left index
-    //      finger to the thumb position + 1. If smaller or equal, move right
-    //      index finger one single position.
-    // Make progress: You make progress, because on each iteration the range is halved
-    //      or decreased by one.
-    // Maintain loop invariant: For each iteration, no elements equal to val is on the left
-    //      of the left index finger; no elements less than val are on the right of the right
-    //      index finger.
-    // Establishing the loop invariant: Place your index fingers at the first and last element
-    // Exit condition: You are done when your fingers points to the same element
-    // Ending: If the element remaining is equal to val, then return the position; else return
-    //      not found.
-    // Termination and running time: The time is proportional to successive halving in the best case,
-    //      and linear in the worst case.
-    // Special cases: What if L is empty
-    //
-    //  algorithm: LowerBound(L, n) into r
-    //      { pre-cond: L is sorted }
-    //      { post-cond: L[r] is the leftmost element or L[r] is nil }
-    //      lo = 0
-    //      hi = n-1
-    //      loop:
-    //          { loop-invariant: ... }
-    //          mid = lo + (hi - lo) / 2
-    //          exit when lo = hi
-    //          % Make progress while maintaining the loop invariant
-    //          if L[mid] < val, then continue with the upper range
-    //          elif L[mid] > val, then continue with the lower range
-    //          elif L[mid] = val, then snag the smallest element from the range.
-    //      end loop
-    //      if L[mid] = val return pos, else return 'not found'
-    //  end algorithm
     if (b == e)
         return e;
     auto notFound = e;
@@ -563,53 +521,33 @@ I lower_bound(I b, I e, T val) {
     return notFound;
 }
 
+template <typename I, typename T>
+I upper_bound(I b, I e, T val) {
+    // TODO(dannas): How add lower_bound
+    // Pre: A sorted list L
+    // Post: pos points to the rightmost elemnt equal to or larger than val
+    //      upper_bound of 2 for [1, 2, 2, 3] => pos 2
+    //      upper_bound of 2 for [1, 3, 3, 3] => pos 0
+    //      upper_bound of 2 for [1, 1, 1, 3] => pos 2
+    // What  to do now?
+    //      Come up with a strategy
+    //      refine it
+    //      make sure we make progress
+    //      make sure we halt
+    //      make sure each iteration is correct
+    //
+    // How make sure the input range is cut in half on each iteration?
+    //  How can I cut it in half but end up on the left end of the interval?
+    //  If I just shrink the upper endpoint by one,
+    //  then in the  pathological case [1, 1, 1, 1...] It will take N iterations
+
+}
+
 // TODO(dannas): Add
-// upper_bound
 // binary_search
 
 template <typename I, typename T>
 bool binary_search(I b, I e, T val) {
-    // Pre: A sorted list L
-    // Post: Return value is true if val exists in L
-    // Basic steps: Keep track of uninspected elements with your index fingers.
-    //      Move the fingers closer until you've either found a match or run out
-    //      of elements to inspect.
-    // Measure of progress: How many elements remains between your index fingers?
-    // The loop invariant: The elements left of your left index finger is less than val.
-    //      The elements to the right of your right index fingers is larger than val.
-    // Main steps: Put your index fingers at the first and last element.
-    //      Put your thumb at the middle element
-    //      Compare the element at your thumb with val.
-    //      We're done if the element equals val
-    //      Else move one of the index fingers to the thumb position,
-    //      which depends on whether the element is larger or smaller than
-    //      val.
-    // Make progress: You make progress, because on each iteration the distance between your fingers is halved
-    // Maintain loop invariant: For each iteration, the left index finger is larger or equal to all left of it.
-    //      The right index fingers is smaller or equal to all elements right of it.
-    // Establishing the loop invariant: You establish the loop invariant by pointing your fingers to the outermost
-    //      elements.
-    // Exit condition: You are done when your fingers have crossed or you've found a matching element
-    // Ending: By the exit condition and loop invariant, all elements have been inspected or an element matching val has
-    //      been found.
-    // Termination and running time: The time is proportional to successive halving of L.
-    // Special cases: What if L is empty?
-    //
-    //  algorithm: BinarySearch (L, n) into R
-    //      { pre-cond: L is sorted }
-    //      { post-cond: All intervals has been inspected or element has been found }
-    //      lo = 0      % left index finger position
-    //      hi = n-1    % right index finger position
-    //      loop:
-    //          { loop-invariant: L[lo] >= L[0..lo) and L[hi] <= L[hi+1...n) }
-    //          mid = lo + (hi-lo) / 2
-    //          exit when lo > hi or L[mid] = val
-    //          % Make progress while maintaining the loop invariant
-    //          if L[mid] < val then continue with the upper interval
-    //          elif L[mid] > val then continue with the lower interval
-    //      end loop
-    //  end algorithm
-
     if (b == e)
         return false;
     e--;
@@ -631,50 +569,6 @@ bool binary_search(I b, I e, T val) {
 
 template <typename I1, typename I2, typename O>
 O merge(I1 b1, I1 e1, I2 b2, I2 e2, O d_b) {
-    // Pre: Two sorted lists L1 and L2
-    // Post: The merged list M has length len(L1) + len(L2)
-    //       M is sorted
-    //       Elements copied from L1 and L2 maintains their relative positions
-    // Basic steps: Move an index finger along each list. Copy the smallest
-    //       element to the position of your thumb in the destination list.
-    // Measure of progress: The measure of progress is how far along each list
-    //       your index fingers have moved.
-    // The loop invariant:
-    //       The numbers left of your thumb are sorted
-    //       The relative order of the numbers left of the index finger in L1 is preserved
-    //       The relative order of the numbers left of the index finger in L2 is preserved
-    // Main steps: Each iteration, you compare the numbers at your index fingers. The smallest
-    //       number is copied and that index finger is moved to the next number. The thumb is
-    //       is moved one position on each iteration.
-    // Make progress: You make progress because one index finger moves each iteration.
-    // Maintain loop invariant: For each step, the old thumb numbers is larger or equal to the
-    //      old index finger numbers.
-    // Establishing the loop invariant: You establish the loop invariant by pointing your index fingers
-    //      to the first elements inn the list and your thumb to the beginning of the destination list.
-    // Exit condition: You are done when both your index fingers have reached the end of their lists.
-    // Ending: By the exit condition, all elements have been visitied. By the loop invariant, all numbers
-    //      in the destination list are stable sorted.
-    // Termination and running time: The time required is proortional to the length of the two lists.
-    // Special cases: What happens when there are duplicates or when one of the lists are empty?
-    //
-    //  algorithm: Merge (L1, L2) into O
-    //
-    //      { pre-cond:  L1 and L2 are sorted }
-    //      { post-cond: O is stable sorted }
-    //      i = 0   % first index finger
-    //      j = 0   % second index finger
-    //      k = 0   % thumb position
-    //      loop:
-    //          { loop-invariant: O[0,k) is sorted }
-    //          exit when i = len(L1) and j = len(L2)
-    //          % Make progress while maintaining the loop invariant
-    //          if L1 is done then copy a number from L2 and increment j
-    //          elif L2 is done then copy a number from L1 and increment i
-    //          else compare and copy the larger number
-    //          increment k
-    //      end loop
-    //  end algorithm
-
     while (b1 != e1 || b2 != e2) {
         if (b1 == e1)
             *d_b++ = *b2++;
