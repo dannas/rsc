@@ -584,8 +584,18 @@ O merge(I1 b1, I1 e1, I2 b2, I2 e2, O d_b) {
     return d_b;
 }
 
+template <typename I1, typename I2>
+bool includes(I1 b1, I2 e1, I2 b2, I2 e2) {
+
+    for (; b1 != e1; ++b1) {
+        b2 = danstd::find(b2, e2, *b1);
+        if (b2 == e2)
+            return false;
+    }
+    return true;
+}
+
 // inplace_merge
-// includes
 // set_difference
 // set_intersection
 // set_symmetric_intersection

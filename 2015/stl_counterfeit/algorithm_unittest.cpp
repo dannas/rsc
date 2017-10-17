@@ -781,6 +781,44 @@ TEST(Algorithm, merge_ThreeElementsTwoIdentical) {
     ASSERT_LT(dest[0].order(), dest[1].order());
 }
 
+TEST(Algorithm, includes_Empty) {
+    Vector v1;
+    Vector v2;
+    bool r = danstd::includes(begin(v1), end(v1), begin(v2), end(v2));
+    ASSERT_EQ(true, r);
+}
+
+TEST(Algorithm, includes_EmptyOrSingle) {
+    Vector v1;
+    Vector v2 = {1};
+    bool r = danstd::includes(begin(v1), end(v1), begin(v2), end(v2));
+    ASSERT_EQ(true, r);
+
+    v1 = {1};
+    v2 = {};
+    r = danstd::includes(begin(v1), end(v1), begin(v2), end(v2));
+    ASSERT_EQ(false, r);
+
+    v1 = {1};
+    v2 = {1};
+    r = danstd::includes(begin(v1), end(v1), begin(v2), end(v2));
+    ASSERT_EQ(true, r);
+}
+
+TEST(Algorithm, includes_TwoInSizeDifference) {
+    Vector v1 = {1, 2};
+    Vector v2 = {1, 2, 3, 4};
+    bool r = danstd::includes(begin(v1), end(v1), begin(v2), end(v2));
+    ASSERT_EQ(true, r);
+}
+
+TEST(Algorithm, includes_AnElementMissing) {
+    Vector v1 = {1, 2, 42};
+    Vector v2 = {1, 2};
+    bool r = danstd::includes(begin(v1), end(v1), begin(v2), end(v2));
+    ASSERT_EQ(false, r);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
