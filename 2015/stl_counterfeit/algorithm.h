@@ -595,11 +595,27 @@ bool includes(I1 b1, I2 e1, I2 b2, I2 e2) {
     return true;
 }
 
+template <typename I1, typename I2, typename O>
+O set_union(I1 b1, I1 e1, I2 b2, I2 e2, O d_b) {
+    auto o = d_b;
+    for (; b1 != e1; ++b1) {
+        *d_b++ = *b1;
+        while (b2 != e2 && *b2 <= *b1) {
+            if (*b2 != *b1)
+                *d_b++ = *b2;
+            b2++;
+        }
+    }
+    for (; b2 != e2; ++b2) {
+        *d_b++ = *b2;
+    }
+    return o;
+}
+
 // inplace_merge
 // set_difference
 // set_intersection
 // set_symmetric_intersection
-// set_union
 //
 // Heap operations
 // is_heap

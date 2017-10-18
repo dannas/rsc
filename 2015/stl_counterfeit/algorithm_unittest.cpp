@@ -819,6 +819,65 @@ TEST(Algorithm, includes_AnElementMissing) {
     ASSERT_EQ(false, r);
 }
 
+TEST(Algorithm, set_union_Empty) {
+    Vector v1;
+    Vector v2;
+    Vector o;
+
+    auto i = danstd::set_union(begin(v1), end(v1), begin(v2), end(v2), begin(o));
+    ASSERT_EQ(i, begin(o));
+    ASSERT_TRUE(o.empty());
+
+}
+
+TEST(Algorithm, set_union_Unique) {
+    Vector v1 = {1, 2, 3};
+    Vector v2 = {4, 5, 6};
+    Vector o(6, 0);
+    Vector expected = {1, 2, 3, 4, 5, 6};
+
+    auto i = danstd::set_union(begin(v1), end(v1), begin(v2), end(v2), begin(o));
+    ASSERT_EQ(i, begin(o));
+    ASSERT_EQ(6, o.size());
+    ASSERT_EQ(expected, o);
+}
+
+TEST(Algorithm, set_union_Duplicates) {
+    Vector v1 = {1, 2, 3};
+    Vector v2 = {1, 2, 3};
+    Vector o(3, 0);
+    Vector expected = {1, 2, 3};
+
+    auto i = danstd::set_union(begin(v1), end(v1), begin(v2), end(v2), begin(o));
+    ASSERT_EQ(i, begin(o));
+    ASSERT_EQ(3, o.size());
+    ASSERT_EQ(expected, o);
+}
+
+TEST(Algorithm, set_union_FirstVectorLarger) {
+    Vector v1 = {1, 2, 3, 4, 5};
+    Vector v2 = {1, 2, 3};
+    Vector o(5, 0);
+    Vector expected = {1, 2, 3, 4, 5};
+
+    auto i = danstd::set_union(begin(v1), end(v1), begin(v2), end(v2), begin(o));
+    ASSERT_EQ(i, begin(o));
+    ASSERT_EQ(5, o.size());
+    ASSERT_EQ(expected, o);
+}
+
+TEST(Algorithm, set_union_SecondVectorLarger) {
+    Vector v1 = {1, 2, 3};
+    Vector v2 = {1, 2, 3, 4, 5};
+    Vector o(5, 0);
+    Vector expected = {1, 2, 3, 4, 5};
+
+    auto i = danstd::set_union(begin(v1), end(v1), begin(v2), end(v2), begin(o));
+    ASSERT_EQ(i, begin(o));
+    ASSERT_EQ(5, o.size());
+    ASSERT_EQ(expected, o);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
