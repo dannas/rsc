@@ -15,8 +15,6 @@
 
 #include <algorithm>
 #include <cstdlib>
-#include <cstdio>
-#include <unistd.h>
 #include <deque>
 
 #include <ncurses.h>
