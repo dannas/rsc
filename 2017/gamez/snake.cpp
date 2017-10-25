@@ -33,11 +33,20 @@ bool operator==(const Point& lhs, const Point& rhs)
   return lhs.x == rhs.x && lhs.y == rhs.y;
 }
 
-int dir_;            // The direction of the snake.
-int width_;          // Width of the board.
-int height_;         // Height of the board.
-deque<Point> snake_; // Positions occupied by the snake.
-Point food_;         // Next food to eat.
+// The direction of the snake.
+int dir_;
+
+// Width of the board.
+int width_;
+
+// Height of the board.
+int height_;
+
+// Positions occupied by the snake.
+deque<Point> snake_;
+
+// Next food to eat.
+Point food_;
 
 bool
 legalArrowKey(int c)
@@ -80,7 +89,8 @@ randInt(int lo, int hi)
 Point
 newFood()
 {
-  int bw = 10; // Border width
+  // Border width.
+  int bw = 10;
 
   while (true) {
     int x = randInt(bw, width_ - bw);
@@ -164,21 +174,30 @@ initBoard()
 void
 enableRawMode()
 {
-  initscr();            // Creates stdscr.
-  cbreak();             // Don't wait for newline.
-  noecho();             // Don't echo chars written.
-  keypad(stdscr, TRUE); // Enable fn and arrow keys.
-  curs_set(0);          // Hide cursor.
-  timeout(100);         // Let getch() block for 100ms
+  // Create stdscr.
+  initscr();
+
+  // Don't wait for newlines.
+  cbreak();
+
+  // Don't echo chars written.
+  noecho();
+
+  // Enable fn and arrow keys.
+  keypad(stdscr, TRUE);
+
+  // Hide the cursor.
+  curs_set(0);
+
+  // Let getch() block for 100ms.
+  timeout(100);
 }
 
 int
 main()
 {
   enableRawMode();
-
   initBoard();
-
   gameLoop();
 
   endwin(); // Restore terminal state.

@@ -2,8 +2,10 @@
 
 struct Ball
 {
-  double rx, ry;
-  double vx, vy;
+  double rx;
+  double ry;
+  double vx;
+  double vy;
 };
 
 struct Paddle
@@ -12,22 +14,20 @@ struct Paddle
   int lower;
 };
 
-int width_;  // Width of the board.
-int height_; // Height of the board.
-Ball ball_;  // Current position of the ball.
-Paddle paddle_;
-int dir_; // Diretion of the paddle
+// Width of the board.
+int width_;
 
-void
-enableRawMode()
-{
-  initscr();            // Creates stdscr.
-  cbreak();             // Don't wait for newline.
-  noecho();             // Don't echo chars written.
-  keypad(stdscr, TRUE); // Enable fn and arrow keys.
-  curs_set(0);          // Hide cursor.
-  timeout(100);         // Let getch() block for 100ms
-}
+// Height of the board.
+int height_;
+
+// Current position of the ball.
+Ball ball_;
+
+// Edges of the paddle.
+Paddle paddle_;
+
+// Direction of the paddle.
+int dir_;
 
 bool
 legalArrowKey(int c)
@@ -39,17 +39,21 @@ void
 readArrowKeys()
 {
   int c = getch();
-  if (legalArrowKey(c))
+  if (legalArrowKey(c)) {
     dir_ = c;
-  else
-    dir_ = 0; // sentinel for "not up or down"
+  } else {
+    // Sentinel for "not up or down".
+    dir_ = 0;
+  }
 }
 
 void
 render()
 {
   clear();
+
   mvaddch(ball_.ry, ball_.rx, ACS_DIAMOND);
+
   for (int y = paddle_.upper; y <= paddle_.lower; ++y)
     mvaddch(y, width_ - 1, ACS_BLOCK);
 }
@@ -83,6 +87,14 @@ update()
   double& vx = ball_.vx;
   double& vy = ball_.vy;
 
+  // Detect collision with borders and paddle.
+  //
+  // (0,0)  +----------+ (xmax, 0)
+  //        |
+  //        |    *     |
+  //        |
+  //        +----------+
+  //
   if (rx <= 0)
     vx = -vx;
   else if (hitsPaddle(ball_, paddle_))
@@ -94,6 +106,7 @@ update()
   else if (ry >= height_)
     vy = -vy;
 
+  // Calculate new postion, based on speed.
   rx += vx;
   ry += vy;
 
@@ -132,5 +145,7 @@ main()
   enableRawMode();
   initBoard();
   gameLoop();
-  endwin(); // Restore terminal state.
+
+  // Restore terminal state.
+  endwin();
 }
