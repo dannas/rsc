@@ -5,8 +5,9 @@
 //      ./snake
 //
 // DESCRIPTION
-//      A simple ncurses based snakes game. The speed of the game is constant. 
-//      There are no score keeping or levels - the only way to win is not to play.
+//      A simple ncurses based snakes game. The speed of the game is constant.
+//      There are no score keeping or levels - the only way to win is not to
+//      play.
 //      Use the arrow keys for controlling the snake.
 //      The snake will travel faster while an arrow key is continously pressed.
 //
@@ -21,137 +22,164 @@
 
 using namespace std;
 
-struct Point {
-    int x;
-    int y;
+struct Point
+{
+  int x;
+  int y;
 };
 
-bool operator==(const Point& lhs, const Point& rhs) {
-    return lhs.x == rhs.x && lhs.y == rhs.y;
+bool operator==(const Point& lhs, const Point& rhs)
+{
+  return lhs.x == rhs.x && lhs.y == rhs.y;
 }
 
-int          dir_;          // The direction of the snake.
-int          width_;        // Width of the board.
-int          height_;       // Height of the board.
-deque<Point> snake_;        // Positions occupied by the snake.
-Point        food_;         // Next food to eat.
+int dir_;            // The direction of the snake.
+int width_;          // Width of the board.
+int height_;         // Height of the board.
+deque<Point> snake_; // Positions occupied by the snake.
+Point food_;         // Next food to eat.
 
-bool legalArrowKey(int c) {
-    return (c == KEY_UP &&  dir_ != KEY_DOWN)
-        || (c == KEY_DOWN &&  dir_ != KEY_UP)
-        || (c == KEY_RIGHT && dir_ != KEY_LEFT)
-        || (c == KEY_LEFT &&  dir_ != KEY_RIGHT) ;
+bool
+legalArrowKey(int c)
+{
+  return (c == KEY_UP && dir_ != KEY_DOWN) ||
+         (c == KEY_DOWN && dir_ != KEY_UP) ||
+         (c == KEY_RIGHT && dir_ != KEY_LEFT) ||
+         (c == KEY_LEFT && dir_ != KEY_RIGHT);
 }
 
-void readArrowKeys() {
-    int c = getch();
-    if (legalArrowKey(c))
-        dir_ = c;
+void
+readArrowKeys()
+{
+  int c = getch();
+  if (legalArrowKey(c))
+    dir_ = c;
 }
 
-bool collides(const deque<Point>& points, const Point& p) {
-    return count(begin(points), end(points), p);
+bool
+collides(const deque<Point>& points, const Point& p)
+{
+  return count(begin(points), end(points), p);
 }
 
-bool outsideBoard(const Point& p) {
-    return p.x < 0 
-        || p.x >= width_
-        || p.y < 0 
-        || p.y >= height_;
+bool
+outsideBoard(const Point& p)
+{
+  return p.x < 0 || p.x >= width_ || p.y < 0 || p.y >= height_;
 }
 
 // Generate a random integer in range [lo, hi]
-int randInt(int lo, int hi) {
-    return lo + rand() / (RAND_MAX / (hi - lo + 1) + 1);
+int
+randInt(int lo, int hi)
+{
+  return lo + rand() / (RAND_MAX / (hi - lo + 1) + 1);
 }
 
-// Generate coordinates for a new food item that don't collide with existing 
+// Generate coordinates for a new food item that don't collide with existing
 // items or borders.
-Point newFood() {
-    int bw = 10; // Border width
+Point
+newFood()
+{
+  int bw = 10; // Border width
 
-    while (true) {
-        int x = randInt(bw, width_ - bw);
-        int y = randInt(bw, height_ - bw);
-        Point f{x, y};
-        if (!collides(snake_, f))
-            return f;
-    }
+  while (true) {
+    int x = randInt(bw, width_ - bw);
+    int y = randInt(bw, height_ - bw);
+    Point f{ x, y };
+    if (!collides(snake_, f))
+      return f;
+  }
 }
 
-bool moveOneStep() {
-    // Copy current head.
-    Point head = snake_.front();
+bool
+moveOneStep()
+{
+  // Copy current head.
+  Point head = snake_.front();
 
-    // Adjust position
-    if      (dir_ == KEY_UP)      head.y--;
-    else if (dir_ == KEY_DOWN)    head.y++;
-    else if (dir_ == KEY_RIGHT)   head.x++;
-    else if (dir_ == KEY_LEFT)    head.x--;
+  // Adjust position
+  if (dir_ == KEY_UP)
+    head.y--;
+  else if (dir_ == KEY_DOWN)
+    head.y++;
+  else if (dir_ == KEY_RIGHT)
+    head.x++;
+  else if (dir_ == KEY_LEFT)
+    head.x--;
 
-    // Game over if we collide with ourself or the borders.
-    if (collides(snake_, head))
-        return false;
-    if (outsideBoard(head))
-        return false;
+  // Game over if we collide with ourself or the borders.
+  if (collides(snake_, head))
+    return false;
+  if (outsideBoard(head))
+    return false;
 
-    // Do the move.
-    snake_.push_front(head);
+  // Do the move.
+  snake_.push_front(head);
 
-    // Keep the tail if we've found food.
-    if (head == food_)
-        food_ = newFood();
-    else
-        snake_.pop_back();
-
-    return true;
-}
-
-void render() {
-    clear();
-    for (auto p : snake_) {
-        mvaddch(p.y, p.x, ACS_BLOCK);
-    }
-    mvaddch(food_.y, food_.x, ACS_DIAMOND);
-}
-
-void gameLoop() {
-    bool alive = true;
-
-    while (alive) {
-        render();
-        readArrowKeys();
-        alive = moveOneStep();
-    }
-}
-
-void initBoard() {
-    dir_ = KEY_UP;
-    getmaxyx(stdscr, height_, width_);
-    int xmid = width_ / 2;
-    int ymid = height_ / 2;
-
-    for (int i = 0; i < 10; i++)
-        snake_.push_back({xmid, ymid + i});
-
+  // Keep the tail if we've found food.
+  if (head == food_)
     food_ = newFood();
+  else
+    snake_.pop_back();
+
+  return true;
 }
 
-void enableRawMode() {
-    initscr();              // Creates stdscr.
-    cbreak();               // Don't wait for newline.
-    noecho();               // Don't echo chars written.
-    keypad(stdscr, TRUE);   // Enable fn and arrow keys.
-    curs_set(0);            // Hide cursor.
-    timeout(100);           // Let getch() block for 100ms
+void
+render()
+{
+  clear();
+  for (auto p : snake_) {
+    mvaddch(p.y, p.x, ACS_BLOCK);
+  }
+  mvaddch(food_.y, food_.x, ACS_DIAMOND);
 }
 
-int main() {
-    enableRawMode();
+void
+gameLoop()
+{
+  bool alive = true;
 
-    initBoard();
+  while (alive) {
+    render();
+    readArrowKeys();
+    alive = moveOneStep();
+  }
+}
 
-    gameLoop();
+void
+initBoard()
+{
+  dir_ = KEY_UP;
+  getmaxyx(stdscr, height_, width_);
+  int xmid = width_ / 2;
+  int ymid = height_ / 2;
 
-    endwin();               // Restore terminal state.
+  for (int i = 0; i < 10; i++)
+    snake_.push_back({ xmid, ymid + i });
+
+  food_ = newFood();
+}
+
+void
+enableRawMode()
+{
+  initscr();            // Creates stdscr.
+  cbreak();             // Don't wait for newline.
+  noecho();             // Don't echo chars written.
+  keypad(stdscr, TRUE); // Enable fn and arrow keys.
+  curs_set(0);          // Hide cursor.
+  timeout(100);         // Let getch() block for 100ms
+}
+
+int
+main()
+{
+  enableRawMode();
+
+  initBoard();
+
+  gameLoop();
+
+  endwin(); // Restore terminal state.
 }
