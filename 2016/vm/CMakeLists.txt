@@ -12,8 +12,9 @@ set(CMAKE_BUILD_TYPE "Debug")
 
 set(VM_SOURCES
     assembler.cpp
-    interpreter.cpp
+    codegenerator.cpp
     compiler.cpp
+    interpreter.cpp
     opcodes.cpp
     vm.h
 )
@@ -39,12 +40,21 @@ add_executable(compiler-test
     ${VM_SOURCES}
 )
 
-target_link_libraries(interpreter-test GTest::GTest GTest::Main)
+add_executable(codegenerator-test
+    compiler_unittest.cpp
+    ${VM_SOURCES}
+)
+
+
 target_link_libraries(assembler-test   GTest::GTest GTest::Main)
-target_link_libraries(exec-test        GTest::GTest GTest::Main)
+target_link_libraries(codegenerator-test        GTest::GTest GTest::Main)
 target_link_libraries(compiler-test        GTest::GTest GTest::Main)
+target_link_libraries(exec-test        GTest::GTest GTest::Main)
+target_link_libraries(interpreter-test GTest::GTest GTest::Main)
 
 add_test(assembler-test   assembler-test)
-add_test(interpreter-test interpreter-test)
+add_test(codegenerator-test codegenerator-test)
+add_test(compiler-test compiler-test)
 add_test(exec-test        interpreter-test)
+add_test(interpreter-test interpreter-test)
 
