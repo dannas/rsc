@@ -12,3 +12,6 @@ function build_and_run() {
 
 alias a='assemble_and_disassemble experiments.asm'
 alias c='build_and_run codegenerator.cpp'
+
+alias gs='git status .'
+alias gd='git diff .'
