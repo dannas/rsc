@@ -7,14 +7,14 @@
 // http://www.c-jump.com/CIS77/CPU/x86/lecture.html
 
 enum Reg : uint8_t{
-    EAX = 0,
-    ECX = 1,
-    EDX = 2,
-    EBX = 3,
-    ESP = 4,
-    EBP = 5,
-    ESI = 6,
-    EDI = 7
+    RAX = 0,
+    RCX = 1,
+    RDX = 2,
+    RBX = 3,
+    RSP = 4,
+    RBP = 5,
+    RSI = 6,
+    RDI = 7
 };
 
 // e1   11 100 001
@@ -34,38 +34,46 @@ enum Mod : uint8_t {
 uint8_t code[64];
 
 uint8_t* add(uint8_t* buf, Reg dst, Reg src) {
+    uint8_t pre = 0x48;
     uint8_t op = 0x01;
     uint8_t mod = REG_REG;
     uint8_t modrm = mod << 6 | src << 3 | dst;
+    *buf++ = pre;
     *buf++ = op;
     *buf++ = modrm;
     return buf;
 }
 
 uint8_t* sub(uint8_t* buf, Reg dst, Reg src) {
+    uint8_t pre = 0x48;
     uint8_t op = 0x29;
     uint8_t mod = REG_REG;
     uint8_t modrm = mod << 6 | src << 3 | dst;
+    *buf++ = pre;
     *buf++ = op;
     *buf++ = modrm;
     return buf;
 }
 
 uint8_t* imul(uint8_t* buf, Reg src) {
+    uint8_t pre = 0x48;
     uint8_t op = 0xf7;
     uint8_t mod = REG_REG;
     uint8_t rm = 5;
     uint8_t modrm = mod << 6 | rm << 3 | src;
+    *buf++ = pre;
     *buf++ = op;
     *buf++ = modrm;
     return buf;
 }
 
 uint8_t* idiv(uint8_t* buf, Reg src) {
+    uint8_t pre = 0x48;
     uint8_t op = 0xf7;
     uint8_t mod = REG_REG;
     uint8_t rm = 7;
     uint8_t modrm = mod << 6 | rm << 3 | src;
+    *buf++ = pre;
     *buf++ = op;
     *buf++ = modrm;
     return buf;
@@ -78,15 +86,27 @@ uint8_t* ret(uint8_t* buf) {
 }
 
 uint8_t* mov(uint8_t* buf, Reg dst, Reg src) {
+    uint8_t pre = 0x48;
     uint8_t op = 0x89;
     uint8_t mod = REG_REG;
     uint8_t modrm = mod << 6 | src << 3 | dst;
+    *buf++ = pre;
     *buf++ = op;
     *buf++ = modrm;
     return buf;
 }
 
-int main(int argc, char *argv[]) {
+uint8_t* push(uint8_t* buf, Reg src) {
+    *buf++ = 0x50 | src;
+    return buf;
+}
+
+uint8_t* pop(uint8_t* buf, Reg dst) {
+    *buf++ = 0x58 | dst;
+    return buf;
+}
+
+int main() {
     uint8_t* p = code;
 
     // TODO(dannas): Should we keep addresses in registers or on the stack?
@@ -102,10 +122,12 @@ int main(int argc, char *argv[]) {
     // TODO(dannas): How distinguish between different "addressing forms"?
     // * reg-reg
     // * reg-imm
-    // [reg]
-    // [reg + reg] + disp
-    p = mov(p, EAX, ESI);
-    p = idiv(p, EDI);
+    // * reg-[reg]
+    // * reg-[reg + reg] + disp
+    p = mov(p, RAX, RSI);
+    p = push(p, RAX);
+    p = pop(p, RAX);
+    p = idiv(p, RDI);
     p = ret(p);
 
     // rwx protection per page boundary, hence can't use malloc allocated memory
