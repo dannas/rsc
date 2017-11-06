@@ -612,8 +612,20 @@ O set_union(I1 b1, I1 e1, I2 b2, I2 e2, O d_b) {
     return o;
 }
 
+template <typename I1, typename I2, typename O>
+O set_difference(I1 b1, I1 e1, I2 b2, I2 e2, O d_b) {
+    for (; b1 != e1; ++b1) {
+        while (b2 != e2 && *b2 < *b1) {
+            ++b2;
+        }
+        if (b2 == e2 ||  *b2 != *b1) {
+            *d_b++ = *b1;
+        }
+    }
+    return d_b;
+}
+
 // inplace_merge
-// set_difference
 // set_intersection
 // set_symmetric_intersection
 //

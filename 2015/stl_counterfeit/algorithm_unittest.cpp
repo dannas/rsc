@@ -878,6 +878,44 @@ TEST(Algorithm, set_union_SecondVectorLarger) {
     ASSERT_EQ(expected, o);
 }
 
+TEST(Algorithm, set_difference_BothEmpty) {
+    Vector v1 = {};
+    Vector v2 = {};
+    Vector o = {};
+    auto i = danstd::set_difference(begin(v1), end(v1), begin(v2), end(v2), begin(o));
+    ASSERT_EQ(i, end(o));
+    ASSERT_TRUE(o.empty());
+}
+
+TEST(Algorithm, set_difference_FirstEmpty) {
+    Vector v1 = {};
+    Vector v2 = {1, 2, 3};
+    Vector o = {};
+    auto i = danstd::set_difference(begin(v1), end(v1), begin(v2), end(v2), begin(o));
+    ASSERT_EQ(i, end(o));
+    ASSERT_TRUE(o.empty());
+}
+
+TEST(Algorithm, set_difference_SecondEmpty) {
+    Vector v1 = {1, 2, 3};
+    Vector v2 = {};
+    Vector o(v1.size(), 0);
+    Vector expected = {1, 2, 3};
+    auto i = danstd::set_difference(begin(v1), end(v1), begin(v2), end(v2), begin(o));
+    ASSERT_EQ(i, end(o));
+    ASSERT_EQ(expected, o);
+}
+
+TEST(Algorithm, set_difference_Interleaved) {
+    Vector v1 = {1, 3, 5};
+    Vector v2 = {0, 2, 4, 6};
+    Vector o(v1.size(), 0);
+    Vector expected = {1, 3, 5};
+    auto i = danstd::set_difference(begin(v1), end(v1), begin(v2), end(v2), begin(o));
+    ASSERT_EQ(i, end(o));
+    ASSERT_EQ(expected, o);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
