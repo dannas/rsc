@@ -8,6 +8,7 @@ using namespace std;
 
 // Encoding x86 instructions
 // http://www.c-jump.com/CIS77/CPU/x86/lecture.html
+// http://wiki.osdev.org/X86-64_Instruction_Encoding
 
 enum Reg : uint8_t{
     RAX = 0,
@@ -20,18 +21,11 @@ enum Reg : uint8_t{
     RDI = 7
 };
 
-// e1   11 100 001
-
-// mod       effective addr
-// 00        example [reg] 
-// 01                [reg] + disp8
-// 10                [reg] + disp32
-// 11        reg-reg
 enum Mod : uint8_t {
-    REG_INDIRECT = 0x00,
-    REG_DISP1 = 0x01,
-    REG_DISP4 = 0x02,
-    REG_REG = 0x3
+    INDIRECT = 0,
+    INDIRECT_DISP1 = 1,
+    INDIRECT_DISP4 = 2,
+    DIRECT = 3
 };
 
 class CodeGenerator {
@@ -64,7 +58,7 @@ size_t CodeGenerator::size() {
 void CodeGenerator::add(Reg dst, Reg src) {
     uint8_t pre = 0x48;
     uint8_t op = 0x01;
-    uint8_t mod = REG_REG;
+    uint8_t mod = DIRECT;
     uint8_t modrm = mod << 6 | src << 3 | dst;
 
     buf_.push_back(pre);
@@ -83,7 +77,7 @@ void CodeGenerator::cqo() {
 void CodeGenerator::sub(Reg dst, Reg src) {
     uint8_t pre = 0x48;
     uint8_t op = 0x29;
-    uint8_t mod = REG_REG;
+    uint8_t mod = DIRECT;
     uint8_t modrm = mod << 6 | src << 3 | dst;
 
     buf_.push_back(pre);
@@ -95,7 +89,7 @@ void CodeGenerator::sub(Reg dst, Reg src) {
 void CodeGenerator::imul(Reg src) {
     uint8_t pre = 0x48;
     uint8_t op = 0xf7;
-    uint8_t mod = REG_REG;
+    uint8_t mod = DIRECT;
     uint8_t rm = 5;
     uint8_t modrm = mod << 6 | rm << 3 | src;
 
@@ -107,7 +101,7 @@ void CodeGenerator::imul(Reg src) {
 void CodeGenerator::idiv(Reg src) {
     uint8_t pre = 0x48;
     uint8_t op = 0xf7;
-    uint8_t mod = REG_REG;
+    uint8_t mod = DIRECT;
     uint8_t rm = 7;
     uint8_t modrm = mod << 6 | rm << 3 | src;
 
@@ -125,7 +119,7 @@ void CodeGenerator::ret() {
 void CodeGenerator::mov(Reg dst, Reg src) {
     uint8_t pre = 0x48;
     uint8_t op = 0x89;
-    uint8_t mod = REG_REG;
+    uint8_t mod = DIRECT;
     uint8_t modrm = mod << 6 | src << 3 | dst;
 
     buf_.push_back(pre);
@@ -143,21 +137,6 @@ void CodeGenerator::pop(Reg dst) {
 
 int main() {
 
-    // TODO(dannas): Should we keep addresses in registers or on the stack?
-    // Is it easier to use the stack?
-    // How do I allocate registers?
-    
-    // TODO(dannas): What asm instructions do I need for executing P-code?
-    // arithmetic operators
-    // loading locals
-    // calling and returning from functions
-    // printing return values
-    
-    // TODO(dannas): How distinguish between different "addressing forms"?
-    // * reg-reg
-    // * reg-imm
-    // * reg-[reg]
-    // * reg-[reg + reg] + disp
     CodeGenerator masm;
 
     masm.mov(RAX, RSI);
