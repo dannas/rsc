@@ -55,6 +55,11 @@ void interpret(const std::vector<int32_t> &code, int32_t* globals, std::ostream&
 // Return a string containing the disassembled bytecode.
 std::string disassemble(std::istream& in);
 
+// Compile the bytecode in |code|.
+//
+// |code| must be well formed bytecode - as produced by the assembler step.
+std::vector<uint8_t> compile(const std::vector<int32_t>& code);
+
 // PRIVATE INTERFACE
 
 // List of available bytecodes on the form

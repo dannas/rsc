@@ -1,6 +1,11 @@
 #include "vm.h"
 #include "codegenerator.h"
 
+#include <cstdint>
+#include <sys/mman.h>
+#include <cstring>
+#include <cstdio>
+
 #include <gtest/gtest.h>
 
 using namespace std;
