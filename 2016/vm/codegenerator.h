@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cstdint>
 #include <sys/mman.h>
 #include <cstring>
@@ -59,58 +61,58 @@ private:
     std::vector<uint8_t> buf_;
 };
 
-uint8_t* CodeGenerator::data() {
+inline uint8_t* CodeGenerator::data() {
     return buf_.data();
 }
 
-size_t CodeGenerator::size() {
+inline size_t CodeGenerator::size() {
     return buf_.size();
 }
 
-void CodeGenerator::add(Reg dst, Reg src) {
+inline void CodeGenerator::add(Reg dst, Reg src) {
     emit(REX_W);
     emit(0x01);
     emitModRM(DIRECT, src, dst);
 }
 
-void CodeGenerator::cqo() {
+inline void CodeGenerator::cqo() {
     emit(REX_W);
     emit(0x99);
 }
 
-void CodeGenerator::sub(Reg dst, Reg src) {
+inline void CodeGenerator::sub(Reg dst, Reg src) {
     emit(REX_W);
     emit(0x29);
     emitModRM(DIRECT, src, dst);
 }
 
-void CodeGenerator::imul(Reg src) {
+inline void CodeGenerator::imul(Reg src) {
     emit(REX_W);
     emit(0xf7);
     emitModRM(DIRECT, 5, src);
 }
 
-void CodeGenerator::idiv(Reg src) {
+inline void CodeGenerator::idiv(Reg src) {
     emit(REX_W);
     emit(0xf7);
     emitModRM(DIRECT, 7, src);
 }
 
-void CodeGenerator::ret() {
+inline void CodeGenerator::ret() {
     emit(0xc3);
 }
 
-void CodeGenerator::mov(Reg dst, Reg src) {
+inline void CodeGenerator::mov(Reg dst, Reg src) {
     emit(REX_W);
     emit(0x89);
     emitModRM(DIRECT, src, dst);
 }
 
-void CodeGenerator::push(Reg src) {
+inline void CodeGenerator::push(Reg src) {
     emit(0x50 | src);
 }
 
-void CodeGenerator::push(Imm32 imm) {
+inline void CodeGenerator::push(Imm32 imm) {
     emit(0x68);
     emit(imm.bytes[0]);
     emit(imm.bytes[1]);
@@ -118,53 +120,15 @@ void CodeGenerator::push(Imm32 imm) {
     emit(imm.bytes[3]);
 }
 
-void CodeGenerator::pop(Reg dst) {
+inline void CodeGenerator::pop(Reg dst) {
     emit(0x58 | dst);
 }
 
-void CodeGenerator::emit(uint8_t b) {
+inline void CodeGenerator::emit(uint8_t b) {
     buf_.push_back(b);
 }
 
-void CodeGenerator::emitModRM(uint8_t mod, uint8_t r, uint8_t m) {
+inline void CodeGenerator::emitModRM(uint8_t mod, uint8_t r, uint8_t m) {
     emit(mod << 6 | r << 3 | m);
 }
 
-int main() {
-
-    CodeGenerator masm;
-
-#if 0
-    masm.mov(RAX, RSI);
-    masm.push(RAX);
-    masm.pop(RAX);
-    masm.cqo();
-    masm.idiv(RDI);
-    masm.ret();
-
-    masm.push(RDI);
-    masm.push(RSI);
-#endif
-    masm.push(Imm32(11));
-    masm.push(Imm32(22));
-    masm.pop(RAX);
-    masm.pop(RBX);
-    masm.add(RAX, RBX);
-    masm.ret();
-
-    // rwx protection per page boundary, hence can't use malloc allocated memory
-    // which may span pages in unpredictable ways.
-    // TODO(dannas): Introduce W^X via mprotect
-    // TODO(dannas): Call munmap.
-    void *mem = mmap(nullptr, masm.size(), PROT_WRITE | PROT_EXEC,
-            MAP_ANON | MAP_PRIVATE, -1, 0);
-
-    memcpy(mem, masm.data(), masm.size());
-
-    int (*func)(int, int) = (int (*)(int, int))mem;
-
-    int sum = func(40, 2);
-    printf("sum=%d\n", sum);
-    
-    return 0;
-}

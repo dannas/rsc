@@ -12,7 +12,7 @@ set(CMAKE_BUILD_TYPE "Debug")
 
 set(VM_SOURCES
     assembler.cpp
-    codegenerator.cpp
+    codegenerator.h
     compiler.cpp
     interpreter.cpp
     opcodes.cpp
@@ -41,7 +41,7 @@ add_executable(compiler-test
 )
 
 add_executable(codegenerator-test
-    compiler_unittest.cpp
+    codegenerator_unittest.cpp
     ${VM_SOURCES}
 )
 
