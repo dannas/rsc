@@ -11,7 +11,15 @@ function build_and_run() {
 }
 
 alias a='assemble_and_disassemble experiments.asm'
-alias c='build_and_run codegenerator.cpp'
 
-alias gs='git status .'
+alias gs='git status -s .'
 alias gd='git diff .'
+
+alias gd='git diff .'
+alias m='make -C build -j8 -s'
+alias t='make -C build -j8 -s test'
+alias i='./build/interpreter-test'
+alias ast='./build/assembler-test'
+alias e='./build/exec-test'
+alias cg='./build/codegenerator-test'
+alias c='./build/compiler-test'
