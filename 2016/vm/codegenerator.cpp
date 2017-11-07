@@ -34,6 +34,8 @@ struct Imm32 {
     };
 };
 
+const uint8_t REX_W = 0x48;
+
 class CodeGenerator {
 public:
     uint8_t* data();
@@ -51,6 +53,9 @@ public:
     void sub(Reg dst, Reg src);
 
 private:
+    void emit(uint8_t b);
+    void emitModRM(uint8_t mod, uint8_t r, uint8_t m);
+
     std::vector<uint8_t> buf_;
 };
 
@@ -63,91 +68,66 @@ size_t CodeGenerator::size() {
 }
 
 void CodeGenerator::add(Reg dst, Reg src) {
-    uint8_t pre = 0x48;
-    uint8_t op = 0x01;
-    uint8_t mod = DIRECT;
-    uint8_t modrm = mod << 6 | src << 3 | dst;
-
-    buf_.push_back(pre);
-    buf_.push_back(op);
-    buf_.push_back(modrm);
+    emit(REX_W);
+    emit(0x01);
+    emitModRM(DIRECT, src, dst);
 }
 
 void CodeGenerator::cqo() {
-    uint8_t pre = 0x48;
-    uint8_t op = 0x99;
-
-    buf_.push_back(pre);
-    buf_.push_back(op);
+    emit(REX_W);
+    emit(0x99);
 }
 
 void CodeGenerator::sub(Reg dst, Reg src) {
-    uint8_t pre = 0x48;
-    uint8_t op = 0x29;
-    uint8_t mod = DIRECT;
-    uint8_t modrm = mod << 6 | src << 3 | dst;
-
-    buf_.push_back(pre);
-    buf_.push_back(pre);
-    buf_.push_back(op);
-    buf_.push_back(modrm);
+    emit(REX_W);
+    emit(0x29);
+    emitModRM(DIRECT, src, dst);
 }
 
 void CodeGenerator::imul(Reg src) {
-    uint8_t pre = 0x48;
-    uint8_t op = 0xf7;
-    uint8_t mod = DIRECT;
-    uint8_t rm = 5;
-    uint8_t modrm = mod << 6 | rm << 3 | src;
-
-    buf_.push_back(pre);
-    buf_.push_back(op);
-    buf_.push_back(modrm);
+    emit(REX_W);
+    emit(0xf7);
+    emitModRM(DIRECT, 5, src);
 }
 
 void CodeGenerator::idiv(Reg src) {
-    uint8_t pre = 0x48;
-    uint8_t op = 0xf7;
-    uint8_t mod = DIRECT;
-    uint8_t rm = 7;
-    uint8_t modrm = mod << 6 | rm << 3 | src;
-
-    buf_.push_back(pre);
-    buf_.push_back(op);
-    buf_.push_back(modrm);
+    emit(REX_W);
+    emit(0xf7);
+    emitModRM(DIRECT, 7, src);
 }
 
 void CodeGenerator::ret() {
-    uint8_t op = 0xc3;
-
-    buf_.push_back(op);
+    emit(0xc3);
 }
 
 void CodeGenerator::mov(Reg dst, Reg src) {
-    uint8_t pre = 0x48;
-    uint8_t op = 0x89;
-    uint8_t mod = DIRECT;
-    uint8_t modrm = mod << 6 | src << 3 | dst;
-
-    buf_.push_back(pre);
-    buf_.push_back(op);
-    buf_.push_back(modrm);
+    emit(REX_W);
+    emit(0x89);
+    emitModRM(DIRECT, src, dst);
 }
 
 void CodeGenerator::push(Reg src) {
-    buf_.push_back(0x50 | src);
+    emit(0x50 | src);
 }
 
 void CodeGenerator::push(Imm32 imm) {
-    buf_.push_back(0x68);
-    buf_.push_back(imm.bytes[0]);
-    buf_.push_back(imm.bytes[1]);
-    buf_.push_back(imm.bytes[2]);
-    buf_.push_back(imm.bytes[3]);
+    emit(0x68);
+    emit(imm.bytes[0]);
+    emit(imm.bytes[1]);
+    emit(imm.bytes[2]);
+    emit(imm.bytes[3]);
 }
 
 void CodeGenerator::pop(Reg dst) {
-    buf_.push_back(0x58 | dst);
+    emit(0x58 | dst);
+}
+
+void CodeGenerator::emit(uint8_t b) {
+    buf_.push_back(b);
+}
+
+void CodeGenerator::emitModRM(uint8_t mod, uint8_t r, uint8_t m) {
+    emit(mod << 6 | r << 3 | m);
 }
 
 int main() {
