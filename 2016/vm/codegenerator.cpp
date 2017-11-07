@@ -26,6 +26,14 @@ enum Mod : uint8_t {
     DIRECT = 3
 };
 
+struct Imm32 {
+    Imm32(uint32_t v) : val(v) {}
+    union {
+        uint32_t val;
+        uint8_t bytes[4];
+    };
+};
+
 class CodeGenerator {
 public:
     uint8_t* data();
@@ -38,6 +46,7 @@ public:
     void mov(Reg dst, Reg src);
     void pop(Reg dst);
     void push(Reg src);
+    void push(Imm32 imm);
     void ret();
     void sub(Reg dst, Reg src);
 
@@ -129,6 +138,14 @@ void CodeGenerator::push(Reg src) {
     buf_.push_back(0x50 | src);
 }
 
+void CodeGenerator::push(Imm32 imm) {
+    buf_.push_back(0x68);
+    buf_.push_back(imm.bytes[0]);
+    buf_.push_back(imm.bytes[1]);
+    buf_.push_back(imm.bytes[2]);
+    buf_.push_back(imm.bytes[3]);
+}
+
 void CodeGenerator::pop(Reg dst) {
     buf_.push_back(0x58 | dst);
 }
@@ -137,11 +154,22 @@ int main() {
 
     CodeGenerator masm;
 
+#if 0
     masm.mov(RAX, RSI);
     masm.push(RAX);
     masm.pop(RAX);
     masm.cqo();
     masm.idiv(RDI);
+    masm.ret();
+
+    masm.push(RDI);
+    masm.push(RSI);
+#endif
+    masm.push(Imm32(11));
+    masm.push(Imm32(22));
+    masm.pop(RAX);
+    masm.pop(RBX);
+    masm.add(RAX, RBX);
     masm.ret();
 
     // rwx protection per page boundary, hence can't use malloc allocated memory
@@ -155,7 +183,7 @@ int main() {
 
     int (*func)(int, int) = (int (*)(int, int))mem;
 
-    int sum = func(2, 16);
+    int sum = func(40, 2);
     printf("sum=%d\n", sum);
     
     return 0;
