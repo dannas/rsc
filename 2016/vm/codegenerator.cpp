@@ -4,8 +4,6 @@
 #include <cstdio>
 #include <vector>
 
-using namespace std;
-
 // Encoding x86 instructions
 // http://www.c-jump.com/CIS77/CPU/x86/lecture.html
 // http://wiki.osdev.org/X86-64_Instruction_Encoding
@@ -44,7 +42,7 @@ public:
     void sub(Reg dst, Reg src);
 
 private:
-    vector<uint8_t> buf_;
+    std::vector<uint8_t> buf_;
 };
 
 uint8_t* CodeGenerator::data() {
