@@ -35,11 +35,10 @@ vector<uint8_t> compile(const vector<int32_t>& code) {
             masm.sub(RAX, RBX);
             masm.push(RAX);
         CASE OP_IMULT:
-            // ### pop rax
-            // ### pop rbx
-            // ### imul rbx
-            // ### push rax
-            assert(false && "unhandled opcode");
+            masm.pop(RBX);
+            masm.pop(RAX);
+            masm.imul(RBX);
+            masm.push(RAX);
         CASE OP_IDIV:
             // ### pop rax
             // ### pop rbx

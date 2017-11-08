@@ -45,6 +45,17 @@ TEST(Compiler, SubtractTwoConstants) {
     EXEC_AND_COMPARE(2, buf);
 }
 
+TEST(Compiler, MultiplyTwoConstants) {
+    char buf[] = R"(
+        iconst 5
+        iconst 3
+        imult
+        ret
+        halt
+    )";
+    EXEC_AND_COMPARE(15, buf);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
