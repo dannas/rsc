@@ -44,6 +44,8 @@ public:
     void cqo();
     void idiv(Reg src);
     void imul(Reg src);
+    void int3();
+    void jmp(Imm32 imm);
     void mov(Reg dst, Reg src);
     void pop(Reg dst);
     void push(Reg src);
@@ -91,6 +93,18 @@ inline void CodeGenerator::imul(Reg src) {
     emit(REX_W);
     emit(0xf7);
     emitModRM(DIRECT, 5, src);
+}
+
+inline void CodeGenerator::int3() {
+    emit(0xcc);
+}
+
+inline void CodeGenerator::jmp(Imm32 imm) {
+    emit(0xe9);
+    emit(imm.bytes[0]);
+    emit(imm.bytes[1]);
+    emit(imm.bytes[2]);
+    emit(imm.bytes[3]);
 }
 
 inline void CodeGenerator::idiv(Reg src) {

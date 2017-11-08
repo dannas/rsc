@@ -68,6 +68,23 @@ TEST(CodeGenerator, RemainderOfTwoConstants) {
     EXEC_AND_COMPARE(2, code);
 }
 
+TEST(CodeGenerator, JumpAheadTwoInstructions) {
+    CodeGenerator masm;
+
+    masm.push(Imm32(1));
+    masm.jmp(Imm32(2));
+    masm.pop(RAX);
+    masm.ret();
+    masm.pop(RAX);
+    masm.push(Imm32(2));
+    masm.pop(RAX);
+    masm.ret();
+
+    auto code = masm.buf();
+
+    EXEC_AND_COMPARE(2, code);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
