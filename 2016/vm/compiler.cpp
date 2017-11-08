@@ -44,7 +44,11 @@ vector<uint8_t> compile(const vector<int32_t>& code) {
             masm.idiv(RBX);
             masm.push(RAX);
         CASE OP_IMOD:
-            assert(false && "unhandled opcode");
+            masm.pop(RBX);
+            masm.pop(RAX);
+            masm.cqo();
+            masm.idiv(RBX);
+            masm.push(RDX);
         CASE OP_ICONST:
             x = code[ip++];
             masm.push(Imm32(x));
