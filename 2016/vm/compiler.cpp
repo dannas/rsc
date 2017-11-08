@@ -30,10 +30,10 @@ vector<uint8_t> compile(const vector<int32_t>& code) {
             masm.add(RAX, RBX);
             masm.push(RAX);
         CASE OP_ISUB:
-            // ### pop rax
-            // ### pop rbx
-            // ### sub rax, rbx
-            // ### push rax
+            masm.pop(RBX);
+            masm.pop(RAX);
+            masm.sub(RAX, RBX);
+            masm.push(RAX);
         CASE OP_IMULT:
             // ### pop rax
             // ### pop rbx
