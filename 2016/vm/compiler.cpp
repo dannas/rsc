@@ -10,6 +10,9 @@ using namespace std;
 
 vector<uint8_t> compile(const vector<int32_t>& code) {
     CodeGenerator masm;
+    // TODO(dannas): Add prologue for storing callee saved regs.
+    // TODO(dannas): Add epilogue for restoring callee saved regs.
+    // TODO(dannas): Convert rdi, rsi, rdx, rcx, r8, r9, xmm0-xmm7 to stack variables.
 
     size_t ip = 0;
 
@@ -73,6 +76,7 @@ vector<uint8_t> compile(const vector<int32_t>& code) {
         CASE OP_CALL:
             assert(false && "unhandled opcode");
         CASE OP_RET:
+            // TODO(dannas): Restore stack before exiting.
             masm.pop(RAX);
             masm.ret();
         CASE OP_HALT:
