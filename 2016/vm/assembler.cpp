@@ -14,7 +14,6 @@ using namespace std;
 #define FOR_EACH_TOKEN(macro) \
     macro(LABEL)              \
     macro(FUNCDEF)            \
-    macro(GLOBALS)            \
     macro(COMMA)              \
     macro(EQUALSIGN)          \
     macro(NEWLINE)            \
@@ -122,8 +121,6 @@ private:
         } while (isalpha(c_));
         if (text == ".def")
             return {FUNCDEF, text};
-        else if (text == ".globals")
-            return {GLOBALS, text};
         else
             return {LABEL, text};
 
@@ -221,7 +218,6 @@ private:
 //
 // See vm.h for a description of the grammar.
 //
-// TODO(dannas): Parse .globals.
 class Parser {
 public:
     Parser(Lexer& lexer_) : lexer_(lexer_), ip_(0) {
@@ -276,16 +272,6 @@ private:
         symtab_.defineLabel(tok_.text, ip_, bytecode_);
         consume();
         match(NEWLINE);
-    }
-
-    void globals() {
-        match(GLOBALS);
-        while (tok_.type == ID)
-            global();
-    }
-    void global() {
-        int x = atoi(tok_.text.c_str());
-        globals_.push_back(x);
     }
 
     void funcdef() {
@@ -360,7 +346,6 @@ private:
     Lexer& lexer_;
     Token tok_;                  // lookahead token
     vector<int32_t> bytecode_;   // the instruction output
-    vector<int32_t> globals_;    // the globals output
     int ip_;                     // current position in |bytecode|
     SymbolTable symtab_;         // map labels and func defs to addresses
 };

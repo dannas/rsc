@@ -6,9 +6,8 @@ using namespace std;
 
 #define INTERPRET_AND_COMPARE(code, expected) \
     do { \
-        int32_t globals[] = {}; \
         stringstream ss; \
-        interpret(code, globals, ss); \
+        interpret(code, ss); \
         ss.seekg(0); \
         string actual = ss.str(); \
         ASSERT_EQ(expected, actual); \

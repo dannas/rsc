@@ -82,7 +82,7 @@ ostream& operator<< (ostream& os, const Stack& stack) {
     return os;
 }
 
-void interpret(const vector<int32_t>& code, int32_t* globals, ostream& out) {
+void interpret(const vector<int32_t>& code, ostream& out) {
 
     Stack stack;
 
@@ -137,14 +137,6 @@ void interpret(const vector<int32_t>& code, int32_t* globals, ostream& out) {
             addr = code[ip++];
             if (stack.top())
                 ip = addr;
-        CASE OP_GLOAD:
-            x = code[ip++];
-            y = globals[x];
-            stack.push(y);
-        CASE OP_GSTORE:
-            x = code[ip++];
-            y = stack.pop();
-            globals[x] = y;
         CASE OP_LOAD:
             x = code[ip++];
             stack.load(x);

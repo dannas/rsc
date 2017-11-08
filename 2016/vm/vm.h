@@ -6,8 +6,7 @@
 
 // GRAMMAR ===
 //
-// program              => globaldeclaration functiondeclaration*
-// globalsdeclaration   => NEWLINE* '.globals'
+// program              => functiondeclaration*
 // functiondeclaration  => NEWLINE* '.def' ID 'args' '=' OPERAND ',' 'locals' '=' OPERAND NEWLINE instr*
 // labeldeclaration     => NEWLINE* LABEL
 // instr                => ID NEWLINE
@@ -21,10 +20,6 @@
 //
 //  SP points to the top of the stack (the stack pointer)
 //  FP marks the beginning of the active stack frame (the frame pointer)
-//
-// TODO(dannas): What about a constant pool?
-// TODO(dannas): What about memory?
-//
 //
 // CALLING CONVENTION ===
 //
@@ -43,12 +38,12 @@
 //
 std::vector<int32_t> assemble(std::istream& in);
 
-// Interpret the bytecode in |code| using global variables stored in |globals|.
+// Interpret the bytecode in |code|.
 //
 // |code| must be well formed bytecode - as produced by the assembler step.
 // The executing bytecode can interact with the outside by printing stdout
 // to |out|.
-void interpret(const std::vector<int32_t> &code, int32_t* globals, std::ostream& out);
+void interpret(const std::vector<int32_t> &code, std::ostream& out);
 
 // Disassemble the bytecode pointed to by |in|.
 //
@@ -103,18 +98,6 @@ std::vector<uint8_t> compile(const std::vector<int32_t>& code);
      * Stack: =>
      */ \
     macro(OP_BRT,     "brt",    1)  \
-    \
-    /* Pushes the global value 'gval' onto the stack.
-     * Operands: int32_t index into globals memory space.
-     * Stack: => gval
-     */ \
-    macro(OP_GLOAD,   "gload",  1)  \
-    \
-    /* Pops the top value from the stack and stores it at the supplied index.
-     * Operands: int32_t index into globals memory space.
-     * Stack: val =>
-     */ \
-    macro(OP_GSTORE,  "gstore", 1)  \
     \
     /* Pushes the parameter 'param' onto the stack.
      * Operands: int32_t index into parameters further down the stack.

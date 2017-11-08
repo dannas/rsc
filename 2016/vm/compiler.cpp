@@ -8,8 +8,6 @@
 
 using namespace std;
 
-const int kMaxStackSize = 64;	// TODO(dannas): Max stack size is hardcoded
-
 vector<uint8_t> compile(const vector<int32_t>& code) {
     CodeGenerator masm;
 
@@ -57,10 +55,6 @@ vector<uint8_t> compile(const vector<int32_t>& code) {
         CASE OP_BR:
             assert(false && "unhandled opcode");
         CASE OP_BRT:
-            assert(false && "unhandled opcode");
-        CASE OP_GLOAD:
-            assert(false && "unhandled opcode");
-        CASE OP_GSTORE:
             assert(false && "unhandled opcode");
         CASE OP_LOAD:
             // ### mov rax, [rbp+index]
