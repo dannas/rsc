@@ -28,7 +28,6 @@ TEST(Compiler, AddTwoConstants) {
         iconst 3
         iconst 5
         iadd
-        ret
         halt
     )";
     EXEC_AND_COMPARE(8, buf);
@@ -39,7 +38,6 @@ TEST(Compiler, SubtractTwoConstants) {
         iconst 5
         iconst 3
         isub
-        ret
         halt
     )";
     EXEC_AND_COMPARE(2, buf);
@@ -50,7 +48,6 @@ TEST(Compiler, MultiplyTwoConstants) {
         iconst 5
         iconst 3
         imult
-        ret
         halt
     )";
     EXEC_AND_COMPARE(15, buf);
@@ -61,7 +58,6 @@ TEST(Compiler, DivideTwoConstants) {
         iconst 24
         iconst 4
         idiv
-        ret
         halt
     )";
     EXEC_AND_COMPARE(6, buf);
@@ -72,7 +68,6 @@ TEST(Compiler, RemainderOfTwoConstants) {
         iconst 11
         iconst 7
         imod
-        ret
         halt
     )";
     EXEC_AND_COMPARE(4, buf);

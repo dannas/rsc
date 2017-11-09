@@ -8,11 +8,28 @@
 
 using namespace std;
 
+static void emitPrologue(CodeGenerator& masm) {
+    // The callee-saved registers on x64 are
+    // r12-r15, rbx, rsp, rbp 
+    // We currently don't use registers beyond the first 8, so
+    // ignore r12-r15.
+    // We rely on the code being run with -fno-omit-framepointer
+    // so rbp will be used as frame pointer inside and outside the jit.
+    // TODO(dannas): Push parameters from rdi, rsi, rdx, rcx, r8, r9 to stack,
+    // to allow passing in parameters to the JITted code.
+    masm.push(RBP);
+    masm.mov(RSP, RBP);
+    masm.push(RBX);
+}
+
+static void emitEpilogue(CodeGenerator& masm) {
+    masm.pop(RBX);
+    masm.pop(RBP);
+    masm.ret();
+}
+
 vector<uint8_t> compile(const vector<int32_t>& code) {
     CodeGenerator masm;
-    // TODO(dannas): Add prologue for storing callee saved regs.
-    // TODO(dannas): Add epilogue for restoring callee saved regs.
-    // TODO(dannas): Convert rdi, rsi, rdx, rcx, r8, r9, xmm0-xmm7 to stack variables.
 
     // TODO(dannas): Record destination offsets for the labels.
     // BR instructions has an absolute address operand.
@@ -24,6 +41,8 @@ vector<uint8_t> compile(const vector<int32_t>& code) {
     // When we reach one of the addresses, record the current asm pos
     //
     // That works for back branches, What about forward branches?
+
+    emitPrologue(masm);
 
     size_t ip = 0;
 
@@ -90,20 +109,19 @@ vector<uint8_t> compile(const vector<int32_t>& code) {
         CASE OP_CALL:
             assert(false && "unhandled opcode");
         CASE OP_RET:
-            // TODO(dannas): Restore stack before exiting.
             masm.pop(RAX);
             masm.ret();
         CASE OP_HALT:
+            masm.pop(RAX);
             // TODO(dannas): How should ret and halt interact?
-            // ### pop rax
-            // ### ret
-            ;
-            //assert(false && "unhandled opcode");
             break;
         default:
             assert(false && "unknown opcode");
         }
     }
+
+    emitEpilogue(masm);
+
     return masm.buf();
 }
 
