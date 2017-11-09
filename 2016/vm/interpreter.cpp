@@ -130,6 +130,8 @@ void interpret(const vector<int32_t>& code, ostream& out) {
             x = stack.pop();
             y = stack.pop();
             stack.push(y == x);
+        CASE OP_LABEL:
+            ;
         CASE OP_BR:
             addr = code[ip++];
             ip = addr;

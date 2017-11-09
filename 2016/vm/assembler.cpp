@@ -270,6 +270,7 @@ private:
     }
     void label() {
         symtab_.defineLabel(tok_.text, ip_, bytecode_);
+        pushByteCode(OP_LABEL);
         consume();
         match(NEWLINE);
     }

@@ -14,11 +14,22 @@ vector<uint8_t> compile(const vector<int32_t>& code) {
     // TODO(dannas): Add epilogue for restoring callee saved regs.
     // TODO(dannas): Convert rdi, rsi, rdx, rcx, r8, r9, xmm0-xmm7 to stack variables.
 
+    // TODO(dannas): Record destination offsets for the labels.
+    // BR instructions has an absolute address operand.
+    // We want relative offsets for the generated asm code.
+    //
+    // Scan through the bytecode
+    // Record target addresses for BR instructions
+    // Do the regular loop
+    // When we reach one of the addresses, record the current asm pos
+    //
+    // That works for back branches, What about forward branches?
+
     size_t ip = 0;
 
     while (ip < code.size()) {
         OpCode op = static_cast<OpCode>(code[ip]);
-        int32_t x;
+        int32_t x, addr;
 
         ip++; // Move to next opcode or operand
 
@@ -55,12 +66,15 @@ vector<uint8_t> compile(const vector<int32_t>& code) {
         CASE OP_ICONST:
             x = code[ip++];
             masm.push(Imm32(x));
+        CASE OP_LABEL:
+            assert(false && "unhandled opcode");
         CASE OP_ILT:
             assert(false && "unhandled opcode");
         CASE OP_IEQ:
             assert(false && "unhandled opcode");
         CASE OP_BR:
-            assert(false && "unhandled opcode");
+            addr = code[ip++];
+            masm.jmp(Imm32(addr));
         CASE OP_BRT:
             assert(false && "unhandled opcode");
         CASE OP_LOAD:

@@ -88,6 +88,11 @@ std::vector<uint8_t> compile(const std::vector<int32_t>& code);
     macro(OP_ILT,     "ilt",    0)  \
     macro(OP_IEQ,     "ieq",    0)  \
     \
+    /* NOP used while emitting code.
+     *
+     */ \
+    macro(OP_LABEL,   "label",  0) \
+    \
     /* Jumps to an absolute address unconditionally.
      * Stack: =>
      */ \

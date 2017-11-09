@@ -47,6 +47,7 @@ TEST(Assembler, jump) {
     vector<int32_t> expected = {
         OP_ICONST, 1,
         OP_BRT, 4,
+        OP_LABEL,
         OP_HALT
     };
 
