@@ -117,15 +117,15 @@ vector<uint8_t> compile(const vector<int32_t>& code) {
             masm.pop(RAX);
             masm.ret();
         CASE OP_HALT:
+            // TODO(dannas): Consider adding a jmp here for another location
+            // where emitEpilogue is placed.
             masm.pop(RAX);
-            // TODO(dannas): How should ret and halt interact?
+            emitEpilogue(masm);
             break;
         default:
             assert(false && "unknown opcode");
         }
     }
-
-    emitEpilogue(masm);
 
     return masm.buf();
 }
