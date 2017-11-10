@@ -8,6 +8,10 @@
 
 using namespace std;
 
+// Discussion of prologues/epilogues for JITs
+// ### https://nickdesaulniers.github.io/blog/2015/05/25/interpreter-compiler-jit/
+// ### https://nickdesaulniers.github.io/blog/2014/04/18/lets-write-some-x86-64/
+
 static void emitPrologue(CodeGenerator& masm) {
     // The callee-saved registers on x64 are
     // r12-r15, rbx, rsp, rbp 
