@@ -22,7 +22,8 @@ static void emitPrologue(CodeGenerator& masm) {
     // TODO(dannas): Push parameters from rdi, rsi, rdx, rcx, r8, r9 to stack,
     // to allow passing in parameters to the JITted code.
     masm.push(RBP);
-    masm.mov(RSP, RBP);
+    // TODO(dannas): Shouldn't this be the other way around?
+    masm.mov(RBP, RSP);
     masm.push(RBX);
 }
 
