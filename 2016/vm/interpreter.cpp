@@ -82,7 +82,7 @@ ostream& operator<< (ostream& os, const Stack& stack) {
     return os;
 }
 
-void interpret(const vector<int32_t>& code, ostream& out) {
+void interpret(const Bytecode &code, ostream& out) {
 
     Stack stack;
 

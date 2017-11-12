@@ -33,7 +33,7 @@ static void emitEpilogue(CodeGenerator& masm) {
     masm.ret();
 }
 
-vector<uint8_t> compile(const vector<int32_t>& code) {
+MachineCode compile(const Bytecode &code) {
     CodeGenerator masm;
 
     // TODO(dannas): Record destination offsets for the labels.

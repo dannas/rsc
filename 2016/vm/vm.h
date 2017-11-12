@@ -34,6 +34,9 @@
 //         nargs
 //
 
+using Bytecode = std::vector<int32_t>;
+using MachineCode = std::vector<uint32_t>;
+
 // Assemble the assembly code in the stream provided by |in| into bytecode.
 //
 std::vector<int32_t> assemble(std::istream& in);
@@ -43,7 +46,7 @@ std::vector<int32_t> assemble(std::istream& in);
 // |code| must be well formed bytecode - as produced by the assembler step.
 // The executing bytecode can interact with the outside by printing stdout
 // to |out|.
-void interpret(const std::vector<int32_t> &code, std::ostream& out);
+void interpret(const Bytecode& code, std::ostream& out);
 
 // Disassemble the bytecode pointed to by |in|.
 //
@@ -53,7 +56,7 @@ std::string disassemble(std::istream& in);
 // Compile the bytecode in |code|.
 //
 // |code| must be well formed bytecode - as produced by the assembler step.
-std::vector<uint8_t> compile(const std::vector<int32_t>& code);
+MachineCode compile(const Bytecode& code);
 
 // PRIVATE INTERFACE
 
