@@ -35,7 +35,7 @@
 //
 
 using Bytecode = std::vector<int32_t>;
-using MachineCode = std::vector<uint32_t>;
+using MachineCode = std::vector<uint8_t>;
 
 // Assemble the assembly code in the stream provided by |in| into bytecode.
 //

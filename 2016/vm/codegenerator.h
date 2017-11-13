@@ -32,6 +32,53 @@ struct Imm32 {
     };
 };
 
+class Label {
+public:
+    Label(uint32_t offset) : bound_(true), offset_(offset) {
+
+    }
+    Label() : bound_(false), offset_(INVALID_OFFSET) {
+    }
+    void use(uint32_t imm) {
+        incomingEdges_.push_back(imm);
+    }
+
+    std::vector<uint32_t> incoming() {
+        return incomingEdges_;
+    }
+
+    int32_t offset() {
+        return offset_;
+    }
+
+    bool bound() {
+        return bound_;
+    }
+
+    void bind(uint32_t offset) {
+        offset_ = offset;
+    }
+
+    bool used() {
+        return !bound() && offset_ < INVALID_OFFSET;
+    }
+
+private:
+    bool bound_;
+    int32_t offset_;
+
+    // TODO(dannas): Consider using the jump operands for encoding a jump list of
+    // not yet resolved jumps as is done in the SpiderMonkey MacroAssemblers.
+    std::vector<uint32_t> incomingEdges_;
+
+    static const int32_t INVALID_OFFSET = INT32_MAX;
+    friend bool operator==(const Label& lhs, const Label& rhs);
+};
+
+inline bool operator==(const Label& lhs, const Label& rhs) {
+    return lhs.offset_ == rhs.offset_;
+}
+
 const uint8_t REX_W = 0x48;
 
 class CodeGenerator {
@@ -40,6 +87,17 @@ public:
     uint8_t* data();
     size_t size();
 
+    // TODO(dannas): Add a method for fetching Labels.
+    // For a bytecode with structured control flow there would
+    // be no need for keeping track of the labels since each block
+    // (iteration or selection) would have a predefined limited scope.
+
+    // MacroAssembler methods
+    void jump(Label& label);
+    void bind(Label& label);
+    void patch(size_t src, uint32_t dst);
+
+    // Codegenerator methods
     void add(Reg dst, Reg src);
     void cqo();
     void idiv(Reg src);
@@ -58,10 +116,12 @@ private:
     void emitModRM(uint8_t mod, uint8_t r, uint8_t m);
 
     std::vector<uint8_t> buf_;
+    std::vector<Label> labels_;
 };
 
 inline std::vector<uint8_t> CodeGenerator::buf() {
     return buf_;
+
 }
 
 inline uint8_t* CodeGenerator::data() {
@@ -71,6 +131,40 @@ inline uint8_t* CodeGenerator::data() {
 inline size_t CodeGenerator::size() {
     return buf_.size();
 }
+
+inline void CodeGenerator::jump(Label& label) {
+    // If the label is not bound, then record the jmp src for later patching.
+    if (!label.bound()) {
+        label.use(size());
+        jmp(Imm32(0));
+    } else {
+        jmp(label.offset());
+    }
+}
+
+inline void CodeGenerator::bind(Label& label) {
+    // TODO(dannas): There must always be one more instruction after a label. How
+    // enforce that?
+    label.bind(size());
+
+    uint32_t dst = label.offset();
+
+    if (label.used()) {
+        // Traverse the list of incoming jmp sources and patch their locations.
+        for (uint32_t src : label.incoming()) {
+            // TODO(dannas): Ensure that |src| points to jmp operand.
+            patch(src, dst);
+        }
+    }
+}
+
+inline void CodeGenerator::patch(size_t src, uint32_t dst) {
+    buf_[src] =   (dst      ) & 0xff;
+    buf_[src+1] = (dst >> 8 ) & 0xff;
+    buf_[src+2] = (dst >> 16) & 0xff;
+    buf_[src+3] = (dst >> 24) & 0xff;
+}
+
 
 inline void CodeGenerator::add(Reg dst, Reg src) {
     emit(REX_W);
