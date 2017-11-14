@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <cassert>
 
 // Encoding x86 instructions
 // http://www.c-jump.com/CIS77/CPU/x86/lecture.html
@@ -61,6 +62,9 @@ public:
 
     bool used() {
         return !bound() && offset_ < INVALID_OFFSET;
+    }
+    ~Label() {
+        assert(!used());
     }
 
 private:
