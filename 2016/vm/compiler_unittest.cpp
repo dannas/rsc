@@ -73,6 +73,19 @@ TEST(Compiler, RemainderOfTwoConstants) {
     EXEC_AND_COMPARE(4, buf);
 }
 
+TEST(Compiler, ForwardBranch) {
+    char buf[] = R"(
+        iconst 1
+        br .end
+        halt
+    .end
+        iconst 1
+        iadd
+        halt
+    )";
+    EXEC_AND_COMPARE(2, buf);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

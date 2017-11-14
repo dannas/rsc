@@ -2,7 +2,7 @@
 #include "codegenerator.h"
 
 #include <cassert>
-#include <vector>
+#include <map>
 
 #define CASE break;case
 
@@ -35,7 +35,7 @@ static void emitEpilogue(CodeGenerator& masm) {
 
 MachineCode compile(const Bytecode &code) {
     CodeGenerator masm;
-    vector<Label> labels;
+    map<int32_t, Label> labels;
 
     emitPrologue(masm);
 
