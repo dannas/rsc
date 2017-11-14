@@ -35,13 +35,10 @@ struct Imm32 {
 
 class Label {
 public:
-    Label(uint32_t offset) : bound_(true), offset_(offset) {
-
-    }
     Label() : bound_(false), offset_(INVALID_OFFSET) {
     }
-    void use(uint32_t imm) {
-        incomingEdges_.push_back(imm);
+    void use(uint32_t src) {
+        incomingEdges_.push_back(src);
     }
 
     std::vector<uint32_t> incoming() {
@@ -58,6 +55,7 @@ public:
 
     void bind(uint32_t offset) {
         offset_ = offset;
+        bound_ = true;
     }
 
     bool used() {
@@ -142,7 +140,10 @@ inline void CodeGenerator::jump(Label& label) {
         label.use(size());
         jmp(Imm32(0));
     } else {
-        jmp(label.offset());
+        uint32_t dst = label.offset();
+        uint32_t src = size();
+        uint32_t offset = dst - src - 5;
+        jmp(offset);
     }
 }
 
@@ -153,12 +154,11 @@ inline void CodeGenerator::bind(Label& label) {
 
     uint32_t dst = label.offset();
 
-    if (label.used()) {
-        // Traverse the list of incoming jmp sources and patch their locations.
-        for (uint32_t src : label.incoming()) {
-            // TODO(dannas): Ensure that |src| points to jmp operand.
-            patch(src, dst);
-        }
+    // Traverse the list of incoming jmp sources and patch their locations.
+    for (uint32_t src : label.incoming()) {
+        // TODO(dannas): Ensure that |src| points to jmp operand.
+        uint32_t offset = dst - src -  5;
+        patch(src+1, offset);
     }
 }
 

@@ -35,17 +35,7 @@ static void emitEpilogue(CodeGenerator& masm) {
 
 MachineCode compile(const Bytecode &code) {
     CodeGenerator masm;
-
-    // TODO(dannas): Record destination offsets for the labels.
-    // BR instructions has an absolute address operand.
-    // We want relative offsets for the generated asm code.
-    //
-    // Scan through the bytecode
-    // Record target addresses for BR instructions
-    // Do the regular loop
-    // When we reach one of the addresses, record the current asm pos
-    //
-    // That works for back branches, What about forward branches?
+    vector<Label> labels;
 
     emitPrologue(masm);
 
@@ -91,14 +81,14 @@ MachineCode compile(const Bytecode &code) {
             x = code[ip++];
             masm.push(Imm32(x));
         CASE OP_LABEL:
-            assert(false && "unhandled opcode");
+            masm.bind(labels[ip]);
         CASE OP_ILT:
             assert(false && "unhandled opcode");
         CASE OP_IEQ:
             assert(false && "unhandled opcode");
         CASE OP_BR:
             addr = code[ip++];
-            masm.jmp(Imm32(addr));
+            masm.jump(labels[addr]);
         CASE OP_BRT:
             assert(false && "unhandled opcode");
         CASE OP_LOAD:

@@ -68,7 +68,7 @@ TEST(CodeGenerator, RemainderOfTwoConstants) {
     EXEC_AND_COMPARE(2, code);
 }
 
-TEST(CodeGenerator, JumpAheadTwoInstructions) {
+TEST(CodeGenerator, JmpForward) {
     CodeGenerator masm;
 
     masm.push(Imm32(1));
@@ -78,6 +78,59 @@ TEST(CodeGenerator, JumpAheadTwoInstructions) {
     masm.pop(RAX);
     masm.push(Imm32(2));
     masm.pop(RAX);
+    masm.ret();
+
+    auto code = masm.buf();
+
+    EXEC_AND_COMPARE(2, code);
+}
+
+TEST(CodeGenerator, JumpForward) {
+    CodeGenerator masm;
+
+    masm.push(Imm32(1));
+    Label label;
+    masm.jump(label);
+
+    masm.pop(RAX);
+    masm.ret();
+
+    masm.bind(label);
+    masm.pop(RAX);
+    masm.push(Imm32(2));
+    masm.pop(RAX);
+    masm.ret();
+
+    auto code = masm.buf();
+
+    EXEC_AND_COMPARE(2, code);
+}
+
+TEST(CodeGenerator, JumpForwardAndBackward) {
+    CodeGenerator masm;
+
+    masm.push(Imm32(1));
+    Label forward;
+    masm.jump(forward);
+
+    Label back;
+    masm.bind(back);
+    masm.pop(RAX);
+    masm.ret();
+
+    masm.bind(forward);
+    masm.push(Imm32(1));
+    masm.pop(RAX);
+    masm.pop(RBX);
+    masm.add(RAX, RBX);
+    masm.push(RAX);
+    masm.jump(back);
+
+    masm.push(Imm32(1));
+    masm.pop(RAX);
+    masm.pop(RBX);
+    masm.add(RAX, RBX);
+    masm.push(RAX);
     masm.ret();
 
     auto code = masm.buf();
