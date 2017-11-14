@@ -26,9 +26,9 @@ TEST(CodeGenerator, AddTwoConstants) {
 
     masm.push(Imm32(3));
     masm.push(Imm32(5));
-    masm.pop(RAX);
-    masm.pop(RBX);
-    masm.add(RAX, RBX);
+    masm.pop(rax);
+    masm.pop(rbx);
+    masm.add(rax, rbx);
     masm.ret();
 
     auto code = masm.buf();
@@ -41,9 +41,9 @@ TEST(CodeGenerator, SubTwoConstants) {
 
     masm.push(Imm32(17));
     masm.push(Imm32(11));
-    masm.pop(RBX);
-    masm.pop(RAX);
-    masm.sub(RAX, RBX);
+    masm.pop(rbx);
+    masm.pop(rax);
+    masm.sub(rax, rbx);
     masm.ret();
 
     auto code = masm.buf();
@@ -56,11 +56,11 @@ TEST(CodeGenerator, RemainderOfTwoConstants) {
 
     masm.push(Imm32(5));
     masm.push(Imm32(3));
-    masm.pop(RBX);
-    masm.pop(RAX);
+    masm.pop(rbx);
+    masm.pop(rax);
     masm.cqo();
-    masm.idiv(RBX);
-    masm.mov(RAX, RDX);
+    masm.idiv(rbx);
+    masm.mov(rax, rdx);
     masm.ret();
 
     auto code = masm.buf();
@@ -73,11 +73,11 @@ TEST(CodeGenerator, JmpForward) {
 
     masm.push(Imm32(1));
     masm.jmp(Imm32(2));
-    masm.pop(RAX);
+    masm.pop(rax);
     masm.ret();
-    masm.pop(RAX);
+    masm.pop(rax);
     masm.push(Imm32(2));
-    masm.pop(RAX);
+    masm.pop(rax);
     masm.ret();
 
     auto code = masm.buf();
@@ -92,13 +92,13 @@ TEST(CodeGenerator, JumpForward) {
     Label label;
     masm.jump(label);
 
-    masm.pop(RAX);
+    masm.pop(rax);
     masm.ret();
 
     masm.bind(label);
-    masm.pop(RAX);
+    masm.pop(rax);
     masm.push(Imm32(2));
-    masm.pop(RAX);
+    masm.pop(rax);
     masm.ret();
 
     auto code = masm.buf();
@@ -115,22 +115,22 @@ TEST(CodeGenerator, JumpForwardAndBackward) {
 
     Label back;
     masm.bind(back);
-    masm.pop(RAX);
+    masm.pop(rax);
     masm.ret();
 
     masm.bind(forward);
     masm.push(Imm32(1));
-    masm.pop(RAX);
-    masm.pop(RBX);
-    masm.add(RAX, RBX);
-    masm.push(RAX);
+    masm.pop(rax);
+    masm.pop(rbx);
+    masm.add(rax, rbx);
+    masm.push(rax);
     masm.jump(back);
 
     masm.push(Imm32(1));
-    masm.pop(RAX);
-    masm.pop(RBX);
-    masm.add(RAX, RBX);
-    masm.push(RAX);
+    masm.pop(rax);
+    masm.pop(rbx);
+    masm.add(rax, rbx);
+    masm.push(rax);
     masm.ret();
 
     auto code = masm.buf();

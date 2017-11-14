@@ -22,15 +22,15 @@ static void emitPrologue(CodeGenerator& masm) {
     // so rbp will be used as frame pointer inside and outside the jit.
     // TODO(dannas): Push parameters from rdi, rsi, rdx, rcx, r8, r9 to stack,
     // to allow passing in parameters to the JITted code.
-    masm.push(RBP);
+    masm.push(rbp);
     // TODO(dannas): Shouldn't this be the other way around?
-    masm.mov(RBP, RSP);
-    masm.push(RBX);
+    masm.mov(rbp, rsp);
+    masm.push(rbx);
 }
 
 static void emitEpilogue(CodeGenerator& masm) {
-    masm.pop(RBX);
-    masm.pop(RBP);
+    masm.pop(rbx);
+    masm.pop(rbp);
     masm.ret();
 }
 
@@ -52,32 +52,32 @@ MachineCode compile(const Bytecode &code) {
         CASE OP_POP:
             UNKNOWN_OPCODE();
         CASE OP_IADD:
-            masm.pop(RAX);
-            masm.pop(RBX);
-            masm.add(RAX, RBX);
-            masm.push(RAX);
+            masm.pop(rax);
+            masm.pop(rbx);
+            masm.add(rax, rbx);
+            masm.push(rax);
         CASE OP_ISUB:
-            masm.pop(RBX);
-            masm.pop(RAX);
-            masm.sub(RAX, RBX);
-            masm.push(RAX);
+            masm.pop(rbx);
+            masm.pop(rax);
+            masm.sub(rax, rbx);
+            masm.push(rax);
         CASE OP_IMULT:
-            masm.pop(RBX);
-            masm.pop(RAX);
-            masm.imul(RBX);
-            masm.push(RAX);
+            masm.pop(rbx);
+            masm.pop(rax);
+            masm.imul(rbx);
+            masm.push(rax);
         CASE OP_IDIV:
-            masm.pop(RBX);
-            masm.pop(RAX);
+            masm.pop(rbx);
+            masm.pop(rax);
             masm.cqo();
-            masm.idiv(RBX);
-            masm.push(RAX);
+            masm.idiv(rbx);
+            masm.push(rax);
         CASE OP_IMOD:
-            masm.pop(RBX);
-            masm.pop(RAX);
+            masm.pop(rbx);
+            masm.pop(rax);
             masm.cqo();
-            masm.idiv(RBX);
-            masm.push(RDX);
+            masm.idiv(rbx);
+            masm.push(rdx);
         CASE OP_ICONST:
             x = code[pos++];
             masm.push(Imm32(x));
@@ -111,12 +111,12 @@ MachineCode compile(const Bytecode &code) {
         CASE OP_CALL:
             UNKNOWN_OPCODE();
         CASE OP_RET:
-            masm.pop(RAX);
+            masm.pop(rax);
             masm.ret();
         CASE OP_HALT:
             // TODO(dannas): Consider adding a jmp here for another location
             // where emitEpilogue is placed.
-            masm.pop(RAX);
+            masm.pop(rax);
             emitEpilogue(masm);
             break;
         default:

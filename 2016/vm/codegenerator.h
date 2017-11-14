@@ -8,14 +8,14 @@
 // http://wiki.osdev.org/X86-64_Instruction_Encoding
 
 enum Reg : uint8_t{
-    RAX = 0,
-    RCX = 1,
-    RDX = 2,
-    RBX = 3,
-    RSP = 4,
-    RBP = 5,
-    RSI = 6,
-    RDI = 7
+    rax = 0,
+    rcx = 1,
+    rdx = 2,
+    rbx = 3,
+    rsp = 4,
+    rbp = 5,
+    rsi = 6,
+    rdi = 7
 };
 
 enum Mod : uint8_t {
