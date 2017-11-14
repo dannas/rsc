@@ -86,6 +86,23 @@ TEST(Compiler, ForwardBranch) {
     EXEC_AND_COMPARE(2, buf);
 }
 
+TEST(Compiler, ForwarAndBackwarddBranch) {
+    char buf[] = R"(
+        iconst 1
+        br .forward
+    .back
+        iconst 1
+        iadd
+        halt
+    .forward
+        iconst 1
+        iadd
+        br .back
+        halt
+    )";
+    EXEC_AND_COMPARE(3, buf);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
