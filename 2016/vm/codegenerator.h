@@ -27,10 +27,7 @@ enum Mod : uint8_t {
 
 struct Imm32 {
     Imm32(uint32_t v) : val(v) {}
-    union {
-        uint32_t val;
-        uint8_t bytes[4];
-    };
+    uint32_t val;
 };
 
 class Label {
@@ -123,6 +120,7 @@ void cmp32Set(Condition cond, Reg lhs, Reg rhs, Reg dst) {
 
 private:
     void emit(uint8_t b);
+    void emit4(uint32_t w);
     void emitModRM(uint8_t mod, uint8_t r, uint8_t m);
 
     std::vector<uint8_t> buf_;
@@ -207,10 +205,7 @@ inline void CodeGenerator::int3() {
 
 inline void CodeGenerator::jmp(Imm32 imm) {
     emit(0xe9);
-    emit(imm.bytes[0]);
-    emit(imm.bytes[1]);
-    emit(imm.bytes[2]);
-    emit(imm.bytes[3]);
+    emit4(imm.val);
 }
 
 inline void CodeGenerator::idiv(Reg src) {
@@ -235,10 +230,7 @@ inline void CodeGenerator::push(Reg src) {
 
 inline void CodeGenerator::push(Imm32 imm) {
     emit(0x68);
-    emit(imm.bytes[0]);
-    emit(imm.bytes[1]);
-    emit(imm.bytes[2]);
-    emit(imm.bytes[3]);
+    emit4(imm.val);
 }
 
 inline void CodeGenerator::pop(Reg dst) {
@@ -247,6 +239,12 @@ inline void CodeGenerator::pop(Reg dst) {
 
 inline void CodeGenerator::emit(uint8_t b) {
     buf_.push_back(b);
+}
+inline void CodeGenerator::emit4(uint32_t w) {
+    emit(w       & 0xff);
+    emit(w >> 8  & 0xff);
+    emit(w >> 16 & 0xff);
+    emit(w >> 24 & 0xff);
 }
 
 inline void CodeGenerator::emitModRM(uint8_t mod, uint8_t r, uint8_t m) {
