@@ -49,4 +49,16 @@ Switching from cstdio to iostream caused a lot of needless churn.
 Wasted a lot of time debugging some example programs. I should have used unit
 tests from the beginning.
 
+Had to abandon a quirky approach to recording labels.
+    Tried to do too much at once.
+    Worked better when I split the work between the codegenerator and compiler.
 
+Calculated the wrong offsets for x86 JMP rel32.
+    Had to innspect the generated asm with gdb to see it.
+    (and calculate the offsets by hand since the linker fills in absolute addresses)
+
+The same miscalculation appeared in the bind()  method.
+    Found by breaking on jump() and bind() and inspecting jmp() calls.
+
+The assembler and compiler disagreed about where to record labels; before or after OP_LABEL
+    Found it by inspecting the labels map with the debugger.
