@@ -71,12 +71,7 @@ private:
     std::vector<uint32_t> incomingEdges_;
 
     static const int32_t INVALID_OFFSET = INT32_MAX;
-    friend bool operator==(const Label& lhs, const Label& rhs);
 };
-
-inline bool operator==(const Label& lhs, const Label& rhs) {
-    return lhs.offset_ == rhs.offset_;
-}
 
 const uint8_t REX_W = 0x48;
 
