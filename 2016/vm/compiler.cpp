@@ -40,13 +40,13 @@ MachineCode compile(const Bytecode &code) {
 
     emitPrologue(masm);
 
-    size_t ip = 0;
+    size_t pos = 0;
 
-    while (ip < code.size()) {
-        OpCode op = static_cast<OpCode>(code[ip]);
+    while (pos < code.size()) {
+        OpCode op = static_cast<OpCode>(code[pos]);
         int32_t x, addr;
 
-        ip++; // Move to next opcode or operand
+        pos++; // Move to next opcode or operand
 
         switch (op) {
         CASE OP_POP:
@@ -79,10 +79,10 @@ MachineCode compile(const Bytecode &code) {
             masm.idiv(RBX);
             masm.push(RDX);
         CASE OP_ICONST:
-            x = code[ip++];
+            x = code[pos++];
             masm.push(Imm32(x));
         CASE OP_LABEL:
-            masm.bind(labels[ip]);
+            masm.bind(labels[pos]);
         CASE OP_ILT:
             // ### cmpSet(rax, rbx, Condition::Less)
             // ### push rax
@@ -92,7 +92,7 @@ MachineCode compile(const Bytecode &code) {
             // ### push rax
             UNKNOWN_OPCODE();
         CASE OP_BR:
-            addr = code[ip++];
+            addr = code[pos++];
             masm.jump(labels[addr]);
         CASE OP_BRT:
             // ### pop rax
