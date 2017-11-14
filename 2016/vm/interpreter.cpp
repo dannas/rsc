@@ -6,6 +6,7 @@
 #include "vm.h"
 
 #define CASE break;case
+#define UNKNOWN_OPCODE() assert(false && "unknown opcode")
 
 using namespace std;
 
@@ -168,7 +169,7 @@ void interpret(const Bytecode &code, ostream& out) {
         CASE OP_HALT:
             return;
         default:
-            assert(false && "unknown opcode");
+            UNKNOWN_OPCODE();
         }
     }
 }

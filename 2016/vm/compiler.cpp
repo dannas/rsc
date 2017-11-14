@@ -5,6 +5,7 @@
 #include <map>
 
 #define CASE break;case
+#define UNKNOWN_OPCODE() assert(false && "unknown opcode")
 
 using namespace std;
 
@@ -49,7 +50,7 @@ MachineCode compile(const Bytecode &code) {
 
         switch (op) {
         CASE OP_POP:
-            assert(false && "unhandled opcode");
+            UNKNOWN_OPCODE();
         CASE OP_IADD:
             masm.pop(RAX);
             masm.pop(RBX);
@@ -83,26 +84,32 @@ MachineCode compile(const Bytecode &code) {
         CASE OP_LABEL:
             masm.bind(labels[ip]);
         CASE OP_ILT:
-            assert(false && "unhandled opcode");
+            // ### cmpSet(rax, rbx, Condition::Less)
+            // ### push rax
+            UNKNOWN_OPCODE();
         CASE OP_IEQ:
-            assert(false && "unhandled opcode");
+            // ### cmpSet(rax, rbx, Condition::Equal)
+            // ### push rax
+            UNKNOWN_OPCODE();
         CASE OP_BR:
             addr = code[ip++];
             masm.jump(labels[addr]);
         CASE OP_BRT:
-            assert(false && "unhandled opcode");
+            // ### pop rax
+            // ### branch if rax is true
+            UNKNOWN_OPCODE();
         CASE OP_LOAD:
             // ### mov rax, [rbp+index]
             // ### push rax
-            assert(false && "unhandled opcode");
+            UNKNOWN_OPCODE();
         CASE OP_STORE:
             // ### pop rax
             // ### mov [rbp+index], rax
-            assert(false && "unhandled opcode");
+            UNKNOWN_OPCODE();
         CASE OP_PRINT:
-            assert(false && "unhandled opcode");
+            UNKNOWN_OPCODE();
         CASE OP_CALL:
-            assert(false && "unhandled opcode");
+            UNKNOWN_OPCODE();
         CASE OP_RET:
             masm.pop(RAX);
             masm.ret();
@@ -113,7 +120,7 @@ MachineCode compile(const Bytecode &code) {
             emitEpilogue(masm);
             break;
         default:
-            assert(false && "unknown opcode");
+            UNKNOWN_OPCODE();
         }
     }
 
