@@ -82,11 +82,6 @@ public:
     uint8_t* data();
     size_t size();
 
-    // TODO(dannas): Add a method for fetching Labels.
-    // For a bytecode with structured control flow there would
-    // be no need for keeping track of the labels since each block
-    // (iteration or selection) would have a predefined limited scope.
-
     // MacroAssembler methods
     void jump(Label& label);
     void bind(Label& label);
@@ -120,7 +115,6 @@ private:
     void emitModRM(uint8_t mod, uint8_t r, uint8_t m);
 
     std::vector<uint8_t> buf_;
-    std::vector<Label> labels_;
 };
 
 inline std::vector<uint8_t> CodeGenerator::buf() {
