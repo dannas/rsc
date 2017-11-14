@@ -131,7 +131,6 @@ inline size_t CodeGenerator::size() {
 }
 
 inline void CodeGenerator::jump(Label& label) {
-    // If the label is not bound, then record the jmp src for later patching.
     if (!label.bound()) {
         label.use(size());
         jmp(Imm32(0));
@@ -144,15 +143,10 @@ inline void CodeGenerator::jump(Label& label) {
 }
 
 inline void CodeGenerator::bind(Label& label) {
-    // TODO(dannas): There must always be one more instruction after a label. How
-    // enforce that?
     label.bind(size());
 
-    uint32_t dst = label.offset();
-
-    // Traverse the list of incoming jmp sources and patch their locations.
     for (uint32_t src : label.incoming()) {
-        // TODO(dannas): Ensure that |src| points to jmp operand.
+        uint32_t dst = label.offset();
         uint32_t offset = dst - src -  5;
         patch(src+1, offset);
     }
