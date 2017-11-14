@@ -19,42 +19,16 @@ set(VM_SOURCES
     vm.h
 )
 
+macro(vm_test name)
+    add_executable(${name} "${name}.cpp" ${VM_SOURCES})
+    target_link_libraries(${name} GTest::GTest GTest::Main)
+    add_test(${name} ${name})
+endmacro(vm_test)
 
-add_executable(interpreter-test
-    interpreter_unittest.cpp
-    ${VM_SOURCES}
-)
+vm_test(interpreter_unittest)
+vm_test(assembler_unittest)
+vm_test(exec_integrationtest)
+vm_test(compiler_unittest)
+vm_test(codegenerator_unittest)
 
-add_executable(assembler-test
-    assembler_unittest.cpp
-    ${VM_SOURCES}
-)
-
-add_executable(exec-test
-    exec_integrationtest.cpp
-    ${VM_SOURCES}
-)
-
-add_executable(compiler-test
-    compiler_unittest.cpp
-    ${VM_SOURCES}
-)
-
-add_executable(codegenerator-test
-    codegenerator_unittest.cpp
-    ${VM_SOURCES}
-)
-
-
-target_link_libraries(assembler-test   GTest::GTest GTest::Main)
-target_link_libraries(codegenerator-test        GTest::GTest GTest::Main)
-target_link_libraries(compiler-test        GTest::GTest GTest::Main)
-target_link_libraries(exec-test        GTest::GTest GTest::Main)
-target_link_libraries(interpreter-test GTest::GTest GTest::Main)
-
-add_test(assembler-test   assembler-test)
-add_test(codegenerator-test codegenerator-test)
-add_test(compiler-test compiler-test)
-add_test(exec-test        interpreter-test)
-add_test(interpreter-test interpreter-test)
 
