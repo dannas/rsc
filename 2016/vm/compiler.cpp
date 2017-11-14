@@ -8,6 +8,7 @@
 #define UNKNOWN_OPCODE() assert(false && "unknown opcode")
 
 using namespace std;
+using BytecodePos = int32_t;
 
 // Discussion of prologues/epilogues for JITs
 // ### https://nickdesaulniers.github.io/blog/2015/05/25/interpreter-compiler-jit/
@@ -36,7 +37,7 @@ static void emitEpilogue(CodeGenerator& masm) {
 
 MachineCode compile(const Bytecode &code) {
     CodeGenerator masm;
-    map<int32_t, Label> labels;
+    map<BytecodePos, Label> labels;
 
     emitPrologue(masm);
 
@@ -44,7 +45,8 @@ MachineCode compile(const Bytecode &code) {
 
     while (pos < code.size()) {
         OpCode op = static_cast<OpCode>(code[pos]);
-        int32_t x, addr;
+        Imm32 imm;
+        BytecodePos addr;
 
         pos++; // Move to next opcode or operand
 
@@ -79,8 +81,8 @@ MachineCode compile(const Bytecode &code) {
             masm.idiv(rbx);
             masm.push(rdx);
         CASE OP_ICONST:
-            x = code[pos++];
-            masm.push(Imm32(x));
+            imm = code[pos++];
+            masm.push(imm);
         CASE OP_LABEL:
             masm.bind(labels[pos]);
         CASE OP_ILT:

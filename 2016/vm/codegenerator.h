@@ -26,6 +26,7 @@ enum Mod : uint8_t {
 };
 
 struct Imm32 {
+    Imm32() : val(0) {}
     Imm32(uint32_t v) : val(v) {}
     uint32_t val;
 };
