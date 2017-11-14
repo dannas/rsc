@@ -99,6 +99,14 @@ public:
     void bind(Label& label);
     void patch(size_t src, uint32_t dst);
 
+    //  TODO(dannas): One way to emit a conditional move
+#if 0
+void cmp32Set(Condition cond, Reg lhs, Reg rhs, Reg dst) {
+    cmp32(lhs, rhs);
+    emitSet(cond, dest);
+}
+#endif
+
     // Codegenerator methods
     void add(Reg dst, Reg src);
     void cqo();
