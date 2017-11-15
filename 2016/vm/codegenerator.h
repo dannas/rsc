@@ -18,6 +18,29 @@ enum Reg : uint8_t{
     rdi = 7
 };
 
+enum Condition : uint8_t {
+    Overflow = 0,
+    NoOverflow = 1,
+    Below = 2,
+    AboveOrEqual = 3,
+    Equal = 4,
+    NotEqual = 5,
+    BelowOrEqual = 6,
+    Above = 7,
+    Signed = 8,
+    NotSigned = 9,
+    Parity = 10,
+    NoParity = 11,
+    LessThan = 12,
+    GreaterThanOrEqual = 13,
+    LessThanOrEqual = 14,
+    GreaterThan = 15,
+
+    NonZero = NotEqual,
+    CarrySet  = Below,
+    CarryClear = AboveOrEqual
+};
+
 enum Mod : uint8_t {
     INDIRECT = 0,
     INDIRECT_DISP1 = 1,
@@ -83,26 +106,23 @@ public:
     size_t size();
 
     // MacroAssembler methods
+    void j(Condition cond, Label& label);
     void jump(Label& label);
     void bind(Label& label);
     void patch(size_t src, uint32_t dst);
-
-    //  TODO(dannas): One way to emit a conditional move
-#if 0
-void cmp32Set(Condition cond, Reg lhs, Reg rhs, Reg dst) {
-    cmp32(lhs, rhs);
-    emitSet(cond, dest);
-}
-#endif
+    void cmpSet(Condition cond, Reg lhs, Reg rhs, Reg dst);
 
     // Codegenerator methods
     void add(Reg dst, Reg src);
+    void cmp(Reg dst, Reg src);
     void cqo();
     void idiv(Reg src);
     void imul(Reg src);
     void int3();
-    void jmp(Imm32 imm);
+    uint32_t jCC(Condition cond, Imm32 imm);
+    uint32_t jmp(Imm32 imm);
     void mov(Reg dst, Reg src);
+    void mov(Reg dst, Imm32 imm);
     void pop(Reg dst);
     void push(Reg src);
     void push(Imm32 imm);
@@ -130,14 +150,26 @@ inline size_t CodeGenerator::size() {
     return buf_.size();
 }
 
-inline void CodeGenerator::jump(Label& label) {
+inline void CodeGenerator::j(Condition cond, Label& label) {
     if (!label.bound()) {
-        label.use(size());
-        jmp(Imm32(0));
+        uint32_t src = jCC(cond, Imm32(0));
+        label.use(src);
     } else {
         uint32_t dst = label.offset();
         uint32_t src = size();
-        uint32_t offset = dst - src - 5;
+        uint32_t offset = dst - src - 6; // jCC is 6 bytes
+        jCC(cond, offset);
+    }
+}
+
+inline void CodeGenerator::jump(Label& label) {
+    if (!label.bound()) {
+        uint32_t src = jmp(Imm32(0));
+        label.use(src);
+    } else {
+        uint32_t dst = label.offset();
+        uint32_t src = size();
+        uint32_t offset = dst - src - 5; // jmp is 5 bytes
         jmp(offset);
     }
 }
@@ -147,8 +179,8 @@ inline void CodeGenerator::bind(Label& label) {
 
     for (uint32_t src : label.incoming()) {
         uint32_t dst = label.offset();
-        uint32_t offset = dst - src -  5;
-        patch(src+1, offset);
+        uint32_t offset = dst - src -  4;   // incoming edges point to imm32 operand, 4 bytes long
+        patch(src, offset);
     }
 }
 
@@ -159,11 +191,28 @@ inline void CodeGenerator::patch(size_t src, uint32_t dst) {
     buf_[src+3] = (dst >> 24) & 0xff;
 }
 
+inline void CodeGenerator::cmpSet(Condition cond, Reg lhs, Reg rhs, Reg dst) {
+    cmp(lhs, rhs);
+    // TODO(dannas): Consider using setCC here.
+
+    mov(dst, Imm32(1));
+    Label end;
+    j(cond, end);
+    mov(dst, Imm32(0));
+
+    bind(end);
+}
 
 inline void CodeGenerator::add(Reg dst, Reg src) {
     emit(REX_W);
     emit(0x01);
     emitModRM(DIRECT, src, dst);
+}
+
+inline void CodeGenerator::cmp(Reg lhs, Reg rhs) {
+    emit(REX_W);
+    emit(0x39);
+    emitModRM(DIRECT, rhs, lhs);
 }
 
 inline void CodeGenerator::cqo() {
@@ -187,9 +236,18 @@ inline void CodeGenerator::int3() {
     emit(0xcc);
 }
 
-inline void CodeGenerator::jmp(Imm32 imm) {
-    emit(0xe9);
+inline uint32_t CodeGenerator::jCC(Condition cond, Imm32 imm) {
+    emit(0x0f);
+    emit(0x80 | cond);
+    uint32_t src = size();
     emit4(imm.val);
+    return src;
+}
+inline uint32_t CodeGenerator::jmp(Imm32 imm) {
+    emit(0xe9);
+    uint32_t src = size();
+    emit4(imm.val);
+    return src;
 }
 
 inline void CodeGenerator::idiv(Reg src) {
@@ -206,6 +264,13 @@ inline void CodeGenerator::mov(Reg dst, Reg src) {
     emit(REX_W);
     emit(0x89);
     emitModRM(DIRECT, src, dst);
+}
+
+inline void CodeGenerator::mov(Reg dst, Imm32 imm) {
+    emit(REX_W);
+    emit(0xc7);
+    emitModRM(DIRECT, 0, dst);
+    emit4(imm.val);
 }
 
 inline void CodeGenerator::push(Reg src) {

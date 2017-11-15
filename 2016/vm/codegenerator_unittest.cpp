@@ -138,6 +138,58 @@ TEST(CodeGenerator, JumpForwardAndBackward) {
     EXEC_AND_COMPARE(2, code);
 }
 
+TEST(CodeGenerator, CmpSetEqual_InputEqual) {
+    CodeGenerator masm;
+
+    masm.mov(rax, 42);
+    masm.mov(rbx, 42);
+    masm.cmpSet(Equal, rax, rbx, rax);
+    masm.ret();
+
+    auto code = masm.buf();
+
+    EXEC_AND_COMPARE(1, code);
+}
+
+TEST(CodeGenerator, CmpSetEqual_InputLessThan) {
+    CodeGenerator masm;
+
+    masm.mov(rax, 41);
+    masm.mov(rbx, 42);
+    masm.cmpSet(Equal, rax, rbx, rax);
+    masm.ret();
+
+    auto code = masm.buf();
+
+    EXEC_AND_COMPARE(0, code);
+}
+
+TEST(CodeGenerator, CmpSetLessThan_InputLessThan) {
+    CodeGenerator masm;
+
+    masm.mov(rax, 41);
+    masm.mov(rbx, 42);
+    masm.cmpSet(LessThan, rax, rbx, rax);
+    masm.ret();
+
+    auto code = masm.buf();
+
+    EXEC_AND_COMPARE(1, code);
+}
+
+TEST(CodeGenerator, CmpSetLessThan_InputEqual) {
+    CodeGenerator masm;
+
+    masm.mov(rax, 42);
+    masm.mov(rbx, 42);
+    masm.cmpSet(LessThan, rax, rbx, rax);
+    masm.ret();
+
+    auto code = masm.buf();
+
+    EXEC_AND_COMPARE(0, code);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
