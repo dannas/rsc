@@ -351,7 +351,7 @@ private:
     SymbolTable symtab_;         // map labels and func defs to addresses
 };
 
-vector<int32_t> assemble(istream& in) {
+Bytecode assemble(istream& in) {
     Lexer lexer(in);
     Parser parser(lexer);
     return parser.code();

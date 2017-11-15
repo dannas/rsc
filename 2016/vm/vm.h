@@ -39,7 +39,7 @@ using MachineCode = std::vector<uint8_t>;
 
 // Assemble the assembly code in the stream provided by |in| into bytecode.
 //
-std::vector<int32_t> assemble(std::istream& in);
+Bytecode assemble(std::istream& in);
 
 // Interpret the bytecode in |code|.
 //
