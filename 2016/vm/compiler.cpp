@@ -86,9 +86,10 @@ MachineCode compile(const Bytecode &code) {
         CASE OP_LABEL:
             masm.bind(labels[pos]);
         CASE OP_ILT:
-            // ### cmpSet(rax, rbx, Condition::Less)
-            // ### push rax
-            UNKNOWN_OPCODE();
+            masm.pop(rbx);
+            masm.pop(rax);
+            masm.cmpSet(LessThan, rax, rbx, rax);
+            masm.push(rax);
         CASE OP_IEQ:
             // ### cmpSet(rax, rbx, Condition::Equal)
             // ### push rax

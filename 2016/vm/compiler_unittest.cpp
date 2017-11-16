@@ -103,6 +103,36 @@ TEST(Compiler, ForwarAndBackwarddBranch) {
     EXEC_AND_COMPARE(3, buf);
 }
 
+TEST(Compiler, CompareForLessThan_WhenLess) {
+    char buf[] = R"(
+        iconst 1
+        iconst 2
+        ilt
+        halt
+    )";
+    EXEC_AND_COMPARE(1, buf);
+}
+
+TEST(Compiler, CompareForLessThan_WhenEqual) {
+    char buf[] = R"(
+        iconst 2
+        iconst 2
+        ilt
+        halt
+    )";
+    EXEC_AND_COMPARE(0, buf);
+}
+
+TEST(Compiler, CompareForLessThan_WhenLarger) {
+    char buf[] = R"(
+        iconst 2
+        iconst 1
+        ilt
+        halt
+    )";
+    EXEC_AND_COMPARE(0, buf);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
