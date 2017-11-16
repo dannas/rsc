@@ -123,11 +123,41 @@ TEST(Compiler, CompareForLessThan_WhenEqual) {
     EXEC_AND_COMPARE(0, buf);
 }
 
-TEST(Compiler, CompareForLessThan_WhenLarger) {
+TEST(Compiler, CompareForLessThan_WhenGreater) {
     char buf[] = R"(
         iconst 2
         iconst 1
         ilt
+        halt
+    )";
+    EXEC_AND_COMPARE(0, buf);
+}
+
+TEST(Compiler, CompareForEqual_WhenEqual) {
+    char buf[] = R"(
+        iconst 1
+        iconst 1
+        ieq
+        halt
+    )";
+    EXEC_AND_COMPARE(1, buf);
+}
+
+TEST(Compiler, CompareForEqual_WhenLess) {
+    char buf[] = R"(
+        iconst 1
+        iconst 2
+        ieq
+        halt
+    )";
+    EXEC_AND_COMPARE(0, buf);
+}
+
+TEST(Compiler, CompareForEqual_WhenGreater) {
+    char buf[] = R"(
+        iconst 2
+        iconst 1
+        ieq
         halt
     )";
     EXEC_AND_COMPARE(0, buf);

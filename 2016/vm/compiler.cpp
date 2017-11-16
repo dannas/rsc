@@ -91,9 +91,10 @@ MachineCode compile(const Bytecode &code) {
             masm.cmpSet(LessThan, rax, rbx, rax);
             masm.push(rax);
         CASE OP_IEQ:
-            // ### cmpSet(rax, rbx, Condition::Equal)
-            // ### push rax
-            UNKNOWN_OPCODE();
+            masm.pop(rbx);
+            masm.pop(rax);
+            masm.cmpSet(Equal, rax, rbx, rax);
+            masm.push(rax);
         CASE OP_BR:
             addr = code[pos++];
             masm.jump(labels[addr]);
