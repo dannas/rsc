@@ -133,6 +133,7 @@ private:
     void emit(uint8_t b);
     void emit4(uint32_t w);
     void emitModRM(uint8_t mod, uint8_t r, uint8_t m);
+    uint32_t toRelative(uint32_t dst, uint32_t src, uint32_t opSize);
 
     std::vector<uint8_t> buf_;
 };
@@ -155,9 +156,7 @@ inline void CodeGenerator::j(Condition cond, Label& label) {
         uint32_t src = jCC(cond, Imm32(0));
         label.use(src);
     } else {
-        uint32_t dst = label.offset();
-        uint32_t src = size();
-        uint32_t offset = dst - src - 6; // jCC is 6 bytes
+        uint32_t offset = toRelative(label.offset(), size(), /*opSize=*/6);
         jCC(cond, offset);
     }
 }
@@ -167,9 +166,7 @@ inline void CodeGenerator::jump(Label& label) {
         uint32_t src = jmp(Imm32(0));
         label.use(src);
     } else {
-        uint32_t dst = label.offset();
-        uint32_t src = size();
-        uint32_t offset = dst - src - 5; // jmp is 5 bytes
+        uint32_t offset = toRelative(label.offset(), size(), /*opSize=*/5);
         jmp(offset);
     }
 }
@@ -178,8 +175,7 @@ inline void CodeGenerator::bind(Label& label) {
     label.bind(size());
 
     for (uint32_t src : label.incoming()) {
-        uint32_t dst = label.offset();
-        uint32_t offset = dst - src -  4;   // incoming edges point to imm32 operand, 4 bytes long
+        uint32_t offset = toRelative(label.offset(), src, /*opSize=*/4);
         patch(src, offset);
     }
 }
@@ -300,3 +296,6 @@ inline void CodeGenerator::emitModRM(uint8_t mod, uint8_t r, uint8_t m) {
     emit(mod << 6 | r << 3 | m);
 }
 
+inline uint32_t CodeGenerator::toRelative(uint32_t dst, uint32_t src, uint32_t opSize) {
+    return dst - src - opSize;
+}
