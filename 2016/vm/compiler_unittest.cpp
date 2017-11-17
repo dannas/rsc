@@ -163,6 +163,22 @@ TEST(Compiler, CompareForEqual_WhenGreater) {
     EXEC_AND_COMPARE(0, buf);
 }
 
+TEST(Compiler, JumpIfTrue_CompareForEqual) {
+    char buf[] = R"(
+        iconst 1
+        iconst 1
+        ieq
+        brt .true
+        iconst 42
+        iadd
+        halt
+    .true
+        iconst 2
+        halt
+    )";
+    EXEC_AND_COMPARE(2, buf);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

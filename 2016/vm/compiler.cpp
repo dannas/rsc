@@ -99,9 +99,12 @@ MachineCode compile(const Bytecode &code) {
             addr = code[pos++];
             masm.jump(labels[addr]);
         CASE OP_BRT:
-            // ### pop rax
-            // ### branch if rax is true
-            UNKNOWN_OPCODE();
+            addr = code[pos++];
+            masm.push(Imm32(1));
+            masm.pop(rbx);
+            masm.pop(rax);
+            masm.cmp(rax, rbx);
+            masm.j(AboveOrEqual, labels[addr]);
         CASE OP_LOAD:
             // ### mov rax, [rbp+index]
             // ### push rax
