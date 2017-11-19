@@ -32,3 +32,10 @@ vm_test(compiler_unittest)
 vm_test(codegenerator_unittest)
 
 
+macro(vm_benchmark name)
+    add_executable(${name} "${name}.cpp" ${VM_SOURCES})
+    target_link_libraries(${name} "-lbenchmark -lpthread")
+    add_test(${name} ${name})
+endmacro(vm_benchmark)
+
+vm_benchmark(integer_ops_benchmark)
