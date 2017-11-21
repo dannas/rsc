@@ -92,7 +92,7 @@ void interpret(const Bytecode &code, ostream& out) {
     while (true) {
         OpCode op = static_cast<OpCode>(code[ip]);
 
-        cout << op << "\t" << stack << "\n";
+        //cout << op << "\t" << stack << "\n";
 
         ip++; // Move to next opcode or operand
 

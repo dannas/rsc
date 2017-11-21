@@ -231,7 +231,7 @@ public:
 private:
     void consume() {
         tok_ = lexer_.next();
-        cout << tok_.type << "\t\t" << tok_.text << "\n";
+        //cout << tok_.type << "\t\t" << tok_.text << "\n";
     }
 
 
