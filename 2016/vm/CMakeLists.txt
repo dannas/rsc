@@ -42,7 +42,6 @@ target_compile_options(sources PUBLIC -Werror)
 target_compile_options(sources PUBLIC -Wswitch-enum)
 target_compile_options(sources PUBLIC -Wswitch-default)
 target_compile_options(sources PUBLIC -std=c++14)
-target_compile_options(sources PUBLIC -std=c++11)
 
 vm_test(interpreter_unittest)
 vm_test(assembler_unittest)
