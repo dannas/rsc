@@ -18,8 +18,12 @@ alias gd='git diff .'
 alias gd='git diff .'
 alias m='make -C build -j8 -s'
 alias t='make -C build -j8 -s test'
+
 alias i='./build/interpreter_unittest'
 alias ast='./build/assembler_unittest'
 alias e='./build/exec_integrationtest'
 alias cg='./build/codegenerator_unittest'
 alias c='./build/compiler_unittest'
+alias ib='./build/integer_ops_benchmark'
+
+alias pr='perf record -g --call-graph dwarf'
