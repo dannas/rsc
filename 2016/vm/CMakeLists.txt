@@ -30,7 +30,6 @@ macro(vm_benchmark name)
     add_executable(${name} "${name}.cpp")
     target_link_libraries(${name} sources)
     target_link_libraries(${name} "-lbenchmark -lpthread")
-    add_test(${name} ${name})
 endmacro(vm_benchmark)
 
 target_compile_options(sources PUBLIC -Og)
