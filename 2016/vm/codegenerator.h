@@ -106,6 +106,7 @@ public:
     size_t size();
 
     // MacroAssembler methods
+    void call(Label& label);
     void j(Condition cond, Label& label);
     void jump(Label& label);
     void bind(Label& label);
@@ -115,6 +116,7 @@ public:
     // Codegenerator methods
     void add(Reg dst, Reg src);
     void add(Reg dst, Imm32 imm);
+    uint32_t call(Imm32 imm);
     void cmp(Reg dst, Reg src);
     void cqo();
     void idiv(Reg src);
@@ -151,6 +153,16 @@ inline uint8_t* CodeGenerator::data() {
 
 inline size_t CodeGenerator::size() {
     return buf_.size();
+}
+
+inline void CodeGenerator::call(Label& label) {
+    if (!label.bound()) {
+        uint32_t src = call(Imm32(0));
+        label.use(src);
+    } else {
+        uint32_t offset = toRelative(label.offset(), size(), /*opSize=*/5);
+        call(offset);
+    }
 }
 
 inline void CodeGenerator::j(Condition cond, Label& label) {
@@ -212,6 +224,13 @@ void CodeGenerator::add(Reg dst, Imm32 imm) {
     emit(0x81);
     emitModRM(DIRECT, 0, dst);
     emit4(imm.val);
+}
+
+uint32_t CodeGenerator::call(Imm32 imm) {
+    emit(0xe8);
+    uint32_t src = size();
+    emit4(imm.val);
+    return src;
 }
 
 inline void CodeGenerator::cmp(Reg lhs, Reg rhs) {
