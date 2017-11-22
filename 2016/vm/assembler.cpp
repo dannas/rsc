@@ -290,6 +290,7 @@ private:
         int32_t nlocals = atoi(tok_.text.c_str());
         match(OPERAND);
         match(NEWLINE);
+        pushByteCode(OP_LABEL);
         symtab_.defineFunction(text, ip, nargs, nlocals, bytecode_);
 
         while (tok_.type == ID)

@@ -65,6 +65,7 @@ TEST(Assembler, function) {
     vector<int32_t> expected = {
         OP_CALL, 5, 0, 0,
         OP_HALT,
+        OP_LABEL,
         OP_RET,
     };
 
