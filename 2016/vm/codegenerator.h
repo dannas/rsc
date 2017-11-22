@@ -114,6 +114,7 @@ public:
 
     // Codegenerator methods
     void add(Reg dst, Reg src);
+    void add(Reg dst, Imm32 imm);
     void cmp(Reg dst, Reg src);
     void cqo();
     void idiv(Reg src);
@@ -128,6 +129,7 @@ public:
     void push(Imm32 imm);
     void ret();
     void sub(Reg dst, Reg src);
+    void sub(Reg dst, Imm32 imm);
 
 private:
     void emit(uint8_t b);
@@ -205,6 +207,13 @@ inline void CodeGenerator::add(Reg dst, Reg src) {
     emitModRM(DIRECT, src, dst);
 }
 
+void CodeGenerator::add(Reg dst, Imm32 imm) {
+    emit(REX_W);
+    emit(0x81);
+    emitModRM(DIRECT, 0, dst);
+    emit4(imm.val);
+}
+
 inline void CodeGenerator::cmp(Reg lhs, Reg rhs) {
     emit(REX_W);
     emit(0x39);
@@ -220,6 +229,13 @@ inline void CodeGenerator::sub(Reg dst, Reg src) {
     emit(REX_W);
     emit(0x29);
     emitModRM(DIRECT, src, dst);
+}
+
+inline void CodeGenerator::sub(Reg dst, Imm32 imm) {
+    emit(REX_W);
+    emit(0x81);
+    emitModRM(DIRECT, 5, dst);
+    emit4(imm.val);
 }
 
 inline void CodeGenerator::imul(Reg src) {
