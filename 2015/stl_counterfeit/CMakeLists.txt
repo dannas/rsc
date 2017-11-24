@@ -14,6 +14,7 @@ set(SOURCES
     algorithm.h
     unique_ptr.h
     string.h
+    map.h
 )
 
 add_executable(algorithm-test
@@ -31,11 +32,18 @@ add_executable(string-test
     string.h
 )
 
+add_executable(map-test
+    map_unittest.cpp
+    map.h
+)
+
 target_link_libraries(algorithm-test GTest::GTest GTest::Main)
 target_link_libraries(unique_ptr-test GTest::GTest GTest::Main)
 target_link_libraries(string-test GTest::GTest GTest::Main)
+target_link_libraries(map-test GTest::GTest GTest::Main)
 
 add_test(algorithm-test   algorithm-test)
 add_test(unique_ptr-test   unique_ptr-test)
-add_test(string-test   unique_ptr-test)
+add_test(string-test   string-test)
+add_test(map-test   map-test)
 
