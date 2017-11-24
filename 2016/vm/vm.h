@@ -96,6 +96,10 @@ MachineCode compile(const Bytecode& code);
      */ \
     macro(OP_LABEL,   "label",  0) \
     \
+    /* NOP used while emitting code.
+     *
+     */ \
+    macro(OP_FUNC,   "func",  2) \
     /* Jumps to an absolute address unconditionally.
      * Stack: =>
      */ \
@@ -128,7 +132,7 @@ MachineCode compile(const Bytecode& code);
      * Calling convention paragraph at top of this file.
      * Stack: TODO
      */ \
-    macro(OP_CALL,    "call",   3)  \
+    macro(OP_CALL,    "call",   1)  \
     \
     /* Pops the topmost val of the stack, then pops 'locals', 'parameters',
      * 'nargs', 'fp' and 'retaddr' before pushing the stored val. Sets the ip

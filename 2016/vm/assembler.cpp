@@ -147,16 +147,12 @@ struct LabelSymbol {
         : defined(false)
         , address(0)
         , forwardRefs()
-        , nargs(-1)
-        , nlocals(-1) {}
+    {}
 
     bool defined;                   // has definition been seen?
     int32_t address;                // address of the label
     vector <int32_t> forwardRefs;   // offsets into the bytecode
-    int32_t nargs;                  // number of parameters for funcdef
-    int32_t nlocals;                // number of locals for funcdef
 };
-
 
 
 // SymbolTable for a monolithic scope.
@@ -193,7 +189,6 @@ public:
     }
 
     void defineFunction(const string& name, int32_t ip,
-                        int32_t nargs, int32_t nlocals,
                         vector<int32_t> &bytecode) {
         auto& l = labels_[name];
         assert(!l.defined && "label already defined");
@@ -201,13 +196,10 @@ public:
         // Backpatch previous references to the symbol.
         for (auto& ref : l.forwardRefs) {
             bytecode[ref] = ip;
-            bytecode[ref+1] = nargs;
-            bytecode[ref+2] = nlocals;
         }
 
         l.defined = true;
         l.address = ip;
-        l.nargs = nargs;
         l.forwardRefs.clear();
     }
 private:
@@ -290,8 +282,10 @@ private:
         int32_t nlocals = atoi(tok_.text.c_str());
         match(OPERAND);
         match(NEWLINE);
-        pushByteCode(OP_LABEL);
-        symtab_.defineFunction(text, ip, nargs, nlocals, bytecode_);
+        pushByteCode(OP_FUNC);
+        pushByteCode(nargs);
+        pushByteCode(nlocals);
+        symtab_.defineFunction(text, ip, bytecode_);
 
         while (tok_.type == ID)
             instr();
@@ -312,12 +306,6 @@ private:
             pushByteCode(l.address);
             consume();
 
-            // if the symbol is a reference to a function
-            // insert nargs and nlocals as well
-            if (code == OP_CALL) {
-                pushByteCode(l.nargs);
-                pushByteCode(l.nlocals);
-            }
             match(NEWLINE);
             return;
         }

@@ -44,15 +44,26 @@ public:
 
     void load(int index) {
         checkRep();
-        int nargs = arr_[fp_-1];
-        int offset = index - nargs - 1;
-        push(arr_[fp_+offset]);
+        // TODO(dannas): The stack should look like this:
+        // parameters
+        // ret
+        // locals
+        // nargs+nlocals
+        // oldfp  <=== fp
+        int nlocals = arr_[fp_-1];
+        if (index < 0) {
+            int offset = fp_ - 1 - nlocals - 1 + index;
+            push(arr_[offset]);
+        } else {
+            int offset = fp_ - 1 - 1 - nlocals + index;
+            push(arr_[offset]);
+        }
     }
 
     void store(int index) {
         checkRep();
-        int nargs = arr_[fp_-1];
-        int offset = index - nargs - 1;
+        int nlocals = arr_[fp_-2];
+        int offset = index - nlocals - 1;
         arr_[fp_+offset] = pop();
     }
 
@@ -76,8 +87,11 @@ ostream& operator<< (ostream& os, const Stack& stack) {
     if (stack.sp_ > 0)
         os << stack.arr_[0];
 
-    for (int i = 1; i < stack.sp_; i++)
+    for (int i = 1; i < stack.sp_; i++) {
         os << ", " << stack.arr_[i];
+        if (i ==  stack.fp_)
+            os << "*";
+    }
 
     os << "]";
     return os;
@@ -92,7 +106,7 @@ void interpret(const Bytecode &code, ostream& out) {
     while (true) {
         OpCode op = static_cast<OpCode>(code[ip]);
 
-        //cout << op << "\t" << stack << "\n";
+        //cout << ip << " " << op << "\t" << stack << "\n";
 
         ip++; // Move to next opcode or operand
 
@@ -133,6 +147,13 @@ void interpret(const Bytecode &code, ostream& out) {
             stack.push(y == x);
         CASE OP_LABEL:
             ;
+        CASE OP_FUNC:
+            nargs = code[ip++];
+            nlocals = code[ip++];
+            for (int i = 0; i < nlocals; i++)
+                stack.push(0);
+            stack.push(nlocals);
+            stack.pushfp();
         CASE OP_BR:
             addr = code[ip++];
             ip = addr;
@@ -150,21 +171,15 @@ void interpret(const Bytecode &code, ostream& out) {
             out << stack.pop() << "\n";
         CASE OP_CALL:
             addr = code[ip++];
-            nargs = code[ip++];
-            nlocals = code[ip++];
-            for (int i = 0; i < nlocals; i++)
-                stack.push(0);
-            stack.push(nargs+nlocals);
-            stack.pushfp();
             stack.push(ip);
             ip = addr;
         CASE OP_RET:
             ret = stack.pop();
-            ip = stack.pop();
             stack.popfp();
-            nargs = stack.pop();
-            while (nargs--)
+            nlocals = stack.pop();
+            while (nlocals--)
                 stack.pop();
+            ip = stack.pop();
             stack.push(ret);
         CASE OP_HALT:
             return;

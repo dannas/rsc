@@ -14,6 +14,9 @@ using BytecodePos = int32_t;
 // ### https://nickdesaulniers.github.io/blog/2015/05/25/interpreter-compiler-jit/
 // ### https://nickdesaulniers.github.io/blog/2014/04/18/lets-write-some-x86-64/
 
+// A short description of the SYSV ABI
+// http://c9x.me/compile/doc/abi.html
+
 static void emitPrologue(CodeGenerator& masm) {
     // The callee-saved registers on x64 are
     // r12-r15, rbx, rsp, rbp 
@@ -24,7 +27,6 @@ static void emitPrologue(CodeGenerator& masm) {
     // TODO(dannas): Push parameters from rdi, rsi, rdx, rcx, r8, r9 to stack,
     // to allow passing in parameters to the JITted code.
     masm.push(rbp);
-    // TODO(dannas): Shouldn't this be the other way around?
     masm.mov(rbp, rsp);
     masm.push(rbx);
 }
@@ -38,6 +40,7 @@ static void emitEpilogue(CodeGenerator& masm) {
 MachineCode compile(const Bytecode &code) {
     CodeGenerator masm;
     map<BytecodePos, Label> labels;
+    map<BytecodePos, Label> functions;
 
     emitPrologue(masm);
 
@@ -47,6 +50,7 @@ MachineCode compile(const Bytecode &code) {
         OpCode op = static_cast<OpCode>(code[pos]);
         Imm32 imm;
         BytecodePos addr;
+        int nargs, nlocals;
 
         pos++; // Move to next opcode or operand
 
@@ -85,6 +89,8 @@ MachineCode compile(const Bytecode &code) {
             masm.push(imm);
         CASE OP_LABEL:
             masm.bind(labels[pos]);
+        CASE OP_FUNC:
+            masm.bind(functions[pos]);
         CASE OP_ILT:
             masm.pop(rbx);
             masm.pop(rax);
@@ -116,7 +122,14 @@ MachineCode compile(const Bytecode &code) {
         CASE OP_PRINT:
             UNKNOWN_OPCODE();
         CASE OP_CALL:
-            UNKNOWN_OPCODE();
+            addr = code[pos++];
+            nargs = code[pos++];
+            nlocals = code[pos++];
+            masm.push(rbp);
+            masm.mov(rbp, rsp);
+            masm.sub(rsp, nlocals* sizeof(int32_t));
+            // TODO(dannas): Let OP_FUNC take care of allocating the locals?
+            masm.call(labels[addr]);
         CASE OP_RET:
             masm.pop(rax);
             masm.ret();

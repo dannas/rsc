@@ -7,6 +7,9 @@
 // http://www.c-jump.com/CIS77/CPU/x86/lecture.html
 // http://wiki.osdev.org/X86-64_Instruction_Encoding
 
+// A readable description of the most common x86 instructions
+// http://c9x.me/x86/
+
 enum Reg : uint8_t{
     rax = 0,
     rcx = 1,

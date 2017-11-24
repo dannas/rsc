@@ -63,9 +63,9 @@ TEST(Assembler, function) {
     )";
 
     vector<int32_t> expected = {
-        OP_CALL, 5, 0, 0,
+        OP_CALL, 3,
         OP_HALT,
-        OP_LABEL,
+        OP_FUNC, 0, 0,
         OP_RET,
     };
 
@@ -153,9 +153,10 @@ TEST(Disassembler, addFunction) {
     vector<int32_t> buf = {
         OP_ICONST, 1,
         OP_ICONST, 2,
-        OP_CALL, 7, 2, 1,
+        OP_CALL, 8,
         OP_PRINT,
         OP_HALT,
+        OP_FUNC, 2, 1,
         OP_LOAD, 0,
         OP_LOAD, 1,
         OP_IADD,
@@ -166,9 +167,10 @@ TEST(Disassembler, addFunction) {
     string expected = R"(
         iconst 1
         iconst 2
-        call 7 2 1
+        call 8
         print
         halt
+        func 2 1
         load 0
         load 1
         iadd
