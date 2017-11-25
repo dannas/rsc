@@ -32,7 +32,7 @@ macro(vm_benchmark name)
     target_link_libraries(${name} "-lbenchmark -lpthread")
 endmacro(vm_benchmark)
 
-target_compile_options(sources PUBLIC -Og)
+target_compile_options(sources PUBLIC -O0)
 target_compile_options(sources PUBLIC -fno-omit-frame-pointer)
 target_compile_options(sources PUBLIC -g3)
 target_compile_options(sources PUBLIC -Wall)
