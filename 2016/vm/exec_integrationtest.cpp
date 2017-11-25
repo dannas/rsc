@@ -40,8 +40,8 @@ TEST(Integration, addFunction) {
         print
         halt
         .def .f args=2, locals=0
-        load -1
-        load -2
+        load 0
+        load 1
         iadd
         ret
     )";
@@ -50,7 +50,7 @@ TEST(Integration, addFunction) {
     EXEC_AND_COMPARE(buf, expected);
 }
 
-TEST(DISABLED_Integration, pow) {
+TEST(Integration, pow) {
     char buf[] = R"(
          iconst 2
          iconst 2
@@ -87,7 +87,7 @@ TEST(DISABLED_Integration, pow) {
     EXEC_AND_COMPARE(buf, expected);
 }
 
-TEST(DISABLED_Integration, gcd) {
+TEST(Integration, gcd) {
     char buf[] = R"(
     iconst 25484848
     iconst 1448

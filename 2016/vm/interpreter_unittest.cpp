@@ -68,7 +68,7 @@ TEST(Interpreter, callOneParam) {
         OP_PRINT,
         OP_HALT,
         OP_FUNC, 1, 0,
-        OP_LOAD, -1,
+        OP_LOAD, 0,
         OP_RET
     };
     string expected = "1\n";
@@ -84,8 +84,8 @@ TEST(Interpreter, callTwoParams) {
         OP_PRINT,
         OP_HALT,
         OP_FUNC, 2, 0,
-        OP_LOAD, -1,
-        OP_LOAD, -2,
+        OP_LOAD, 0,
+        OP_LOAD, 1,
         OP_IADD,
         OP_RET
     };

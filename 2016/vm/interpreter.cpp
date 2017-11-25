@@ -43,28 +43,50 @@ public:
     }
 
     void load(int index) {
+        assert(index >= 0);
         checkRep();
-        // TODO(dannas): The stack should look like this:
-        // parameters
-        // ret
-        // locals
-        // nargs+nlocals
-        // oldfp  <=== fp
+        // TODO(dannas): Clean up the index calculations ofr load and store.
+        // Stack layout
+        //      parameters
+        //      ret
+        //      locals
+        //      nlocals
+        //      nargs
+        //      oldfp  <=== fp
+
+        assert(fp_ >= 3 && "a frame must have ret, nargs and nlocals");
+
         int nlocals = arr_[fp_-1];
-        if (index < 0) {
-            int offset = fp_ - 1 - nlocals - 1 + index;
-            push(arr_[offset]);
-        } else {
-            int offset = fp_ - 1 - 1 - nlocals + index;
-            push(arr_[offset]);
+        int nargs = arr_[fp_-2];
+
+        assert(fp_ >= 3 + nlocals + nargs);
+
+        int base = fp_ - 2 - 1 - nlocals - nargs;
+        int pos = base + index;
+
+        if (index >= nargs) {
+            pos += 1;
         }
+        push(arr_[pos]);
+
     }
 
     void store(int index) {
+        assert(index >= 0);
         checkRep();
-        int nlocals = arr_[fp_-2];
-        int offset = index - nlocals - 1;
-        arr_[fp_+offset] = pop();
+
+        assert(fp_ > 2 && "a frame must have ret, nargs and nlocals");
+
+        int nlocals = arr_[fp_-1];
+        int nargs = arr_[fp_-2];
+
+        int base = fp_ - 2 - 1 - nlocals - nargs;
+        int pos = base + index;
+
+        if (index >= nargs) {
+            pos += 1;
+        }
+        arr_[pos] = pop();
     }
 
 private:
@@ -152,6 +174,7 @@ void interpret(const Bytecode &code, ostream& out) {
             nlocals = code[ip++];
             for (int i = 0; i < nlocals; i++)
                 stack.push(0);
+            stack.push(nargs);
             stack.push(nlocals);
             stack.pushfp();
         CASE OP_BR:
@@ -177,6 +200,7 @@ void interpret(const Bytecode &code, ostream& out) {
             ret = stack.pop();
             stack.popfp();
             nlocals = stack.pop();
+            nargs = stack.pop();
             while (nlocals--)
                 stack.pop();
             ip = stack.pop();
