@@ -270,7 +270,6 @@ private:
     void funcdef() {
         match(FUNCDEF);
         string text = tok_.text;
-        int32_t ip = ip_;
         consume();
         match(ID, "args");
         match(EQUALSIGN);
@@ -283,9 +282,9 @@ private:
         match(OPERAND);
         match(NEWLINE);
         pushByteCode(OP_FUNC);
+        symtab_.defineFunction(text, ip_, bytecode_);
         pushByteCode(nargs);
         pushByteCode(nlocals);
-        symtab_.defineFunction(text, ip, bytecode_);
 
         while (tok_.type == ID)
             instr();

@@ -83,7 +83,7 @@ public:
     }
 
     bool used() {
-        return !bound() && offset_ < INVALID_OFFSET;
+        return !bound();
     }
     ~Label() {
         assert(!used());
