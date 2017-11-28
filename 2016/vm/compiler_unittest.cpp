@@ -179,6 +179,17 @@ TEST(Compiler, JumpIfTrue_CompareForEqual) {
     EXEC_AND_COMPARE(2, buf);
 }
 
+TEST(Compiler, FunctionEmpty) {
+    char buf[] = R"(
+        call .f
+        halt
+    .def .f args=0, locals=0
+        iconst 42
+        ret
+    )";
+    EXEC_AND_COMPARE(42, buf);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

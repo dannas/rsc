@@ -281,8 +281,8 @@ private:
         int32_t nlocals = atoi(tok_.text.c_str());
         match(OPERAND);
         match(NEWLINE);
-        pushByteCode(OP_FUNC);
         symtab_.defineFunction(text, ip_, bytecode_);
+        pushByteCode(OP_FUNC);
         pushByteCode(nargs);
         pushByteCode(nlocals);
 

@@ -33,6 +33,7 @@ static void emitPrologue(CodeGenerator& masm) {
 
 static void emitEpilogue(CodeGenerator& masm) {
     masm.pop(rbx);
+    masm.mov(rsp, rbp);
     masm.pop(rbp);
     masm.ret();
 }
@@ -90,7 +91,15 @@ MachineCode compile(const Bytecode &code) {
         CASE OP_LABEL:
             masm.bind(labels[pos]);
         CASE OP_FUNC:
-            masm.bind(functions[pos]);
+            // TODO(dannas): Why does jumps to OP_LABEL work, but
+            // calls to OP_FUNC needs an adjustment of pos?
+            masm.bind(functions[pos-1]);
+            nargs = code[pos++];
+            nlocals = code[pos++];
+            masm.push(rbp);
+            masm.mov(rbp, rsp);
+            // TODO(dannas): Do we need to make sure stack is 16 bit aligned?
+            masm.sub(rsp, nlocals * sizeof(int32_t));
         CASE OP_ILT:
             masm.pop(rbx);
             masm.pop(rax);
@@ -123,15 +132,12 @@ MachineCode compile(const Bytecode &code) {
             UNKNOWN_OPCODE();
         CASE OP_CALL:
             addr = code[pos++];
-            nargs = code[pos++];
-            nlocals = code[pos++];
-            masm.push(rbp);
-            masm.mov(rbp, rsp);
-            masm.sub(rsp, nlocals* sizeof(int32_t));
-            // TODO(dannas): Let OP_FUNC take care of allocating the locals?
-            masm.call(labels[addr]);
+            masm.call(functions[addr]);
+            masm.push(rax);
         CASE OP_RET:
             masm.pop(rax);
+            masm.mov(rsp, rbp);
+            masm.pop(rbp);
             masm.ret();
         CASE OP_HALT:
             // TODO(dannas): Consider adding a jmp here for another location
