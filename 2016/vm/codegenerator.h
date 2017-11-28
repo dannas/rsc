@@ -129,6 +129,7 @@ public:
     uint32_t jmp(Imm32 imm);
     void mov(Reg dst, Reg src);
     void mov(Reg dst, Imm32 imm);
+    void mov(Reg dst, Reg src, uint8_t disp);
     void pop(Reg dst);
     void push(Reg src);
     void push(Imm32 imm);
@@ -305,6 +306,17 @@ inline void CodeGenerator::mov(Reg dst, Imm32 imm) {
     emit(0xc7);
     emitModRM(DIRECT, 0, dst);
     emit4(imm.val);
+}
+
+inline void CodeGenerator::mov(Reg dst, Reg src, uint8_t disp) {
+    // TODO(dannas): Add support for special case encoding of rsp,
+    // two byte displacement.
+    assert(dst != rsp);
+    assert(src != rsp);
+    emit(REX_W);
+    emit(0x8b);
+    emitModRM(INDIRECT_DISP1, dst, src);
+    emit(disp);
 }
 
 inline void CodeGenerator::push(Reg src) {

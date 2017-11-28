@@ -190,6 +190,35 @@ TEST(CodeGenerator, CmpSetLessThan_InputEqual) {
     EXEC_AND_COMPARE(0, code);
 }
 
+TEST(CodeGenerator, MovWithDisplacement_AddTwoStackLocations) {
+    CodeGenerator masm;
+
+    // Prologue
+    masm.push(rbx);
+    masm.push(rbp);
+    masm.mov(rbp, rsp);
+
+    masm.push(Imm32(1));
+    masm.push(Imm32(2));
+
+    // Move with displacement is not yet supported for rsp,
+    // use another reg instead.
+    masm.mov(rcx, rsp);
+    masm.mov(rax, rcx, 0);
+    masm.mov(rbx, rcx, 8);
+    masm.add(rax, rbx);
+
+    // Epilogue
+    masm.mov(rsp, rbp);
+    masm.pop(rbp);
+    masm.pop(rbx);
+    masm.ret();
+
+    auto code = masm.buf();
+
+    EXEC_AND_COMPARE(3, code);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
