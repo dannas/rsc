@@ -12,7 +12,7 @@ using BytecodePos = int32_t;
 
 static void emitPrologue(CodeGenerator& masm) {
     // The callee-saved registers on x64 are
-    // r12-r15, rbx, rsp, rbp 
+    // r12-r15, rbx, rsp, rbp
     // We currently don't use registers beyond the first 8, so
     // ignore r12-r15.
     // We rely on the code being run with -fno-omit-framepointer
@@ -114,6 +114,34 @@ MachineCode compile(const Bytecode &code) {
             masm.cmp(rax, rbx);
             masm.j(AboveOrEqual, labels[addr]);
         CASE OP_LOAD:
+            // TODO(dannas): Should we use a caller or callee cleanup calling convention?
+            //
+            // CDECL is caller cleanup.
+            // The caller pushes the arguments and later pops them.
+            //
+            // The Pascal/stdcall conventions are callee cleanup.
+            // The funtions knows how many bytes have been pushes as arguments.
+            // The ret instruction has an optional 16 bit operand that specifies how many
+            // bytes shall be popped off the stack when returning.
+            //
+            // A third option is to push nargs onto the stack. But then, we'll have to calculate
+            // the load index at runtime in assembly. Fiddly!
+            //
+            // Should I add a stack ADT for keepinng track of number of arguments?
+            // If I were to use a stack then I run into trouble for caller
+            // cleanup calling conventions. At the moment, we don't know how
+            // many ops a function has at the OP_CALL instruction. We need that
+            // there for popping the stack.
+            //
+            // Maybe I should use a use a calle-cleanup convention and keep track of number of
+            // arguments on the stack via a stack ADT. By the time I
+            // reach OP_RET, I can pop the stack and ret <NARGS>. That requires
+            // that there's only one OP_RET for each function though. Maybe the bytecode
+            // should be canonicalized to ensure there' only one exit point for
+            // each function.
+            //
+            // A OP_FUNC_END annotation would allow us to keep track of the proper stack level as well
+
             // ### mov rax, [rbp+index]
             // ### push rax
             UNKNOWN_OPCODE();
