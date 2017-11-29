@@ -190,6 +190,22 @@ TEST(Compiler, FunctionEmpty) {
     EXEC_AND_COMPARE(42, buf);
 }
 
+TEST(Compiler, Function_AddTwoParameters) {
+    char buf[] = R"(
+        iconst 1
+        iconst 2
+        call .f
+        halt
+        .def .f args=2, locals=0
+        load 0
+        load 1
+        iadd
+        ret
+    )";
+
+    EXEC_AND_COMPARE(3, buf);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

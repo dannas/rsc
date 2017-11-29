@@ -39,12 +39,14 @@ MachineCode compile(const Bytecode &code) {
     emitPrologue(masm);
 
     size_t pos = 0;
+    int nargs = 0;
+    int nlocals = 0;
 
     while (pos < code.size()) {
         OpCode op = static_cast<OpCode>(code[pos]);
         Imm32 imm;
         BytecodePos addr;
-        int nargs, nlocals;
+        int index = 0;
 
         pos++; // Move to next opcode or operand
 
@@ -114,37 +116,16 @@ MachineCode compile(const Bytecode &code) {
             masm.cmp(rax, rbx);
             masm.j(AboveOrEqual, labels[addr]);
         CASE OP_LOAD:
-            // TODO(dannas): Should we use a caller or callee cleanup calling convention?
-            //
-            // CDECL is caller cleanup.
-            // The caller pushes the arguments and later pops them.
-            //
-            // The Pascal/stdcall conventions are callee cleanup.
-            // The funtions knows how many bytes have been pushes as arguments.
-            // The ret instruction has an optional 16 bit operand that specifies how many
-            // bytes shall be popped off the stack when returning.
-            //
-            // A third option is to push nargs onto the stack. But then, we'll have to calculate
-            // the load index at runtime in assembly. Fiddly!
-            //
-            // Should I add a stack ADT for keepinng track of number of arguments?
-            // If I were to use a stack then I run into trouble for caller
-            // cleanup calling conventions. At the moment, we don't know how
-            // many ops a function has at the OP_CALL instruction. We need that
-            // there for popping the stack.
-            //
-            // Maybe I should use a use a calle-cleanup convention and keep track of number of
-            // arguments on the stack via a stack ADT. By the time I
-            // reach OP_RET, I can pop the stack and ret <NARGS>. That requires
-            // that there's only one OP_RET for each function though. Maybe the bytecode
-            // should be canonicalized to ensure there' only one exit point for
-            // each function.
-            //
-            // A OP_FUNC_END annotation would allow us to keep track of the proper stack level as well
-
-            // ### mov rax, [rbp+index]
-            // ### push rax
-            UNKNOWN_OPCODE();
+            index = code[pos++];
+            if (nargs > 0 && index < nargs) { 
+                // TODO(dannas): Replace '8' with constant for word length
+                int disp = (nargs + 1 - index) * 8;
+                masm.mov(rax, rbp, disp);
+            } else {
+                int disp = -(index - nargs) * 8;
+                masm.mov(rax, rbp, disp);
+            }
+            masm.push(rax);
         CASE OP_STORE:
             // ### pop rax
             // ### mov [rbp+index], rax
