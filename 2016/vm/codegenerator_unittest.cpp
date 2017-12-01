@@ -190,7 +190,7 @@ TEST(CodeGenerator, CmpSetLessThan_InputEqual) {
     EXEC_AND_COMPARE(0, code);
 }
 
-TEST(CodeGenerator, MovWithDisplacement_AddTwoStackLocations) {
+TEST(CodeGenerator, MovWithDisplacement_LoadTwoStackLocations) {
     CodeGenerator masm;
 
     // Prologue
@@ -219,6 +219,36 @@ TEST(CodeGenerator, MovWithDisplacement_AddTwoStackLocations) {
     EXEC_AND_COMPARE(3, code);
 }
 
+TEST(CodeGenerator, MovWithDisplacement_StoreTwoStackLocations) {
+    CodeGenerator masm;
+
+    // Prologue
+    masm.push(rbx);
+    masm.push(rbp);
+    masm.mov(rbp, rsp);
+    masm.sub(rsp, Imm32(2 * 8)); // TODO(dannas): Replace '8' with worrdsize constant
+
+    masm.mov(rax, 1);
+    masm.mov(rbx, 2);
+
+    masm.mov(rbp, -8, rax);
+    masm.mov(rbp, -16, rbx);
+
+    masm.pop(rcx);
+    masm.pop(rdx);
+    masm.add(rcx, rdx);
+    masm.mov(rax, rcx);
+
+    // Epilogue
+    masm.mov(rsp, rbp);
+    masm.pop(rbp);
+    masm.pop(rbx);
+    masm.ret();
+
+    auto code = masm.buf();
+
+    EXEC_AND_COMPARE(3, code);
+}
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
