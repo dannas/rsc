@@ -1,24 +1,79 @@
 #pragma once
+
 #include <utility>
+#include <iterator>
 
 namespace danstd {
 
 template <typename K, typename V>
 class map {
     struct node {
-        node() : left(nullptr), right(nullptr), kv() {}
+        node() : left(nullptr), right(nullptr), parent(nullptr), kv() {}
         node(node* l, node* r, const K& key, const V& value) 
             : left(l), right(r), kv(key, value) {
         }
 
         node* left;
         node* right;
+        node* parent;
         std::pair<K, V> kv;
     };
 
 public:
+
+    class iterator {
+    public:
+        using value_type = std::pair<K, V>;
+        using reference = node&;
+        using pointer = node*;
+        using iterator_category = std::bidirectional_iterator_tag;
+
+        iterator(node* n)
+            : node_(n), prev_(nullptr) {
+        }
+
+        iterator& operator++() {
+            if (!node_)
+                return *this;
+            K key = node_->kv.first;
+
+            while (key <= node_->kv.first) {
+                if (node_->parent == prev_) {
+                    prev_ = node_;
+                    node_ = node_->right;
+                } else if (node_->left == prev_) {
+                    prev_ = node_;
+                    node_ = node_->left;
+                } else if (node_->right == prev_) {
+                    prev_ = node_;
+                    node_ = node_->parent;
+                }
+            }
+            return *this;
+        }
+
+        iterator operator++(int) {
+            iterator temp(*this);
+            operator++();
+            return temp;
+        }
+
+        value_type operator*() {
+            return node_->kv;
+        }
+
+    private:
+        node* node_;
+        node* prev_;
+    };
+
     map() : root_(nullptr) {
 
+    }
+    // TODO(dannas): Add copy constructor etcetera
+    ~map() {
+        deleteTree(root_);
+        delete root_;
     }
 
     V& operator[](const K& key) {
@@ -31,10 +86,14 @@ public:
         return *get(root_, key);
     }
 
-    ~map() {
-        deleteTree(root_);
-        delete root_;
+    size_t size() {
+        return size(root_);
     }
+
+    iterator begin() {
+        return iterator(root_);
+    }
+
 private:
     // TODO(dannas): Can this be simplified?
     void deleteTree(node* n) {
@@ -72,6 +131,16 @@ private:
         else
             n = new node(n->left, n->right, key, val);
         return n;
+    }
+
+    size_t size(node* node) {
+        if (!node)
+            return 0;
+
+        size_t N = 0;
+        N += size(node->left);
+        N += size(node->right);
+        return N + 1;
     }
 
     node* root_;
