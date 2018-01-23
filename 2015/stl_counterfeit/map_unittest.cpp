@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <utility>
+#include <iostream> // TODO(dannas): Remove after testing
 
 #include "map.h"
 
@@ -35,13 +36,46 @@ TEST(Map, Insert_InsertedElementsShouldBeRetrievable) {
     ASSERT_EQ(3, m.size());
 }
 
-TEST(Map, Iterator_BeginShouldReturnRootElement)  {
+TEST(Map, Iterator_EmptyMapShouldEqualEnd) {
+    danstd::map<int, int> m;
+    auto it = m.begin();
+    ASSERT_EQ(it, m.end());
+}
+TEST(Map, Iterator_IncrementPastEnd) {
+    danstd::map<int, int> m;
+    auto it = m.begin();
+    it++;
+    ASSERT_EQ(it, m.end());
+}
+
+TEST(Map, Iterator_BeginShouldReturnSmallestElement)  {
     danstd::map<int, int> m;
     m[0] = 1;
+    //  0
+
     auto it = m.begin();
-    // TODO(dannas): How overload -> operator for iterator
-    ASSERT_EQ(0, (*it).first);
-    ASSERT_EQ(1, (*it).second);
+    ASSERT_EQ(0, it->first);
+    ASSERT_EQ(1, it->second);
+    m[-2] = -3;
+    it = m.begin();
+    ASSERT_EQ(-2, it->first);
+    ASSERT_EQ(-3, it->second);
+    m[-1] = -5;
+    ASSERT_EQ(-2, it->first);
+    ASSERT_EQ(-3, it->second);
+}
+
+TEST(Map, Iterator_TraverseDecreasing) {
+    danstd::map<int, int> m;
+    m[3] = 3;
+    m[2] = 2;
+    m[1] = 1;
+    auto it = m.begin();
+    ASSERT_EQ(1, it->first);
+    it++;
+    ASSERT_EQ(2, it->first);
+    it++;
+    ASSERT_EQ(3, it->first);
 }
 
 
