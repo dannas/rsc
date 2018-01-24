@@ -30,33 +30,27 @@ public:
         using pointer = node*;
         using iterator_category = std::bidirectional_iterator_tag;
 
-        iterator(node* n, map* m)
-            : node_(n), prev_(n) , map_(m){
+        iterator(node* n)
+            : node_(n) {
         }
 
         iterator& operator++() {
             if (!node_) {
-                std::cout << "no node" << std::endl;
                 return *this;
             }
-            // Tree invariant: The current node is the leftmost of all unvisited nodes
-
-            // CASE previous node is left
-            if (prev_ == node_->left) {
-                std::cout << "left" << std::endl;
-                if (node_->right) {
-                    map_->find_leftmost(node_->right);
-                } else {
-                    prev_ = node_;
-                    node_ = node_->parent;
+            // Either we have a right subtree beneath or we need to go up until we're
+            // no longer part of a right subtree.
+            if (node_->right) {
+                node_ = node_->right;
+                while (node_->left)
+                    node_ = node_->left;
+            } else {
+                node* parent = node_->parent;
+                while (parent && node_ == parent->right) {
+                    node_ = parent;
+                    parent = node_->parent;
                 }
-            // CASE previous node is parent
-            } else if (prev_ == node_->parent) {
-                std::cout << "right" << std::endl;
-                // find grandparent
-            } else if (prev_ == node_) {
-                std::cout << "Not left or right" << std::endl;
-                node_ = node_->parent;
+                node_ = parent;
             }
             return *this;
         }
@@ -81,8 +75,6 @@ public:
 
     private:
         node* node_;
-        node* prev_;
-        map* map_;
     };
 
     map() : root_(nullptr) {
@@ -109,12 +101,14 @@ public:
     }
 
     iterator begin() {
-        node* n = find_leftmost(root_);
-        return iterator(n, this);
+        node* n = root_;
+        while (n && n->left)
+            n = n->left;
+        return iterator(n);
     }
 
     iterator end() {
-        return iterator(nullptr, this);
+        return iterator(nullptr);
     }
 
 private:
@@ -155,27 +149,6 @@ private:
             n->kv.second = val;
         return n;
     }
-
-    node* find_leftmost(node* n) {
-        while (n && n->left)
-            n = n->left;
-        return n;
-    }
-
-    node* find_right_branch(node* n) {
-        // What precondition?
-        // What is the invariant?
-        // What postcondition?
-        while (true) {
-            if (!n)
-                return n;
-            if (n->right)
-                return n->right;
-            n = n->parent;
-        }
-        return n;
-    }
-
 
     size_t size(node* node) {
         if (!node)
