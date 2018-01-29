@@ -10,9 +10,17 @@ namespace danstd {
 template <typename K, typename V>
 class map {
     struct node {
-        node() : left(nullptr), right(nullptr), parent(nullptr), kv() {}
+        node()
+            : left(nullptr)
+            , right(nullptr)
+            , parent(nullptr)
+            , kv() {
+        }
         node(node* l, node* r, node* p, const K& key, const V& value)
-            : left(l), right(r), parent(p), kv(key, value) {
+            : left(l)
+            , right(r)
+            , parent(p)
+            , kv(key, value) {
         }
 
         node* left;
@@ -77,7 +85,8 @@ public:
         node* node_;
     };
 
-    map() : root_(nullptr) {
+    map()
+        : root_(nullptr) {
 
     }
     // TODO(dannas): Add copy constructor etcetera
