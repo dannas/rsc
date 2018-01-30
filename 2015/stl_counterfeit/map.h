@@ -6,9 +6,20 @@
 
 namespace danstd {
 
-
+// A bare minimum symboltable for key/value lookups. Do NOT use in production;
+// for educational purpose only.
+//
+// It demonstrates the most commonly used map functionality such as key/value
+// lookup, insertion, deletion and iteration.
+//
+// The map is built upon a plain, non-balancing, binary search tree (BST). So
+// worse case runtime is O(n).
+//
+// The class does not provide allocators, nor custom Compare functions.
 template <typename K, typename V>
 class map {
+
+    // The internal node that constructs the tree.
     struct node {
         node()
             : left(nullptr)
@@ -95,7 +106,8 @@ public:
     }
 
     // TODO(dannas): Make |other| const and const overload the neccessary member functions
-    map(map& other) : root_(nullptr) {
+    map(map& other) 
+        : root_(nullptr) {
         for (auto& kv : other)
             root_ = put(nullptr, root_, kv.first, kv.second);
     }
@@ -110,7 +122,7 @@ public:
         return *this;
     }
 
-    void swap(map& other) {
+    void swap(map& other) noexcept {
         using std::swap;
         swap(root_, other.root_);
     }
@@ -192,10 +204,16 @@ private:
     node* root_;
 };
 
+// Specialize std::swap.
+//
+// We can't do a proper template specialization for template types since C++
+// does  not allow partial specialization for classes.
+// We can't define this function inside the std namespace since only total template
+// specializations are allowed in there.
+//
+// See Effective C++ Item 25. Consider  support for non-throwing swap.
 template <typename K, typename V>
-void swap(map<K, V>& lhs, map<K, V>& rhs) {
+void swap(map<K, V>& lhs, map<K, V>& rhs) noexcept {
     lhs.swap(rhs);
 }
-
-
 }
