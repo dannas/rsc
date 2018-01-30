@@ -73,6 +73,10 @@ public:
             return lhs.node_ == rhs.node_;
         }
 
+        friend bool operator!=(const iterator& lhs, const iterator& rhs) {
+            return !(lhs == rhs);
+        }
+
         value_type& operator*() {
             return node_->kv;
         }
@@ -89,10 +93,26 @@ public:
         : root_(nullptr) {
 
     }
-    // TODO(dannas): Add copy constructor etcetera
+
+    // TODO(dannas): Make |other| const and const overload the neccessary member functions
+    map(map& other) : root_(nullptr) {
+        for (auto& kv : other)
+            root_ = put(nullptr, root_, kv.first, kv.second);
+    }
+
     ~map() {
         deleteTree(root_);
         delete root_;
+    }
+
+    map& operator=(map other) {
+        swap(other);
+        return *this;
+    }
+
+    void swap(map& other) {
+        using std::swap;
+        swap(root_, other.root_);
     }
 
     V& operator[](const K& key) {
@@ -171,4 +191,11 @@ private:
 
     node* root_;
 };
+
+template <typename K, typename V>
+void swap(map<K, V>& lhs, map<K, V>& rhs) {
+    lhs.swap(rhs);
+}
+
+
 }
