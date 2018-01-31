@@ -31,6 +31,13 @@ static void emitEpilogue(CodeGenerator& masm) {
     masm.ret();
 }
 
+static int calcDisp(int nargs, int index) {
+    // TODO(dannas): Replace '8' with constant for word length
+    if (nargs > 0 && index < nargs)
+        return (nargs + 1 - index) * 8;
+    return -(1 + index - nargs) * 8;
+}
+
 MachineCode compile(const Bytecode &code) {
     CodeGenerator masm;
     map<BytecodePos, Label> labels;
@@ -47,6 +54,7 @@ MachineCode compile(const Bytecode &code) {
         Imm32 imm;
         BytecodePos addr;
         int index = 0;
+        int disp;
 
         pos++; // Move to next opcode or operand
 
@@ -117,26 +125,14 @@ MachineCode compile(const Bytecode &code) {
             masm.j(AboveOrEqual, labels[addr]);
         CASE OP_LOAD:
             index = code[pos++];
-            if (nargs > 0 && index < nargs) { 
-                // TODO(dannas): Replace '8' with constant for word length
-                int disp = (nargs + 1 - index) * 8;
-                masm.mov(rax, rbp, disp);
-            } else {
-                int disp = -(1 + index - nargs) * 8;
-                masm.mov(rax, rbp, disp);
-            }
+            disp = calcDisp(nargs, index);
+            masm.mov(rax, rbp, disp);
             masm.push(rax);
         CASE OP_STORE:
             index = code[pos++];
             masm.pop(rax);
-            if (nargs > 0 && index < nargs) { 
-                // TODO(dannas): Replace '8' with constant for word length
-                int disp = (nargs + 1 - index) * 8;
-                masm.mov(rbp, disp, rax);
-            } else {
-                int disp = -(1 + index - nargs) * 8;
-                masm.mov(rbp, disp, rax);
-            }
+            disp = calcDisp(nargs, index);
+            masm.mov(rbp, disp, rax);
         CASE OP_PRINT:
             UNKNOWN_OPCODE();
         CASE OP_CALL:
