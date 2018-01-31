@@ -94,7 +94,7 @@ MachineCode compile(const Bytecode &code) {
             masm.push(rbp);
             masm.mov(rbp, rsp);
             // TODO(dannas): Do we need to make sure stack is 16 bit aligned?
-            masm.sub(rsp, nlocals * sizeof(int32_t));
+            masm.sub(rsp, (1 + nlocals) * 8); // TODO(dannas): Replace '8' with constant for word length
         CASE OP_ILT:
             masm.pop(rbx);
             masm.pop(rax);
@@ -122,14 +122,21 @@ MachineCode compile(const Bytecode &code) {
                 int disp = (nargs + 1 - index) * 8;
                 masm.mov(rax, rbp, disp);
             } else {
-                int disp = -(index - nargs) * 8;
+                int disp = -(1 + index - nargs) * 8;
                 masm.mov(rax, rbp, disp);
             }
             masm.push(rax);
         CASE OP_STORE:
-            // ### pop rax
-            // ### mov [rbp+index], rax
-            UNKNOWN_OPCODE();
+            index = code[pos++];
+            masm.pop(rax);
+            if (nargs > 0 && index < nargs) { 
+                // TODO(dannas): Replace '8' with constant for word length
+                int disp = (nargs + 1 - index) * 8;
+                masm.mov(rbp, disp, rax);
+            } else {
+                int disp = -(1 + index - nargs) * 8;
+                masm.mov(rbp, disp, rax);
+            }
         CASE OP_PRINT:
             UNKNOWN_OPCODE();
         CASE OP_CALL:

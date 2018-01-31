@@ -179,6 +179,24 @@ TEST(Compiler, JumpIfTrue_CompareForEqual) {
     EXEC_AND_COMPARE(2, buf);
 }
 
+TEST(Compiler, Store_StoreTwoValues) {
+    char buf[] = R"(
+        call .f
+        halt
+    .def .f args=0, locals=2
+        iconst 2
+        store 0
+        iconst 3
+        store 1
+        load 0
+        load 1
+        iadd
+        ret
+    )";
+    EXEC_AND_COMPARE(5, buf);
+
+}
+
 TEST(Compiler, FunctionEmpty) {
     char buf[] = R"(
         call .f
