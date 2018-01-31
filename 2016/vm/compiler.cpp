@@ -60,7 +60,7 @@ MachineCode compile(const Bytecode &code) {
 
         switch (op) {
         CASE OP_POP:
-            UNKNOWN_OPCODE();
+            masm.pop(rax);
         CASE OP_IADD:
             masm.pop(rax);
             masm.pop(rbx);
