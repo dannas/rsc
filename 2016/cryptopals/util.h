@@ -29,3 +29,5 @@ double chisquare(int (&observed)[N], int (&expected)[N]) {
 // Example:
 //      { 0x00, 0x61, 0x62, 0x63, 0x19 } => "\x00abc\x19"
 std::string escapeString(const ByteVector& bytes);
+
+std::vector<ByteVector> transpose(const ByteVector& bytes, size_t ncols);
