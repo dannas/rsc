@@ -14,6 +14,7 @@ add_library(sources STATIC
     assembler.cpp
     codegenerator.h
     compiler.cpp
+    compiler2.cpp
     interpreter.cpp
     opcodes.cpp
     vm.h

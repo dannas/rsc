@@ -58,6 +58,11 @@ std::string disassemble(std::istream& in);
 // |code| must be well formed bytecode - as produced by the assembler step.
 MachineCode compile(const Bytecode& code);
 
+// Compile the bytecode in |code|.
+//
+// |code| must be well formed bytecode - as produced by the assembler step.
+MachineCode compile2(const Bytecode& code);
+
 // PRIVATE INTERFACE
 
 // List of available bytecodes on the form

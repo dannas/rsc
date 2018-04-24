@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <cassert>
+#include <cstdint>
 
 // Encoding x86 instructions
 // http://www.c-jump.com/CIS77/CPU/x86/lecture.html
@@ -10,7 +11,7 @@
 // A readable description of the most common x86 instructions
 // http://c9x.me/x86/
 
-enum Reg : uint8_t{
+enum Reg : uint8_t {
     rax = 0,
     rcx = 1,
     rdx = 2,
@@ -224,14 +225,14 @@ inline void CodeGenerator::add(Reg dst, Reg src) {
     emitModRM(DIRECT, src, dst);
 }
 
-void CodeGenerator::add(Reg dst, Imm32 imm) {
+inline void CodeGenerator::add(Reg dst, Imm32 imm) {
     emit(REX_W);
     emit(0x81);
     emitModRM(DIRECT, 0, dst);
     emit4(imm.val);
 }
 
-uint32_t CodeGenerator::call(Imm32 imm) {
+inline uint32_t CodeGenerator::call(Imm32 imm) {
     emit(0xe8);
     uint32_t src = size();
     emit4(imm.val);

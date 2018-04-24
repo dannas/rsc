@@ -23,6 +23,34 @@ using namespace std;
         munmap(mem, code.size());   \
     } while (0)
 
+#define EXEC_AND_COMPARE2(expected, buf) \
+    do { \
+        stringstream as(buf);   \
+        auto bytecode = assemble(as);   \
+        auto code = compile2(bytecode);  \
+        void *mem = mmap(nullptr, code.size(), PROT_WRITE | PROT_EXEC,  \
+                MAP_ANON | MAP_PRIVATE, -1, 0); \
+        memcpy(mem, code.data(), code.size());  \
+        int (*func)() = (int (*)())mem; \
+        int sum = func();   \
+        ASSERT_EQ(expected, sum);   \
+        munmap(mem, code.size());   \
+    } while (0)
+
+TEST(Compiler, BaseCompilerScratchTest) {
+    char buf[] = R"(
+        call .f
+        halt
+    .def .f args=0, locals=2
+         load 0
+         load 0
+         iadd
+         store 0
+         ret
+    )";
+    EXEC_AND_COMPARE2(0, buf);
+}
+
 TEST(Compiler, AddTwoConstants) {
     char buf[] = R"(
         iconst 3
