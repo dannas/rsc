@@ -105,7 +105,7 @@ const uint8_t REX_W = 0x48;
 
 class CodeGenerator {
 public:
-    std::vector<uint8_t> buf();
+    std::vector<uint8_t> &buf();
     uint8_t* data();
     size_t size();
 
@@ -148,7 +148,7 @@ private:
     std::vector<uint8_t> buf_;
 };
 
-inline std::vector<uint8_t> CodeGenerator::buf() {
+inline std::vector<uint8_t>& CodeGenerator::buf() {
     return buf_;
 
 }

@@ -17,17 +17,33 @@
 using namespace std;
 using BytecodePos = int32_t;
 
+struct Offset {
+    uint32_t offset;
+};
+
 struct Stk {
     enum Kind {
         REG,
-        MEM
+        MEM,
+        CONST
     };
     Kind kind;
     union {
-        Reg reg;
-        uint32_t offset;
+        Reg r_;
+        uint32_t offset_;
+        Imm32 val_;
     };
+
+    Stk(Reg r)      : kind(REG), r_(r) {}
+    Stk(Offset o)   : kind(MEM), offset_(o.offset) {}
+    Stk(Imm32 v)    : kind(CONST), val_(v) {}
+
+    Reg reg()           { assert(kind == REG); return r_; }
+    uint32_t offs()     { assert(kind == MEM); return offset_; }
+    Imm32 val()         { assert(kind == CONST); return val_; }
 };
+
+CodeGenerator masm;
 
 
 // I need a set of available registers
@@ -41,10 +57,10 @@ struct Stk {
 // I need to be able to retrieve a spilled value. Is that done by first
 // loading it into a set?
 // TODO(dannas): Decide on which registers should be available
-set<Reg> registerAvailable = {rbx, rax, rcx, rdx};
+set<Reg> registerAvailable = {rbx, rcx, rsi, rdi};
 vector<Stk> stk;
 
-Reg getFreeReg() {
+Reg allocReg() {
     assert(!registerAvailable.empty());
     // TODO(dannas): Surely there's a better way
     Reg r = *registerAvailable.begin();
@@ -56,16 +72,45 @@ void freeReg(Reg r) {
     registerAvailable.insert(r);
 }
 
-Reg popReg() {
+Reg pop() {
     assert(!stk.empty());
-    Stk s = stk.back();
+    Stk& v = stk.back();
+    Reg r;
+    //assert(v.kind == Stk::REG);
+    switch (v.kind) {
+    case Stk::REG:
+        r = v.reg();
+        break;
+    case Stk::MEM:
+        assert(0);
+        break;
+    case Stk::CONST:
+        r = allocReg();
+        masm.mov(r, v.val());
+        break;
+    default:
+        assert(0);
+    }
+
     stk.pop_back();
-    assert(s.kind == Stk::REG);
-    return s.reg;
+    return r;
+}
+
+Reg pop(Reg specific) {
+    assert(!stk.empty());
+    // TODO(dannas): Assumes that specific is not in set of allocatable registers
+    Reg r = pop();
+    masm.mov(specific, r);
+    freeReg(r);
+    return specific;
 }
 
 void pushReg(Reg r) {
-    stk.push_back({Stk::REG, r});
+    stk.push_back(Stk(r));
+}
+
+void pushConst(Imm32 val) {
+    stk.push_back(Stk(val));
 }
 
 static void emitPrologue(CodeGenerator& masm) {
@@ -97,9 +142,9 @@ static int calcDisp(int nargs, int index) {
 }
 
 MachineCode compile2(const Bytecode &code) {
-    CodeGenerator masm;
     map<BytecodePos, Label> labels;
     map<BytecodePos, Label> functions;
+    masm.buf().clear();
 
     emitPrologue(masm);
 
@@ -120,36 +165,52 @@ MachineCode compile2(const Bytecode &code) {
         CASE OP_POP:
             masm.pop(rax);
         CASE OP_IADD: {
-            Reg r1 = popReg();
-            Reg r2 = popReg();
-            masm.add(r1, r2);
-            pushReg(r1);
+            Reg rs = pop();
+            Reg r = pop();
+            masm.add(r, rs);
+            freeReg(rs);
+            pushReg(r);
         }
-        CASE OP_ISUB:
-            masm.pop(rbx);
-            masm.pop(rax);
-            masm.sub(rax, rbx);
-            masm.push(rax);
-        CASE OP_IMULT:
-            masm.pop(rbx);
-            masm.pop(rax);
-            masm.imul(rbx);
-            masm.push(rax);
-        CASE OP_IDIV:
-            masm.pop(rbx);
-            masm.pop(rax);
+        CASE OP_ISUB: {
+            Reg rs = pop();
+            Reg r = pop();
+            masm.sub(r, rs);
+            freeReg(rs);
+            pushReg(r);
+        }
+        CASE OP_IMULT: {
+            Reg rs = pop();
+            Reg r = pop();
+            masm.mov(rax, r);
+            masm.imul(rs);
+            masm.mov(r, rax);
+            freeReg(rs);
+            pushReg(r);
+        }
+        CASE OP_IDIV: {
+            Reg rs = pop();
+            Reg r = pop();
+            masm.mov(rax, r);
             masm.cqo();
-            masm.idiv(rbx);
-            masm.push(rax);
-        CASE OP_IMOD:
-            masm.pop(rbx);
-            masm.pop(rax);
+            masm.idiv(rs);
+            masm.mov(r, rax);
+            freeReg(rs);
+            pushReg(r);
+        }
+        CASE OP_IMOD: {
+            Reg rs = pop();
+            Reg r = pop();
+            masm.mov(rax, r);
             masm.cqo();
-            masm.idiv(rbx);
-            masm.push(rdx);
-        CASE OP_ICONST:
+            masm.idiv(rs);
+            masm.mov(r, rdx);
+            freeReg(rs);
+            pushReg(r);
+        }
+        CASE OP_ICONST: {
             imm = code[pos++];
-            masm.push(imm);
+            pushConst(imm);
+        }
         CASE OP_LABEL:
             masm.bind(labels[pos]);
         CASE OP_FUNC:
@@ -183,16 +244,15 @@ MachineCode compile2(const Bytecode &code) {
             masm.cmp(rax, rbx);
             masm.j(AboveOrEqual, labels[addr]);
         CASE OP_LOAD: {
-            masm.int3();
             index = code[pos++];
             disp = calcDisp(nargs, index);
-            Reg r = getFreeReg();
+            Reg r = allocReg();
             masm.mov(r, rbp, disp);
             pushReg(r);
         }
         CASE OP_STORE: {
             index = code[pos++];
-            Reg r = popReg();
+            Reg r = pop();
             disp = calcDisp(nargs, index);
             masm.mov(rbp, disp, r);
             freeReg(r);
@@ -208,12 +268,11 @@ MachineCode compile2(const Bytecode &code) {
             masm.mov(rsp, rbp);
             masm.pop(rbp);
             masm.ret();
-        CASE OP_HALT:
-            // TODO(dannas): Consider adding a jmp here for another location
-            // where emitEpilogue is placed.
-            masm.pop(rax);
+        CASE OP_HALT: {
+            pop(rax);
             emitEpilogue(masm);
             break;
+        }
         default:
             UNKNOWN_OPCODE();
         }

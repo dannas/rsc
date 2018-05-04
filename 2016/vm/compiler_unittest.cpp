@@ -37,19 +37,6 @@ using namespace std;
         munmap(mem, code.size());   \
     } while (0)
 
-TEST(Compiler, BaseCompilerScratchTest) {
-    char buf[] = R"(
-        call .f
-        halt
-    .def .f args=0, locals=2
-         load 0
-         load 0
-         iadd
-         store 0
-         ret
-    )";
-    EXEC_AND_COMPARE2(0, buf);
-}
 
 TEST(Compiler, AddTwoConstants) {
     char buf[] = R"(
@@ -59,6 +46,7 @@ TEST(Compiler, AddTwoConstants) {
         halt
     )";
     EXEC_AND_COMPARE(8, buf);
+    EXEC_AND_COMPARE2(8, buf);
 }
 
 TEST(Compiler, SubtractTwoConstants) {
@@ -69,6 +57,7 @@ TEST(Compiler, SubtractTwoConstants) {
         halt
     )";
     EXEC_AND_COMPARE(2, buf);
+    EXEC_AND_COMPARE2(2, buf);
 }
 
 TEST(Compiler, MultiplyTwoConstants) {
@@ -79,6 +68,7 @@ TEST(Compiler, MultiplyTwoConstants) {
         halt
     )";
     EXEC_AND_COMPARE(15, buf);
+    EXEC_AND_COMPARE2(15, buf);
 }
 
 TEST(Compiler, DivideTwoConstants) {
@@ -89,6 +79,7 @@ TEST(Compiler, DivideTwoConstants) {
         halt
     )";
     EXEC_AND_COMPARE(6, buf);
+    EXEC_AND_COMPARE2(6, buf);
 }
 
 TEST(Compiler, RemainderOfTwoConstants) {
@@ -99,6 +90,7 @@ TEST(Compiler, RemainderOfTwoConstants) {
         halt
     )";
     EXEC_AND_COMPARE(4, buf);
+    EXEC_AND_COMPARE2(4, buf);
 }
 
 TEST(Compiler, ForwardBranch) {
