@@ -1,151 +1,143 @@
 #include <ncurses.h>
+#include <cstdlib>
 
-struct Ball
-{
-  double rx;
-  double ry;
-  double vx;
-  double vy;
+// TODO(dannas): How handle float vs int for coordinates?
+// TODO(dannas): How cleanup the references to width-1 and height-1?
+// TODO(dannas): How take radius into account for collision detection?
+// TODO(dannas): How make a proper rendering loop that uses fixed fps?
+
+using Dir = int;
+
+struct Ball {
+  float x, y;   // coordinates
+  float dx, dy; // next change in coordinates
 };
 
-struct Paddle
-{
-  int upper;
-  int lower;
+struct Paddle {
+  int hi;        // upper y coordinate
+  int lo;        // lower y coordinate
+  int x;         // x coordinate
+  Dir dir;       // direction of the paddle
 };
 
-// Width of the board.
-int width_;
-
-// Height of the board.
-int height_;
-
-// Current position of the ball.
-Ball ball_;
-
-// Edges of the paddle.
-Paddle paddle_;
-
-// Direction of the paddle.
-int dir_;
-
-bool
-legalArrowKey(int c)
-{
-  return c == KEY_UP || c == KEY_DOWN;
-}
-
-void
-readArrowKeys()
-{
+void readArrowKeys(Dir& dir) {
   int c = getch();
-  if (legalArrowKey(c)) {
-    dir_ = c;
+
+  if (c == KEY_UP || c == KEY_DOWN) {
+    dir = c;
   } else {
     // Sentinel for "not up or down".
-    dir_ = 0;
+    dir = 0;
   }
 }
 
-void
-render()
-{
+void render(const Ball& b, const Paddle& p) {
   clear();
 
-  mvaddch(ball_.ry, ball_.rx, ACS_DIAMOND);
+  mvaddch(b.y, b.x, ACS_DIAMOND);
 
-  for (int y = paddle_.upper; y <= paddle_.lower; ++y)
-    mvaddch(y, width_ - 1, ACS_BLOCK);
+  for (int y = p.hi; y <= p.lo; ++y)
+    mvaddch(y, p.x, ACS_BLOCK);
 }
 
-void
-movePaddle()
-{
-  if (dir_ == KEY_UP && paddle_.upper != 0) {
-    paddle_.lower--;
-    paddle_.upper--;
-  } else if (dir_ == KEY_DOWN && paddle_.lower != height_ - 1) {
-    paddle_.lower++;
-    paddle_.upper++;
+void move(Paddle& p, int h) {
+  if (p.dir == KEY_UP && p.hi != 0) {
+    p.lo--;
+    p.hi--;
+  } else if (p.dir == KEY_DOWN && p.lo != h - 1) {
+    p.lo++;
+    p.hi++;
   }
 }
 
-bool
-hitsPaddle(const Ball& ball, const Paddle& paddle)
-{
-  return ball.rx >= width_ - 1 && ball.ry >= paddle.upper &&
-         ball.ry <= paddle.lower;
+bool hits(const Ball& b, const Paddle& p) {
+  return b.x >= p.x && b.y >= p.hi &&
+         b.y <= p.lo;
 }
 
-bool
-update()
-{
-  movePaddle();
+bool update(Ball& b, Paddle& p, int h, int w) {
+  move(p, h);
 
-  double& rx = ball_.rx;
-  double& ry = ball_.ry;
-  double& vx = ball_.vx;
-  double& vy = ball_.vy;
+  // Change direction if ball hits left border or paddle.
+  if (b.x <= 0 || hits(b, p)) {
+    b.dx = -b.dx;
 
-  // Detect collision with borders and paddle.
-  //
-  // (0,0)  +----------+ (xmax, 0)
-  //        |
-  //        |    *     |
-  //        |
-  //        +----------+
-  //
-  if (rx <= 0)
-    vx = -vx;
-  else if (hitsPaddle(ball_, paddle_))
-    vx = -vx;
-  else if (rx >= width_)
+  // Change direction if ball hits top or bottom.
+  } else if (b.y <= 0 || b.y >= h) {
+    b.dy = -b.dy;
+
+  // Game Over if ball hits right border outside the paddle.
+  } else if (b.x >= w) {
     return false;
-  else if (ry <= 0)
-    vy = -vy;
-  else if (ry >= height_)
-    vy = -vy;
+  }
 
-  // Calculate new postion, based on speed.
-  rx += vx;
-  ry += vy;
+  b.x += b.dx;
+  b.y += b.dy;
 
   return true;
 }
 
-void
-gameLoop()
-{
+void gameLoop(Ball& b, Paddle& p, int h, int w) {
   bool alive = true;
+
   while (alive) {
-    render();
-    readArrowKeys();
-    alive = update();
+    render(b, p);
+    readArrowKeys(p.dir);
+    alive = update(b, p, h, w);
   }
 }
 
-void
-initBoard()
-{
-  getmaxyx(stdscr, height_, width_);
+void initBoard(Ball& b, Paddle& p, int& h, int& w) {
+  getmaxyx(stdscr, h, w);
 
-  double xmid = width_ / 2.0;
-  double ymid = height_ / 2.0;
-  double vx = -4.5;
-  double vy = -0.5;
+  float xmid = w / 2.0;
+  float ymid = h / 2.0;
 
-  paddle_ = { static_cast<int>(ymid - 10), static_cast<int>(ymid + 10) };
+  // TODO(dannas): How avoid hardcoding the size of the paddle?
+  int hi = ymid - 10;
+  int lo = ymid + 10;
+  p = {hi, lo, w-1, Dir(0)};
 
-  ball_ = { xmid, ymid, vx, vy };
+  // TODO(dannas): How describe how these constants were choosen?
+  float dx = -4.5;
+  float dy = -0.5;
+  b = {xmid, ymid, dx, dy};
 }
 
-int
-main()
-{
-  enableRawMode();
-  initBoard();
-  gameLoop();
-
+void disableRawMode() {
   // Restore terminal state.
   endwin();
+}
+
+void enableRawMode() {
+  atexit(disableRawMode);
+
+  // Create stdscr.
+  initscr();
+
+  // Don't wait for newlines.
+  cbreak();
+
+  // Don't echo chars written.
+  noecho();
+
+  // Enable fn and arrow keys.
+  keypad(stdscr, TRUE);
+
+  // Hide the cursor.
+  curs_set(0);
+
+  // Let getch() block for 100ms.
+  timeout(100);
+}
+
+int main() {
+  Ball b;
+  Paddle p;
+  int h, w;
+
+  enableRawMode();
+
+  initBoard(b, p, h, w);
+  gameLoop(b, p, h, w);
 }
