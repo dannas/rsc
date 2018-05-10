@@ -28,7 +28,9 @@ typedef struct CallFrame {
 } CallFrame;
 
 CallFrame callstack[10];
-CallFrame *fp;
+CallFrame *fp =  NULL;
+
+char *code = NULL;
 
 // Interpreter for the Mouse language.
 // http://mouse.davidgsimpson.com/mouse83/intro83.html
@@ -41,6 +43,17 @@ CallFrame *fp;
 //  Add error reporting
 //  Decide how to handle registers. Which are caller/callee saved?
 //  Should parameter indexes start from 0 or 1?
+
+int32_t scan_int() {
+    assert(isdigit(*code));
+    int32_t val = 0;
+    while (isdigit(*code)) {
+        val *= 10;
+        val += *code - '0';
+        code++;
+    }
+    return val;
+}
 
 int32_t interpret(char *program) {
     enum {
@@ -58,7 +71,7 @@ int32_t interpret(char *program) {
     fp = callstack;
     char* loop_header = NULL;
 
-    char *code = program;
+    code = program;
 
     while (*code) {
         if (*code == '$') {
@@ -90,12 +103,7 @@ int32_t interpret(char *program) {
             break;
         case '0'...'9': {
             PUSHES(1);
-            int32_t val = 0;
-            while (isdigit(*code)) {
-                val *= 10;
-                val += *code - '0';
-                code++;
-            }
+            int32_t val = scan_int();
             PUSH(val);
             break;
         }
@@ -159,12 +167,7 @@ int32_t interpret(char *program) {
 
             while (*code && *code != ';') {
                 if (isdigit(*code)) {
-                    int32_t val = 0;
-                    while (isdigit(*code)) {
-                        val *= 10;
-                        val += *code - '0';
-                        code++;
-                    }
+                    int32_t val = scan_int();
                     fp->params[fp->num_params] = val;
                     fp->num_params++;
                 } else {
@@ -185,13 +188,7 @@ int32_t interpret(char *program) {
             break;
         case '%': {
             code++;
-            assert(isdigit(*code));
-            int32_t index = 0;
-            while (isdigit(*code)) {
-                index *= 10;
-                index += *code - '0';
-                code++;
-            }
+            int32_t index = scan_int();
             assert(index >= 0 && index < fp->num_params);
             PUSHES(1);
             PUSH(fp->params[index]);
