@@ -55,6 +55,16 @@ int32_t scan_int() {
     return val;
 }
 
+void eat(char c) {
+    while (*code && *code != c) {
+        code++;
+    }
+    if (*code) {
+        code++;
+    }
+
+}
+
 int32_t interpret(char *program) {
     enum {
         MAX_STACK = 32,
@@ -97,9 +107,7 @@ int32_t interpret(char *program) {
             code++;
             break;
         case '~':
-            while (*code && *code != '\n') {
-                code++;
-            }
+            eat('\n');
             break;
         case '0'...'9': {
             PUSHES(1);
@@ -133,8 +141,7 @@ int32_t interpret(char *program) {
         case '[':
             POPS(1);
             if (!POP()) {
-                while (*code && *code != ']')
-                    code++;
+                eat(']');
             } else {
                 code++;
             }
@@ -150,12 +157,7 @@ int32_t interpret(char *program) {
             code = loop_header;
             break;
         case '^':
-            while (*code && *code != ')') {
-                code++;
-            }
-            if (*code) {
-                code++;
-            }
+            eat(')');
             break;
         case '#':
             code++;
