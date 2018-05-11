@@ -19,13 +19,22 @@
         PUSH(left op right); \
     } while (0)
 
+enum {
+    MAX_STACK = 32,
+    NUM_REGS = 'Z'-'A' + 1,
+    NUM_MACROS = NUM_REGS,
+    MAX_PARAMS = 10,
+    MAX_CALLFRAMES = 10
+};
+
 typedef struct CallFrame {
     char *return_address;
     int32_t num_params;
-    int32_t params[10];
+    int32_t params[MAX_PARAMS];
+    int32_t saved_regs[NUM_REGS];
 } CallFrame;
 
-CallFrame callstack[10];
+CallFrame callstack[MAX_CALLFRAMES];
 CallFrame *fp =  NULL;
 
 char *code = NULL;
@@ -63,11 +72,6 @@ void eat(char c) {
 }
 
 int32_t interpret(char *program) {
-    enum {
-        MAX_STACK = 32,
-        NUM_REGS = 'Z'-'A' + 1,
-        NUM_MACROS = NUM_REGS
-    };
 
     int32_t stack[MAX_STACK];
     int32_t *top = stack;
@@ -154,7 +158,6 @@ int32_t interpret(char *program) {
             break;
         case '#':
             code++;
-            assert(isalpha(*code));
             fp++;
             memset(fp, 0, sizeof(*fp));
             char name = *code;
@@ -173,10 +176,12 @@ int32_t interpret(char *program) {
                 code++;
             }
             fp->return_address = code;
+            memcpy(fp->saved_regs, registers, NUM_REGS);
             code = macros[tolower(name) - 'a'];
 
             break;
         case '@':
+            memcpy(registers, fp->saved_regs, NUM_REGS);
             assert(fp >= callstack);
             code = fp->return_address;
             fp--;
