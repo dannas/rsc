@@ -4,20 +4,18 @@
 #include <stdio.h>
 #include <string.h>
 
-#define PUSH(val) \
-    (*top++ = (val))
-#define POP(val) \
-    (*--top)
 #define POPS(n) \
     (assert(top - stack >= n))
 #define PUSHES(n) \
     (assert(top + (n) <= stack + MAX_STACK))
+#define PUSH(val) \
+    (PUSHES(1), *top++ = (val))
+#define POP(val) \
+    (POPS(1), *--top)
 #define BINARY_OP(op) \
     do { \
-        POPS(2); \
         int32_t right = POP(); \
         int32_t left = POP(); \
-        PUSHES(1); \
         PUSH(left op right); \
     } while (0)
 
@@ -62,7 +60,6 @@ void eat(char c) {
     if (*code) {
         code++;
     }
-
 }
 
 int32_t interpret(char *program) {
@@ -89,6 +86,7 @@ int32_t interpret(char *program) {
             if (isalpha(*code)) {
                 char c = *code;
                 code++;
+                assert((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
                 macros[tolower(c)- 'a'] = code;
             }
         } else {
@@ -110,19 +108,16 @@ int32_t interpret(char *program) {
             eat('\n');
             break;
         case '0'...'9': {
-            PUSHES(1);
             int32_t val = scan_int();
             PUSH(val);
             break;
         }
         case 'a'...'z':
         case 'A'...'Z':
-            PUSHES(1);
             PUSH(tolower(*code) - 'a');
             code++;
             break;
         case ':': {
-            POPS(2);
             int32_t right = POP();
             int32_t left = POP();
             assert(right >= 0 && right < NUM_REGS);
@@ -131,7 +126,6 @@ int32_t interpret(char *program) {
             break;
         }
         case '.': {
-            POPS(1);
             int32_t address = POP();
             assert(address >= 0 && address < NUM_REGS);
             PUSH(registers[address]);
@@ -139,7 +133,6 @@ int32_t interpret(char *program) {
             break;
         }
         case '[':
-            POPS(1);
             if (!POP()) {
                 eat(']');
             } else {
@@ -192,7 +185,6 @@ int32_t interpret(char *program) {
             code++;
             int32_t index = scan_int();
             assert(index >= 0 && index < fp->num_params);
-            PUSHES(1);
             PUSH(fp->params[index]);
             break;
         }
@@ -230,7 +222,6 @@ int32_t interpret(char *program) {
             break;
         case '\'':
             code++;
-            PUSHES(1);
             if (*code) {
                 PUSH(*code);
                 code++;
@@ -238,7 +229,6 @@ int32_t interpret(char *program) {
             break;
         case '?':
             code++;
-            PUSHES(1);
             if (*code == '\'') {
                 PUSH(getchar());
                 code++;
@@ -250,7 +240,6 @@ int32_t interpret(char *program) {
             break;
         case '!':
             code++;
-            POPS(1);
             if (*code == '\'') {
                 putchar(POP());
                 code++;
