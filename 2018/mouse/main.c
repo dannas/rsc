@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define POPS(n) \
     (assert(top - stack >= n))
@@ -24,7 +25,8 @@ enum {
     NUM_REGS = 'Z'-'A' + 1,
     NUM_MACROS = NUM_REGS,
     MAX_PARAMS = 10,
-    MAX_CALLFRAMES = 10
+    MAX_CALLFRAMES = 10,
+    MAX_CONTROLSTACK = 10
 };
 
 typedef struct CallFrame {
@@ -75,12 +77,15 @@ int32_t interpret(char *program) {
 
     int32_t stack[MAX_STACK];
     int32_t *top = stack;
+
     int32_t registers[NUM_REGS] = {0};
+
+    char *controlStack[MAX_CONTROLSTACK];
+    char **cp = controlStack;
 
     char *macros[NUM_MACROS] = {NULL};
 
     fp = callstack;
-    char* loop_header = NULL;
 
     code = program;
 
@@ -147,14 +152,21 @@ int32_t interpret(char *program) {
             code++;
             break;
         case '(':
-            loop_header = code;
             code++;
+            assert(cp >= controlStack && cp < controlStack + MAX_CONTROLSTACK);
+            *cp++ = code;
             break;
         case ')':
-            code = loop_header;
+            assert(cp >= controlStack && cp < controlStack + MAX_CONTROLSTACK);
+            code = *(cp-1);
             break;
         case '^':
-            eat(')');
+            if (!POP()) {
+                eat(')');
+                cp--;
+            } else {
+                code++;
+            }
             break;
         case '#':
             code++;
@@ -188,9 +200,9 @@ int32_t interpret(char *program) {
             break;
         case '%': {
             code++;
-            int32_t index = scan_int();
-            assert(index >= 0 && index < fp->num_params);
-            PUSH(fp->params[index]);
+            int32_t index = POP();
+            assert(index > 0 && index <= fp->num_params);
+            PUSH(fp->params[index-1]);
             break;
         }
         case '+':
@@ -318,14 +330,33 @@ void test_interpret() {
 
     // Macros
     assert_interpret("#a; $a 1 @", 1);
-    assert_interpret("#a,2; $a %0 @", 2);
+    assert_interpret("#a,2; $a 1% @", 2);
 
 }
 
 #undef assert_interpret
 
 int main() {
-    test_interpret();
+    //test_interpret();
+
+    FILE *file = fopen("../test.mouse", "rb");
+    if (!file) {
+        perror("file");
+        exit(1);
+    }
+    fseek(file, 0, SEEK_END);
+    long len = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    char *program = malloc(len + 1);
+    if (len && fread(program, len, 1, file) != 1) {
+        fclose(file);
+        perror("fread");
+        exit(1);
+    }
+    fclose(file);
+    program[len] = '\0';
+
+    interpret(program);
 
     return 0;
 }
