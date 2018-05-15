@@ -34,6 +34,7 @@ enum {
 };
 
 typedef struct CallFrame {
+    char *macro;
     char *return_address;
     int32_t num_params;
     int32_t params[MAX_PARAMS];
@@ -89,7 +90,11 @@ int32_t interpret(char *program) {
     code = program;
 
     while (*code) {
-        if (*code == '$') {
+        switch (*code) {
+        case '~':
+            eat('\n');
+            break;
+        case '$':
             code++;
             if (isalpha(*code)) {
                 char c = *code;
@@ -97,7 +102,8 @@ int32_t interpret(char *program) {
                 assert((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
                 macros[tolower(c)- 'a'] = code;
             }
-        } else {
+            break;
+        default:
             code++;
         }
     }
@@ -178,25 +184,25 @@ int32_t interpret(char *program) {
             code++;
             fp++;
             memset(fp, 0, sizeof(*fp));
-            char name = *code;
-            assert((name >= 'a' && name <= 'z') || (name >= 'A' && name <= 'Z'));
-
-            while (*code && *code != ';') {
-                if (isdigit(*code)) {
-                    int32_t val = scan_int();
-                    fp->params[fp->num_params] = val;
-                    fp->num_params++;
-                } else {
-                    code++;
-                }
-            }
-            if (*code) {
-                code++;
-            }
+            assert((*code >= 'a' && *code <= 'z') || (*code >= 'A' && *code <= 'Z'));
+            fp->macro = macros[tolower(*code) - 'a'];
+            // TODO(dannas): Cleanup. Dummy value for making ';' and ',' cases consistent: They expect a value to exist on the stack
+            // that should be used as parameter. Let's have param[0] be a dummy.
+            PUSH(sp, 0);
+            code++;
+            break;
+        case ',':
+            fp->params[fp->num_params] = POP(sp);
+            fp->num_params++;
+            code++;
+            break;
+        case ';':
+            fp->params[fp->num_params] = POP(sp);
+            fp->num_params++;
+            code++;
             fp->return_address = code;
             memcpy(fp->saved_regs, registers, NUM_REGS);
-            code = macros[tolower(name) - 'a'];
-
+            code = fp->macro;
             break;
         case '@':
             memcpy(registers, fp->saved_regs, NUM_REGS);
@@ -208,7 +214,7 @@ int32_t interpret(char *program) {
             code++;
             int32_t index = POP(sp);
             assert(index > 0 && index <= fp->num_params);
-            PUSH(sp, fp->params[index-1]);
+            PUSH(sp, fp->params[index]);
             break;
         }
         case '+':
@@ -365,6 +371,7 @@ char *read_file(const char *filename) {
 }
 
 int main() {
+#if 0
     test_interpret();
 
     char *program = read_file("../test.mouse");
@@ -374,6 +381,13 @@ int main() {
     }
 
     interpret(program);
+#endif
+    char program[] =
+    "\" E: \"  #E,1000,#F,0;; \"!\"\n"
+    "$E 1% x: x. 2% x. ! \"=\" ! @      ~ Scope of variables test\n"
+    "$F 1% x: @                       ~ Should not change the x in $E\n";
+    interpret(program);
+
 
     return 0;
 }
