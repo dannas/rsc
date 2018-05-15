@@ -51,7 +51,6 @@ char *code = NULL;
 //  Decide if we should have bounds checks or just rely on $ for end of program
 //  Add error reporting
 //  Decide how to handle registers. Which are caller/callee saved?
-//  Should parameter indexes start from 0 or 1?
 
 int32_t scan_int() {
     assert(isdigit(*code));
@@ -336,25 +335,33 @@ void test_interpret() {
 
 #undef assert_interpret
 
-int main() {
-    //test_interpret();
-
-    FILE *file = fopen("../test.mouse", "rb");
+char *read_file(const char *filename) {
+    FILE *file = fopen(filename, "rb");
     if (!file) {
-        perror("file");
-        exit(1);
+        return NULL;
     }
     fseek(file, 0, SEEK_END);
     long len = ftell(file);
     fseek(file, 0, SEEK_SET);
-    char *program = malloc(len + 1);
-    if (len && fread(program, len, 1, file) != 1) {
+    char *buf = malloc(len + 1);
+    if (len && fread(buf, len, 1, file) != 1) {
         fclose(file);
-        perror("fread");
-        exit(1);
+        free(buf);
+        return NULL;
     }
     fclose(file);
-    program[len] = '\0';
+    buf[len] = '\0';
+    return buf;
+}
+
+int main() {
+    test_interpret();
+
+    char *program = read_file("../test.mouse");
+    if (!program) {
+        perror("read_file");
+        exit(1);
+    }
 
     interpret(program);
 
