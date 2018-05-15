@@ -6,13 +6,13 @@
 #include <stdlib.h>
 
 #define POPS(n) \
-    (assert(top - stack >= n))
+    (assert(sp - stack >= n))
 #define PUSHES(n) \
-    (assert(top + (n) <= stack + MAX_STACK))
+    (assert(sp + (n) <= stack + MAX_STACK))
 #define PUSH(val) \
-    (PUSHES(1), *top++ = (val))
+    (PUSHES(1), *sp++ = (val))
 #define POP(val) \
-    (POPS(1), *--top)
+    (POPS(1), *--sp)
 #define BINARY_OP(op) \
     do { \
         int32_t right = POP(); \
@@ -35,9 +35,6 @@ typedef struct CallFrame {
     int32_t params[MAX_PARAMS];
     int32_t saved_regs[NUM_REGS];
 } CallFrame;
-
-CallFrame callstack[MAX_CALLFRAMES];
-CallFrame *fp =  NULL;
 
 char *code = NULL;
 
@@ -73,18 +70,17 @@ void eat(char c) {
 }
 
 int32_t interpret(char *program) {
-
     int32_t stack[MAX_STACK];
-    int32_t *top = stack;
-
-    int32_t registers[NUM_REGS] = {0};
+    int32_t *sp = stack;
 
     char *controlStack[MAX_CONTROLSTACK];
     char **cp = controlStack;
 
-    char *macros[NUM_MACROS] = {NULL};
+    CallFrame callstack[MAX_CALLFRAMES];
+    CallFrame *fp = callstack;
 
-    fp = callstack;
+    int32_t registers[NUM_REGS] = {0};
+    char *macros[NUM_MACROS] = {NULL};
 
     code = program;
 
@@ -278,7 +274,7 @@ int32_t interpret(char *program) {
             }
             break;
         case '$':
-            if (top == stack) {
+            if (sp == stack) {
                 PUSH(1);
             }
             goto out;
@@ -322,7 +318,7 @@ void test_interpret() {
     assert_interpret("3 0 [ 5 ] $", 3);
 
     // Iteration
-    assert_interpret("(A.  1 +  A: A. 10 = [^]) A. ~ while (sum < 0) sum++;", 10);
+    assert_interpret("(a.  1 +  a: a. 10 < ^) a. ~ while (sum < 0) sum++;", 10);
 
     // Strings
     interpret("\"abc!def!\" 'x !' \"!\"$");
