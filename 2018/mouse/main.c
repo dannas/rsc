@@ -5,28 +5,32 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define POPS(n) \
-    (assert(sp - stack >= n))
-#define PUSHES(n) \
-    (assert(sp + (n) <= stack + MAX_STACK))
-#define PUSH(val) \
-    (PUSHES(1), *sp++ = (val))
-#define POP(val) \
-    (POPS(1), *--sp)
+#define POPS(stack, ptr, n) \
+    (assert(ptr - stack >= n))
+#define PUSHES(stack, ptr, n) \
+    (assert(ptr + (n) <= stack + MAX_STACK))
+
+#define PUSH(ptr, val) \
+    (*ptr++ = (val))
+#define POP(ptr) \
+    (*--ptr)
+#define TOP(ptr) \
+    (*((ptr)-1))
+
 #define BINARY_OP(op) \
     do { \
-        int32_t right = POP(); \
-        int32_t left = POP(); \
-        PUSH(left op right); \
+        POPS(stack, sp, 2); \
+        int32_t right = POP(sp); \
+        int32_t left = POP(sp); \
+        PUSHES(stack, sp, 1); \
+        PUSH(sp, left op right); \
     } while (0)
 
 enum {
-    MAX_STACK = 32,
+    MAX_STACK = 64,
     NUM_REGS = 'Z'-'A' + 1,
     NUM_MACROS = NUM_REGS,
     MAX_PARAMS = 10,
-    MAX_CALLFRAMES = 10,
-    MAX_CONTROLSTACK = 10
 };
 
 typedef struct CallFrame {
@@ -73,10 +77,10 @@ int32_t interpret(char *program) {
     int32_t stack[MAX_STACK];
     int32_t *sp = stack;
 
-    char *controlStack[MAX_CONTROLSTACK];
+    char *controlStack[MAX_STACK];
     char **cp = controlStack;
 
-    CallFrame callstack[MAX_CALLFRAMES];
+    CallFrame callstack[MAX_STACK];
     CallFrame *fp = callstack;
 
     int32_t registers[NUM_REGS] = {0};
@@ -112,32 +116,37 @@ int32_t interpret(char *program) {
             eat('\n');
             break;
         case '0'...'9': {
+            PUSHES(stack, sp, 1);
             int32_t val = scan_int();
-            PUSH(val);
+            PUSH(sp, val);
             break;
         }
         case 'a'...'z':
         case 'A'...'Z':
-            PUSH(tolower(*code) - 'a');
+            PUSHES(stack, sp, 1);
+            PUSH(sp, tolower(*code) - 'a');
             code++;
             break;
         case ':': {
-            int32_t right = POP();
-            int32_t left = POP();
+            POPS(stack, sp, 2);
+            int32_t right = POP(sp);
+            int32_t left = POP(sp);
             assert(right >= 0 && right < NUM_REGS);
             registers[right] = left;
             code++;
             break;
         }
         case '.': {
-            int32_t address = POP();
+            POPS(stack, sp, 1);
+            int32_t address = POP(sp);
             assert(address >= 0 && address < NUM_REGS);
-            PUSH(registers[address]);
+            PUSH(sp, registers[address]);
             code++;
             break;
         }
         case '[':
-            if (!POP()) {
+            POPS(stack, sp, 1);
+            if (!POP(sp)) {
                 eat(']');
             } else {
                 code++;
@@ -148,17 +157,19 @@ int32_t interpret(char *program) {
             break;
         case '(':
             code++;
-            assert(cp >= controlStack && cp < controlStack + MAX_CONTROLSTACK);
-            *cp++ = code;
+            PUSHES(controlStack, cp, 1);
+            PUSH(cp, code);
             break;
         case ')':
-            assert(cp >= controlStack && cp < controlStack + MAX_CONTROLSTACK);
-            code = *(cp-1);
+            POPS(controlStack, cp, 1);
+            code = TOP(cp);
             break;
         case '^':
-            if (!POP()) {
+            POPS(stack, sp, 1);
+            if (!POP(sp)) {
                 eat(')');
-                cp--;
+                POPS(controlStack, cp, 1);
+                POP(cp);
             } else {
                 code++;
             }
@@ -195,9 +206,9 @@ int32_t interpret(char *program) {
             break;
         case '%': {
             code++;
-            int32_t index = POP();
+            int32_t index = POP(sp);
             assert(index > 0 && index <= fp->num_params);
-            PUSH(fp->params[index-1]);
+            PUSH(sp, fp->params[index-1]);
             break;
         }
         case '+':
@@ -235,28 +246,31 @@ int32_t interpret(char *program) {
         case '\'':
             code++;
             if (*code) {
-                PUSH(*code);
+                PUSHES(stack, sp, 1);
+                PUSH(sp, *code);
                 code++;
             }
             break;
         case '?':
             code++;
+            PUSHES(stack, sp, 1);
             if (*code == '\'') {
-                PUSH(getchar());
+                PUSH(sp, getchar());
                 code++;
             } else  {
                 int32_t val;
                 scanf("%d", &val);
-                PUSH(val);
+                PUSH(sp, val);
             }
             break;
         case '!':
             code++;
+            POPS(stack, sp, 1);
             if (*code == '\'') {
-                putchar(POP());
+                putchar(POP(sp));
                 code++;
             } else {
-                printf("%d", POP());
+                printf("%d", POP(sp));
             }
             break;
         case '"': 
@@ -275,7 +289,7 @@ int32_t interpret(char *program) {
             break;
         case '$':
             if (sp == stack) {
-                PUSH(1);
+                PUSH(sp, 1);
             }
             goto out;
             break;
@@ -284,7 +298,7 @@ int32_t interpret(char *program) {
         }
     }
 out:
-    return POP();
+    return POP(sp);
 }
 
 #undef PUSH
