@@ -2,8 +2,8 @@
 #include <ctype.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define POPS(stack, ptr, n) \
     (assert(ptr - stack >= n))
@@ -34,10 +34,7 @@ enum {
 };
 
 typedef struct CallFrame {
-    char *macro;
     char *return_address;
-    int32_t num_params;
-    int32_t params[MAX_PARAMS];
     int32_t saved_regs[NUM_REGS];
 } CallFrame;
 
@@ -46,8 +43,6 @@ char *code = NULL;
 // Interpreter for the Mouse language.
 // http://mouse.davidgsimpson.com/mouse83/intro83.html
 // http://mouse.davidgsimpson.com/mouse83/ref83.html
-//
-//
 //  Add tracing      {...}
 //  Decide if $ should push '1' if stack is empty. Useful for testing
 //  Decide if we should have bounds checks or just rely on $ for end of program
@@ -180,30 +175,22 @@ int32_t interpret(char *program) {
                 code++;
             }
             break;
-        case '#':
+        case '#': {
             code++;
             fp++;
             memset(fp, 0, sizeof(*fp));
             assert((*code >= 'a' && *code <= 'z') || (*code >= 'A' && *code <= 'Z'));
-            fp->macro = macros[tolower(*code) - 'a'];
-            // TODO(dannas): Cleanup. Dummy value for making ';' and ',' cases consistent: They expect a value to exist on the stack
-            // that should be used as parameter. Let's have param[0] be a dummy.
-            PUSH(sp, 0);
+            char *macro = macros[tolower(*code) - 'a'];
             code++;
-            break;
-        case ',':
-            fp->params[fp->num_params] = POP(sp);
-            fp->num_params++;
-            code++;
-            break;
-        case ';':
-            fp->params[fp->num_params] = POP(sp);
-            fp->num_params++;
-            code++;
+            // TODO(dannas): We need to handle recursive functions
+            eat(';');
             fp->return_address = code;
             memcpy(fp->saved_regs, registers, NUM_REGS);
-            code = fp->macro;
+            code = macro;
             break;
+        }
+        case ',':
+        case ';':
         case '@':
             memcpy(registers, fp->saved_regs, NUM_REGS);
             assert(fp >= callstack);
@@ -213,8 +200,31 @@ int32_t interpret(char *program) {
         case '%': {
             code++;
             int32_t index = POP(sp);
-            assert(index > 0 && index <= fp->num_params);
-            PUSH(sp, fp->params[index]);
+            // TODO(dannas): Replace this with a jump to pos after '$' and scan for param at
+            // position index.
+            // One complicating factor is that params may contain expressions. We need to parse
+            // the expressions for determining when we enter a new param.
+            // Once we're at the right param, we start executing it until we reach the next
+            // param.
+
+            char *start = fp->return_address;
+            // TODO(dannas): Are indexes 1-based in mouse?
+            int pos = 1;
+            while (pos < index) {
+                assert(*start != '\0' && "scanned past eof");
+                assert(*start != ';' && "pos out of range");
+                if (*start == ',') {
+                    pos++;
+                }
+                start++;
+            }
+
+            fp++;
+            memset(fp, 0, sizeof(*fp));
+            fp->return_address = code;
+            memcpy(fp->saved_regs, registers, NUM_REGS);
+            code = start;
+
             break;
         }
         case '+':
@@ -345,7 +355,7 @@ void test_interpret() {
 
     // Macros
     assert_interpret("#a; $a 1 @", 1);
-    assert_interpret("#a,2; $a 1% @", 2);
+    //assert_interpret("#a,2; $a 1% @", 2);
 
 }
 
@@ -371,7 +381,6 @@ char *read_file(const char *filename) {
 }
 
 int main() {
-#if 0
     test_interpret();
 
     char *program = read_file("../test.mouse");
@@ -381,13 +390,14 @@ int main() {
     }
 
     interpret(program);
-#endif
+#if 0
     char program[] =
     "\" E: \"  #E,1000,#F,0;; \"!\"\n"
     "$E 1% x: x. 2% x. ! \"=\" ! @      ~ Scope of variables test\n"
     "$F 1% x: @                       ~ Should not change the x in $E\n";
     interpret(program);
 
+#endif
 
     return 0;
 }
