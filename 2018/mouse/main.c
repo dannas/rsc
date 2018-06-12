@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define POPS(stack, ptr, n) \
     (assert(ptr - stack >= n))
@@ -35,6 +36,7 @@ enum {
 
 typedef struct CallFrame {
     char *return_address;
+    char *pos_first_param;
     int32_t saved_regs[NUM_REGS];
 } CallFrame;
 
@@ -67,6 +69,32 @@ void eat(char c) {
     if (*code) {
         code++;
     }
+}
+
+// Return position of next param or position of ';' or end of string if at end
+// TODO(dannas): Clarify what can be returned.
+char* next_param() {
+    int nesting = 0;
+
+    while (true) {
+        if (*code == '#') {
+            nesting++;
+        } else if (nesting > 0) {
+            // TODO(dannas): Should we handle end of string here?
+            if (*code == ';') {
+                nesting--;
+            }
+        } else if (*code == ',' || *code == ';' || *code == '\0') {
+            break;
+        }
+        code++;
+    }
+    assert(nesting == 0);
+
+    if (*code == ',') {
+        code++;
+    }
+    return code;
 }
 
 int32_t interpret(char *program) {
@@ -183,6 +211,7 @@ int32_t interpret(char *program) {
             char *macro = macros[tolower(*code) - 'a'];
             code++;
             // TODO(dannas): We need to handle recursive functions
+            fp->pos_first_param = code;
             eat(';');
             fp->return_address = code;
             memcpy(fp->saved_regs, registers, NUM_REGS);
@@ -199,31 +228,23 @@ int32_t interpret(char *program) {
             break;
         case '%': {
             code++;
-            int32_t index = POP(sp);
-            // TODO(dannas): Replace this with a jump to pos after '$' and scan for param at
-            // position index.
-            // One complicating factor is that params may contain expressions. We need to parse
-            // the expressions for determining when we enter a new param.
-            // Once we're at the right param, we start executing it until we reach the next
-            // param.
-
-            char *start = fp->return_address;
-            // TODO(dannas): Are indexes 1-based in mouse?
-            int pos = 1;
-            while (pos < index) {
-                assert(*start != '\0' && "scanned past eof");
-                assert(*start != ';' && "pos out of range");
-                if (*start == ',') {
+            int32_t param_pos = POP(sp);
+            char *param = fp->pos_first_param;
+            int pos = 0;
+            while (pos < param_pos) {
+                assert(*param != '\0' && "scanned past eof");
+                assert(*param != ';' && "pos out of range");
+                if (*param == ',') {
                     pos++;
                 }
-                start++;
+                param++;
             }
 
             fp++;
             memset(fp, 0, sizeof(*fp));
             fp->return_address = code;
             memcpy(fp->saved_regs, registers, NUM_REGS);
-            code = start;
+            code = param;
 
             break;
         }
@@ -355,8 +376,7 @@ void test_interpret() {
 
     // Macros
     assert_interpret("#a; $a 1 @", 1);
-    //assert_interpret("#a,2; $a 1% @", 2);
-
+    assert_interpret("#a,2; $a 1% @", 2);
 }
 
 #undef assert_interpret
