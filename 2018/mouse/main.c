@@ -198,7 +198,7 @@ int32_t interpret(char *program) {
             if (!POP(sp)) {
                 eat(')');
                 POPS(controlStack, cp, 1);
-                POP(cp);
+                (void)POP(cp);
             } else {
                 code++;
             }
@@ -210,9 +210,14 @@ int32_t interpret(char *program) {
             assert((*code >= 'a' && *code <= 'z') || (*code >= 'A' && *code <= 'Z'));
             char *macro = macros[tolower(*code) - 'a'];
             code++;
-            // TODO(dannas): We need to handle recursive functions
             fp->pos_first_param = code;
-            eat(';');
+
+            while (*code != ';') {
+                code = next_param();
+            }
+            assert(*code == ';');
+            code++;
+
             fp->return_address = code;
             memcpy(fp->saved_regs, registers, NUM_REGS);
             code = macro;
@@ -229,23 +234,16 @@ int32_t interpret(char *program) {
         case '%': {
             code++;
             int32_t param_pos = POP(sp);
-            char *param = fp->pos_first_param;
-            int pos = 0;
-            while (pos < param_pos) {
-                assert(*param != '\0' && "scanned past eof");
-                assert(*param != ';' && "pos out of range");
-                if (*param == ',') {
-                    pos++;
-                }
-                param++;
-            }
-
+            char *old_code = code;
+            code = fp->pos_first_param;
             fp++;
             memset(fp, 0, sizeof(*fp));
-            fp->return_address = code;
+            fp->return_address = old_code;
             memcpy(fp->saved_regs, registers, NUM_REGS);
-            code = param;
 
+            for (int pos = 0; pos < param_pos; pos++) {
+                code = next_param();
+            }
             break;
         }
         case '+':
@@ -377,6 +375,7 @@ void test_interpret() {
     // Macros
     assert_interpret("#a; $a 1 @", 1);
     assert_interpret("#a,2; $a 1% @", 2);
+    assert_interpret("#D,#D,1,2;,#D,3,4;; $D 1% 2% + @", 10);
 }
 
 #undef assert_interpret
