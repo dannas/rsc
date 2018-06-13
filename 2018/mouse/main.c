@@ -93,6 +93,26 @@ char* next_param() {
     return code;
 }
 
+int print_code(char *code_str) {
+    if (!code_str) {
+        printf("     ");
+        return 5;
+    }
+    for (int i = 0; i < 5; ) {
+        if (isblank(*code_str)) {
+            code_str++;
+        } else if (*code_str == '\0') {
+            putchar(' ');
+            i++;
+        } else {
+            putchar(*code_str);
+            code_str++;
+            i++;
+        }
+    }
+    return 5;
+}
+
 int32_t interpret(char *program) {
     int32_t stack[MAX_STACK];
     int32_t *sp = stack;
@@ -132,17 +152,20 @@ int32_t interpret(char *program) {
     code = program;
     while (*code) {
         if (tracing) {
-            printf("%.5s    REGS: ", code);
+            int n = 0;
+            n += print_code(code);
+            n += printf("    REGS: ");
             for (int i = 0; i < NUM_REGS; ++i) {
-                printf("%c=%d ", 'A' + i, registers[i]);
+                n += printf("%c=%d ", 'A' + i, registers[i]);
             }
-            printf("    STACK: ");
+            n += printf("    STACK: ");
             for (int *p = stack; p < sp; ++p) {
-                printf("%d ", *p);
+                n += printf("%d ", *p);
             }
-            printf("\t\tCALLS: ");
+            printf("%*s", 160 - n, "CALLS: ");
             for (CallFrame *f = callstack; f <= fp; ++f) {
-                printf("\"%.5s\"    ", f->return_address);
+                print_code(f->return_address);
+                printf("    ");
             }
             printf("\n");
         }
