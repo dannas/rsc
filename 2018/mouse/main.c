@@ -1,3 +1,9 @@
+// Interpreter for the Mouse language.
+// http://mouse.davidgsimpson.com/mouse83/intro83.html
+// http://mouse.davidgsimpson.com/mouse83/ref83.html
+//  Decide if we should have bounds checks or just rely on $ for end of program
+//  Add error reporting
+
 #include <assert.h>
 #include <ctype.h>
 #include <stdint.h>
@@ -31,7 +37,6 @@ enum {
     MAX_STACK = 64,
     NUM_REGS = 'Z'-'A' + 1,
     NUM_MACROS = NUM_REGS,
-    MAX_PARAMS = 10,
 };
 
 typedef struct CallFrame {
@@ -41,15 +46,6 @@ typedef struct CallFrame {
 } CallFrame;
 
 char *code = NULL;
-
-// Interpreter for the Mouse language.
-// http://mouse.davidgsimpson.com/mouse83/intro83.html
-// http://mouse.davidgsimpson.com/mouse83/ref83.html
-//  Add tracing      {...}
-//  Decide if $ should push '1' if stack is empty. Useful for testing
-//  Decide if we should have bounds checks or just rely on $ for end of program
-//  Add error reporting
-//  Decide how to handle registers. Which are caller/callee saved?
 
 int32_t scan_int() {
     assert(isdigit(*code));
@@ -110,6 +106,8 @@ int32_t interpret(char *program) {
     int32_t registers[NUM_REGS] = {0};
     char *macros[NUM_MACROS] = {NULL};
 
+    bool tracing = false;
+
     code = program;
 
     while (*code) {
@@ -133,6 +131,22 @@ int32_t interpret(char *program) {
 
     code = program;
     while (*code) {
+        if (tracing) {
+            printf("%.5s    REGS: ", code);
+            for (int i = 0; i < NUM_REGS; ++i) {
+                printf("%c=%d ", 'A' + i, registers[i]);
+            }
+            printf("    STACK: ");
+            for (int *p = stack; p < sp; ++p) {
+                printf("%d ", *p);
+            }
+            printf("\t\tCALLS: ");
+            for (CallFrame *f = callstack; f <= fp; ++f) {
+                printf("\"%.5s\"    ", f->return_address);
+            }
+            printf("\n");
+        }
+
         switch (*code) {
         case ' ':
         case '\t':
@@ -322,6 +336,14 @@ int32_t interpret(char *program) {
                 code++;
             }
             break;
+        case '{':
+            tracing = true;
+            code++;
+            break;
+        case '}':
+            tracing = false;
+            code++;
+            break;
         case '$':
             if (sp == stack) {
                 PUSH(sp, 1);
@@ -401,6 +423,8 @@ char *read_file(const char *filename) {
 
 int main() {
     test_interpret();
+
+    interpret("{#D,#D,1,2;,#D,3,4;;} $D 1% 2% + @");
 
     char *program = read_file("../test.mouse");
     if (!program) {
