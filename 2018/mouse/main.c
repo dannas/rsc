@@ -96,11 +96,13 @@ char* next_param() {
 int print_code(char *code_str) {
     if (!code_str) {
         printf("     ");
-        return 5;
+        return 8;
     }
-    for (int i = 0; i < 5; ) {
-        if (isblank(*code_str)) {
+    for (int i = 0; i < 8; ) {
+        if (isspace(*code_str)) {
+            putchar(' ');
             code_str++;
+            i++;
         } else if (*code_str == '\0') {
             putchar(' ');
             i++;
@@ -110,7 +112,7 @@ int print_code(char *code_str) {
             i++;
         }
     }
-    return 5;
+    return 8;
 }
 
 int32_t interpret(char *program) {
@@ -162,12 +164,13 @@ int32_t interpret(char *program) {
             for (int *p = stack; p < sp; ++p) {
                 n += printf("%d ", *p);
             }
-            printf("%*s", 160 - n, "CALLS: ");
+            printf("%*s", 165 - n, "CALLS: ");
             for (CallFrame *f = callstack; f <= fp; ++f) {
                 print_code(f->return_address);
                 printf("    ");
             }
             printf("\n");
+            fflush(stdout);
         }
 
         switch (*code) {
@@ -256,14 +259,18 @@ int32_t interpret(char *program) {
             code++;
 
             fp->return_address = code;
-            memcpy(fp->saved_regs, registers, NUM_REGS);
+            memcpy(fp->saved_regs, registers, NUM_REGS * sizeof(registers[0]));
             code = macro;
             break;
         }
         case ',':
         case ';':
+            assert(fp >= callstack);
+            code = fp->return_address;
+            fp--;
+            break;
         case '@':
-            memcpy(registers, fp->saved_regs, NUM_REGS);
+            memcpy(registers, fp->saved_regs, NUM_REGS * sizeof(registers[0]));
             assert(fp >= callstack);
             code = fp->return_address;
             fp--;
@@ -276,7 +283,6 @@ int32_t interpret(char *program) {
             fp++;
             memset(fp, 0, sizeof(*fp));
             fp->return_address = old_code;
-            memcpy(fp->saved_regs, registers, NUM_REGS);
 
             for (int pos = 0; pos < param_pos; pos++) {
                 code = next_param();
@@ -447,7 +453,7 @@ char *read_file(const char *filename) {
 int main() {
     test_interpret();
 
-    interpret("{#D,#D,1,2;,#D,3,4;;} $D 1% 2% + @");
+    //interpret("{ #D, #D,1,2; , #D,3,4; ; } $D 1% 2% + @");
 
     char *program = read_file("../test.mouse");
     if (!program) {
@@ -458,13 +464,14 @@ int main() {
     interpret(program);
 #if 0
     char program[] =
-    "\" E: \"  #E,1000,#F,0;; \"!\"\n"
-    "$E 1% x: x. 2% x. ! \"=\" ! @      ~ Scope of variables test\n"
-    "$F 1% x: @                       ~ Should not change the x in $E\n";
+    "#G,4410;"
+    "$G 1% n: 2 f:                    ~ Display prime factors of 1%"
+       "( n. f. \\ 0 > ^ f. 1 + f: )   ~ f is now smallest factor of n"
+       "f. n. <"
+       "[ f. ! " "                    ~ Display f"
+          "#G,n. f. /; ] @            ~ Find prime factors of n/f";
     interpret(program);
-
 #endif
-
     return 0;
 }
 
