@@ -266,12 +266,6 @@ int32_t interpret(char *program) {
             code = macro;
             break;
         }
-        case ',':
-        case ';':
-            assert(fp >= callstack);
-            code = fp->return_address;
-            fp--;
-            break;
         case '@':
             memcpy(registers, fp->saved_regs, NUM_REGS * sizeof(registers[0]));
             assert(fp >= callstack);
@@ -292,6 +286,12 @@ int32_t interpret(char *program) {
             }
             break;
         }
+        case ',':
+        case ';':
+            assert(fp >= callstack);
+            code = fp->return_address;
+            fp--;
+            break;
         case '+':
             BINARY_OP(+);
             code++;
