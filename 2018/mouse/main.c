@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <limits.h>
 
 #define POPS(stack, ptr, n) \
     (assert(ptr - stack >= n))
@@ -71,8 +72,10 @@ void eat(char c) {
 // TODO(dannas): Clarify what can be returned.
 char* next_param() {
     int nesting = 0;
+    assert(code);
 
     while (true) {
+        assert(code);
         if (*code == '#') {
             nesting++;
         } else if (nesting > 0) {
@@ -431,6 +434,15 @@ void test_interpret() {
 
 #undef assert_interpret
 
+char *path_file(char path[PATH_MAX]) {
+    for (char *ptr = path + strlen(path); ptr != path; ptr--) {
+        if (ptr[-1] == '/') {
+            return ptr;
+        }
+    }
+    return path;
+}
+
 char *read_file(const char *filename) {
     FILE *file = fopen(filename, "rb");
     if (!file) {
@@ -450,28 +462,21 @@ char *read_file(const char *filename) {
     return buf;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
     test_interpret();
 
-    //interpret("{ #D, #D,1,2; , #D,3,4; ; } $D 1% 2% + @");
+    if (argc != 2) {
+        printf("Usage: %s mouse-file\n", path_file(argv[0]));
+        return 1;
+    }
 
-    char *program = read_file("../test.mouse");
+    char *program = read_file(argv[1]);
     if (!program) {
         perror("read_file");
         exit(1);
     }
 
     interpret(program);
-#if 0
-    char program[] =
-    "#G,4410;"
-    "$G 1% n: 2 f:                    ~ Display prime factors of 1%"
-       "( n. f. \\ 0 > ^ f. 1 + f: )   ~ f is now smallest factor of n"
-       "f. n. <"
-       "[ f. ! " "                    ~ Display f"
-          "#G,n. f. /; ] @            ~ Find prime factors of n/f";
-    interpret(program);
-#endif
     return 0;
 }
 
