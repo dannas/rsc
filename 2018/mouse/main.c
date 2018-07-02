@@ -40,7 +40,14 @@ enum {
     NUM_MACROS = NUM_REGS,
 };
 
+typedef enum FrameType {
+    CONTROL_FRAME,
+    PARAMETER_FRAME,
+    MACRO_FRAME
+} FrameType;
+
 typedef struct CallFrame {
+    FrameType type;
     char *return_address;
     char *pos_first_param;
     int32_t saved_regs[NUM_REGS];
@@ -158,6 +165,7 @@ int32_t interpret(char *program) {
     while (*code) {
         if (tracing) {
             int n = 0;
+            printf("%ld    ", (fp-callstack));
             n += print_code(code);
             n += printf("    REGS: ");
             for (int i = 0; i < NUM_REGS; ++i) {
@@ -280,6 +288,12 @@ int32_t interpret(char *program) {
             fp++;
             memset(fp, 0, sizeof(*fp));
             fp->return_address = old_code;
+
+            // TODO(dannas):
+            // Find topmost macro frame
+            // Set code to pos of that frame (start of macro-call)
+            // Find current parameter
+            assert (fp >= callstack);
 
             for (int pos = 0; pos < param_pos; pos++) {
                 code = next_param();
@@ -463,6 +477,7 @@ char *read_file(const char *filename) {
 }
 
 int main(int argc, char *argv[]) {
+#if 0
     test_interpret();
 
     if (argc != 2) {
@@ -477,6 +492,8 @@ int main(int argc, char *argv[]) {
     }
 
     interpret(program);
+#endif
+    interpret("{#D, #D,1,2; ,5; $D 1% 2% + @}");
     return 0;
 }
 
