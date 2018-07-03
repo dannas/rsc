@@ -48,8 +48,7 @@ typedef enum FrameType {
 
 typedef struct CallFrame {
     FrameType type;
-    char *return_address;
-    char *pos_first_param;
+    char *old_code;
     int32_t saved_regs[NUM_REGS];
 } CallFrame;
 
@@ -177,7 +176,7 @@ int32_t interpret(char *program) {
             }
             printf("%*s", 165 - n, "CALLS: ");
             for (CallFrame *f = callstack; f <= fp; ++f) {
-                print_code(f->return_address);
+                print_code(f->old_code);
                 printf("    ");
             }
             printf("\n");
@@ -261,7 +260,7 @@ int32_t interpret(char *program) {
             assert((*code >= 'a' && *code <= 'z') || (*code >= 'A' && *code <= 'Z'));
             char *macro = macros[tolower(*code) - 'a'];
             code++;
-            fp->pos_first_param = code;
+            fp->old_code = code;
 
             while (*code != ';') {
                 code = next_param();
@@ -269,7 +268,6 @@ int32_t interpret(char *program) {
             assert(*code == ';');
             code++;
 
-            fp->return_address = code;
             memcpy(fp->saved_regs, registers, NUM_REGS * sizeof(registers[0]));
             code = macro;
             break;
@@ -277,17 +275,23 @@ int32_t interpret(char *program) {
         case '@':
             memcpy(registers, fp->saved_regs, NUM_REGS * sizeof(registers[0]));
             assert(fp >= callstack);
-            code = fp->return_address;
+            code = fp->old_code;
+
+            while (*code != ';') {
+                code = next_param();
+            }
+            assert(*code == ';');
+            code++;
             fp--;
             break;
         case '%': {
             code++;
             int32_t param_pos = POP(sp);
             char *old_code = code;
-            code = fp->pos_first_param;
+            code = fp->old_code;
             fp++;
             memset(fp, 0, sizeof(*fp));
-            fp->return_address = old_code;
+            fp->old_code = old_code;
 
             // TODO(dannas):
             // Find topmost macro frame
@@ -303,7 +307,7 @@ int32_t interpret(char *program) {
         case ',':
         case ';':
             assert(fp >= callstack);
-            code = fp->return_address;
+            code = fp->old_code;
             fp--;
             break;
         case '+':
@@ -477,7 +481,6 @@ char *read_file(const char *filename) {
 }
 
 int main(int argc, char *argv[]) {
-#if 0
     test_interpret();
 
     if (argc != 2) {
@@ -492,8 +495,6 @@ int main(int argc, char *argv[]) {
     }
 
     interpret(program);
-#endif
-    interpret("{#D, #D,1,2; ,5; $D 1% 2% + @}");
     return 0;
 }
 
