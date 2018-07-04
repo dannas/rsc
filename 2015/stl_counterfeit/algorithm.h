@@ -636,12 +636,50 @@ O set_difference(I1 b1, I1 e1, I2 b2, I2 e2, O d_b) {
 // push_heap
 // pop_heap
 // sort_heap
-//
+
 // Minimum/maximum operations
-// max
-// max_element
-// min
-// min_element
+
+template <typename T>
+const T& max(const T& a, const T& b) {
+    return a < b ? b : a;
+}
+
+template <typename I>
+I max_element(I b, I e) {
+    if (b == e) {
+        return e;
+    }
+    I m = b;
+    ++b;
+    while (b != e) {
+        if (*m < *b) {
+            m = b;
+        }
+        b++;
+    }
+    return m;
+}
+
+template <typename T>
+const T& min(const T& a, const T& b) {
+    return a > b ? b : a;
+}
+
+template <typename I>
+I min_element(I b, I e) {
+    if (b == e) {
+        return e;
+    }
+    I m = b;
+    ++b;
+    while (b != e) {
+        if (*m > *b) {
+            m = b;
+        }
+        b++;
+    }
+    return m;
+}
 // minmax_element
 // lexiographical_compare
 // is_permutation

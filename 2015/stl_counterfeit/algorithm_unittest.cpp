@@ -916,6 +916,71 @@ TEST(Algorithm, set_difference_Interleaved) {
     ASSERT_EQ(expected, o);
 }
 
+TEST(Algorithm, max) {
+    ASSERT_EQ(2, max(1, 2));
+    ASSERT_EQ(2, max(2, 1));
+    ASSERT_EQ(2, max(2, 2));
+}
+
+TEST(Algorithm, max_element_Empty) {
+    Vector v = {};
+    auto i = danstd::max_element(begin(v), end(v));
+    ASSERT_EQ(i, end(v));
+}
+
+TEST(Algorithm, max_element_OneElement) {
+    Vector v = {1};
+    auto i = danstd::max_element(begin(v), end(v));
+    ASSERT_EQ(i, begin(v));
+    ASSERT_EQ(1, *i);
+}
+
+TEST(Algorithm, max_element_Increasing) {
+    Vector v = {1, 2, 3};
+    auto i = danstd::max_element(begin(v), end(v));
+    ASSERT_NE(i, end(v));
+    ASSERT_EQ(3, *i);
+}
+
+TEST(Algorithm, max_element_Decreasing) {
+    Vector v = {3, 2, 1};
+    auto i = danstd::max_element(begin(v), end(v));
+    ASSERT_NE(i, end(v));
+    ASSERT_EQ(3, *i);
+}
+
+TEST(Algorithm, min) {
+    ASSERT_EQ(1, min(1, 2));
+    ASSERT_EQ(1, min(2, 1));
+    ASSERT_EQ(2, min(2, 2));
+}
+
+TEST(Algorithm, min_element_Empty) {
+    Vector v = {};
+    auto i = danstd::min_element(begin(v), end(v));
+    ASSERT_EQ(i, end(v));
+}
+
+TEST(Algorithm, min_element_OneElement) {
+    Vector v = {1};
+    auto i = danstd::min_element(begin(v), end(v));
+    ASSERT_EQ(i, begin(v));
+    ASSERT_EQ(1, *i);
+}
+
+TEST(Algorithm, min_element_Increasing) {
+    Vector v = {1, 2, 3};
+    auto i = danstd::min_element(begin(v), end(v));
+    ASSERT_NE(i, end(v));
+    ASSERT_EQ(1, *i);
+}
+
+TEST(Algorithm, min_element_Decreasing) {
+    Vector v = {3, 2, 1};
+    auto i = danstd::min_element(begin(v), end(v));
+    ASSERT_NE(i, end(v));
+    ASSERT_EQ(1, *i);
+}
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
