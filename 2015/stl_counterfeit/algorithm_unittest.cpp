@@ -981,6 +981,19 @@ TEST(Algorithm, min_element_Decreasing) {
     ASSERT_NE(i, end(v));
     ASSERT_EQ(1, *i);
 }
+
+TEST(Algorithm, accumulate_Empty) {
+    Vector v;
+    int sum = accumulate(begin(v), end(v), 42);
+    ASSERT_EQ(42, sum);
+}
+
+TEST(Algorithm, accumulate_SmallIncreasing) {
+    Vector v = {1, 2, 3};
+    int sum = accumulate(begin(v), end(v), 0);
+    ASSERT_EQ(6, sum);
+}
+
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

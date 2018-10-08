@@ -688,9 +688,18 @@ I min_element(I b, I e) {
 //
 // Numeric operations
 // iota
-// accumulate
 // inner_product
 // adjacent_difference
 // partial_sum
+
+template <typename I, typename T>
+T accumulate(I b, I e, T init) {
+    while (b != e) {
+        init += *b;
+        b++;
+    }
+    return init;
+}
+
 
 } // namespace counterfeit
