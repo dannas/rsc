@@ -690,7 +690,21 @@ I min_element(I b, I e) {
 // iota
 // inner_product
 // adjacent_difference
-// partial_sum
+
+template <typename I, typename O>
+O partial_sum(I b, I e, O d_b) {
+    if (b == e)
+        return d_b;
+    O r = d_b;
+    *d_b++ = *b++;
+
+    while (b != e) {
+        *d_b = d_b[-1] + *b;
+        b++;
+        d_b++;
+    }
+    return r;
+}
 
 template <typename I, typename T>
 T accumulate(I b, I e, T init) {

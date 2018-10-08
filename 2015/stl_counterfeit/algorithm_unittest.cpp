@@ -984,14 +984,32 @@ TEST(Algorithm, min_element_Decreasing) {
 
 TEST(Algorithm, accumulate_Empty) {
     Vector v;
-    int sum = accumulate(begin(v), end(v), 42);
+    int sum = danstd::accumulate(begin(v), end(v), 42);
     ASSERT_EQ(42, sum);
 }
 
 TEST(Algorithm, accumulate_SmallIncreasing) {
     Vector v = {1, 2, 3};
-    int sum = accumulate(begin(v), end(v), 0);
+    int sum = danstd::accumulate(begin(v), end(v), 0);
     ASSERT_EQ(6, sum);
+}
+
+TEST(Algorithm, partial_sum_Empty) {
+    Vector v;
+    Vector o(v.size(), 0);
+    auto i = danstd::partial_sum(begin(v), end(v), begin(o));
+    ASSERT_TRUE(o.empty());
+    ASSERT_EQ(begin(o), i);
+}
+
+TEST(Algorithm, partial_sum_SmallIncreasing) {
+    Vector v = {1, 2, 3, 4, 5};
+    Vector o(v.size(), 0);
+    Vector expected = {1, 3, 6, 10, 15};
+    auto i = danstd::partial_sum(begin(v), end(v), begin(o));
+    ASSERT_EQ(expected.size(), o.size());
+    ASSERT_EQ(begin(o), i);
+    ASSERT_EQ(expected, o);
 }
 
 int main(int argc, char* argv[]) {
