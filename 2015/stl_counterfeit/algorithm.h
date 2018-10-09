@@ -6,8 +6,9 @@
 
 namespace danstd {
 
-// Non modifying sequence operations
+// NON MODIFYING SEQUENCE OPERATIONS
 
+// Return the first element in [b, e) that is equal to |val|.
 template <typename I, typename T>
 I find(I b, I e, T val) {
     for (; b != e; ++b) {
@@ -17,6 +18,7 @@ I find(I b, I e, T val) {
     return e;
 }
 
+// Return the first element in [b, e) for which |p| returns true.
 template <typename I, typename Predicate>
 I find_if(I b, I e, Predicate p) {
     for (; b != e; ++b) {
@@ -26,6 +28,7 @@ I find_if(I b, I e, Predicate p) {
     return e;
 }
 
+// Return the first element in [b, e) for which |p| returns false.
 template <typename I, typename Predicate>
 I find_if_not(I b, I e, Predicate p) {
     for (; b != e; ++b) {
@@ -35,21 +38,25 @@ I find_if_not(I b, I e, Predicate p) {
     return e;
 }
 
+// Return true if |p| returns true for all elements in [b, e).
 template <typename I, typename Predicate>
 bool all_of(I b, I e, Predicate p) {
     return find_if_not(b, e, p) == e;
 } 
 
+// Return true if |p| returns true for any of the elements in [b, e).
 template <typename I, typename Predicate>
 bool any_of(I b, I e, Predicate p) {
     return find_if(b, e, p) != e;
 }
 
+// Return true if |p| is false for all elements in [b, e).
 template <typename I, typename Predicate>
 bool none_of(I b, I e, Predicate p) {
     return find_if(b, e, p) == e;
 }
 
+// Apply |f| to all elements in [b, e)
 template <typename I, typename Function>
 Function for_each(I b, I e, Function f) {
     for (; b != e; ++b)
@@ -57,6 +64,7 @@ Function for_each(I b, I e, Function f) {
     return f;
 }
 
+// Apply |f| to all elements in [b, b+n).
 template <typename I, typename Size, typename Function>
 Function for_each_n(I b, Size n, Function f) {
     auto e = b + n;
@@ -65,6 +73,7 @@ Function for_each_n(I b, Size n, Function f) {
     return f;
 }
 
+// Return the number of elements in [b, e) that are equal to |value|.
 template <typename I, typename T>
 typename std::iterator_traits<I>::difference_type
 count(I b, I e, T value) {
@@ -76,6 +85,7 @@ count(I b, I e, T value) {
     return n;
 }
 
+// Return the number of elements in [b, e) for which |p| is true.
 template <typename I, typename Predicate>
 typename std::iterator_traits<I>::difference_type
 count_if(I b, I e, Predicate p) {
@@ -87,6 +97,8 @@ count_if(I b, I e, Predicate p) {
     return n;
 }
 
+// Return the first pair of mismatching elements from [b1, e1) and
+// [b2, b2+ e1-b1).
 template <typename T1, typename T2>
 std::pair<T1, T2> mismatch(T1 b1, T1 e1, T2 b2) {
     while (b1 != e1 && *b1 == *b2) {
@@ -97,6 +109,7 @@ std::pair<T1, T2> mismatch(T1 b1, T1 e1, T2 b2) {
 
 }
 
+// Return true if [b1, e1) is equal to [b2, b2+e1-b1).
 template <typename T1, typename T2>
 bool equal(T1 b1, T1 e1, T2 b2) {
     while (b1 != e1) {
@@ -108,6 +121,7 @@ bool equal(T1 b1, T1 e1, T2 b2) {
     return true;
 }
 
+// Return position of the first subsequence [s_b, s_e) in [b, e).
 template <typename T1, typename T2>
 T1 search(T1 b, T1 e, T2 s_b, T2 s_e) {
     for (; b != e; ++b) {
@@ -123,6 +137,7 @@ T1 search(T1 b, T1 e, T2 s_b, T2 s_e) {
     return e;
 }
 
+// Return position of the last subsequence [s_b, s_e) in [b, e).
 template <typename T1, typename T2>
 T1 find_end(T1 b, T1 e, T2 s_b, T2 s_e) {
     auto r = e;
@@ -134,6 +149,8 @@ T1 find_end(T1 b, T1 e, T2 s_b, T2 s_e) {
     return r;
 }
 
+// Return position of first element in [b, e) that is equal to an element in
+// [s_b, s_e)
 template <typename T1, typename T2>
 T1 find_first_of(T1 b, T1 e, T2 s_b, T2 s_e) {
     for (; b != e; ++b) {
@@ -145,6 +162,7 @@ T1 find_first_of(T1 b, T1 e, T2 s_b, T2 s_e) {
     return e;
 }
 
+// Return first position of two identical adjacent elements in [b, e).
 template <typename I>
 I adjacent_find(I b, I e) {
     if (b == e)
@@ -159,6 +177,7 @@ I adjacent_find(I b, I e) {
     return e;
 }
 
+// Return position of [i, i+size) where *i is equal to |val|
 template <typename I, typename Size, typename T>
 I search_n(I b, I e, Size size, const T& val) {
     Size n = 0;
@@ -177,8 +196,9 @@ I search_n(I b, I e, Size size, const T& val) {
     return e;
 }
 
-// Modifying sequence operations
+// MODIFYING SEQUENCE OPERATIONS
 
+// Copy [b, e) to [d_b, d_b + e-b). Return end(destination).
 template <typename I, typename O>
 O copy(I b, I e, O d_b) {
     for (; b != e; ++b, ++d_b) {
@@ -187,6 +207,7 @@ O copy(I b, I e, O d_b) {
     return d_b;
 }
 
+// Copy [b, b+size) to [d_b, d_b + size). Return d_b + size.
 template <typename I, typename Size, typename O>
 O copy_n(I b, I e, Size size, O d_b) {
     for(; b != e && size > 0; --size) {
@@ -195,6 +216,8 @@ O copy_n(I b, I e, Size size, O d_b) {
     return d_b;
 }
 
+// Copy [b, e) in reverse order to [..., d_e). Return iterator
+// to last element copied.
 template <typename I, typename O>
 O copy_backward(I b, I e, O d_e) {
     while (b != e) {
@@ -203,6 +226,7 @@ O copy_backward(I b, I e, O d_e) {
     return d_e;
 }
 
+// Move [b, e) to [d_b, ...)
 template <typename I, typename O>
 O move(I b, I e, O d_b) {
     for (; b != e; ++b) {
@@ -211,6 +235,8 @@ O move(I b, I e, O d_b) {
     return d_b;
 }
 
+// Move [b, e) in reverse order to a range endinng at |d_e|. Return iterator
+// to the last element copied.
 template <typename I, typename O>
 O move_backward(I b, I e, O d_b, O d_e) {
     while (b != e && d_b != d_e) {
@@ -219,12 +245,14 @@ O move_backward(I b, I e, O d_b, O d_e) {
     return d_e;
 }
 
+// Assign [b, e) the value |val|.
 template <typename I, typename T>
 void fill(I b, I e, T val) {
     for (; b != e; ++b)
         *b = val;
 }
 
+// Assign [b, b+n) the value |val|.
 template <typename I, typename Size, typename T>
 void fill_n(I b, I e, Size n, T val) {
     for (; b != e && n > 0; ++b, --n) {
@@ -232,6 +260,7 @@ void fill_n(I b, I e, Size n, T val) {
     }
 }
 
+// Apply |p| to [b, e) and store the result [d_b, ...)
 template <typename I, typename O, typename F>
 O transform(I b, I e, O d_b, F f) {
     for (; b != e; ++b) {
@@ -240,6 +269,7 @@ O transform(I b, I e, O d_b, F f) {
     return d_b;
 }
 
+// Assign [b, e) a value generated by |f|
 template <typename I, typename F>
 void generate(I b, I e, F f) {
     for (; b != e; ++b) {
@@ -247,6 +277,7 @@ void generate(I b, I e, F f) {
     }
 }
 
+// Assign [b, b+n) a value generated by |f|
 template <typename I, typename Size, typename F>
 void generate_n(I b, I e, Size n, F f) {
     for (; b != e && n > 0; ++b, --n) {
@@ -254,6 +285,8 @@ void generate_n(I b, I e, Size n, F f) {
     }
 }
 
+// Remove each element in [b, e) for which |p| is true. Return a new past-end
+// iterator.
 template <typename I, typename Predicate>
 I remove_if(I b, I e, Predicate p) {
     b = find_if(b, e, p);
@@ -273,6 +306,7 @@ I remove_if(I b, I e, Predicate p) {
     return result;
 }
 
+// Copy [b, e) to [d_b, ...), omitting elements equal to |val|.
 template <typename I, typename O, typename T>
 O remove_copy(I b, I e, O d_b, const T& val) {
     for (; b != e; ++b) {
@@ -282,6 +316,7 @@ O remove_copy(I b, I e, O d_b, const T& val) {
     return d_b;
 }
 
+// Replace all elements in [b, e) equal to |old| with |val|.
 template <typename I, typename T>
 void replace(I b, I e, const T& old, const T& val) {
     for (; b != e; ++b) {
@@ -290,6 +325,7 @@ void replace(I b, I e, const T& old, const T& val) {
     }
 }
 
+// Copy [b, e) to [d_b, ...), replacing elements equal to |old| with |val|.
 template <typename I, typename O, typename T>
 O replace_copy(I b, I e, O d_b, const T& old, const T& val) {
     for (; b != e; ++b) {
@@ -301,6 +337,7 @@ O replace_copy(I b, I e, O d_b, const T& old, const T& val) {
     return d_b;
 }
 
+// Swap values |a| and |b|.
 template <typename T>
 void swap(T& a, T& b) {
     T temp = std::move(a);
@@ -308,12 +345,14 @@ void swap(T& a, T& b) {
     b = std::move(temp);
 }
 
+// Swaps the values of the elements the given iterators are pointing to.
 template <typename I>
 void iter_swap(I a, I b) {
     using std::swap;
     swap(*a, *b);
 }
 
+// Exchange [b1, e1) and [b2,  e2)
 template <typename I, typename O>
 O swap_ranges(I b1, I e1, O b2, O e2) {
     for (; b1 != e1 && b2 != e2; ++b1, ++b2) {
@@ -322,6 +361,7 @@ O swap_ranges(I b1, I e1, O b2, O e2) {
     return b2;
 }
 
+// Reverse the order of the elements in [b, e).
 template <typename I>
 void reverse(I b, I e) {
     while (b != e && b != --e) {
@@ -329,6 +369,7 @@ void reverse(I b, I e) {
     }
 }
 
+// Copy [b, e) to [d_b, ...) in reverse order.
 template <typename I, typename O>
 O reverse_copy(I b, I e, O d_b) {
     while (b != e) {
@@ -337,6 +378,7 @@ O reverse_copy(I b, I e, O d_b) {
     return d_b;
 }
 
+// Perform a left rotation on [b,...,m,...,e) such that [m, ..., m-1)
 template <typename I>
 void rotate(I b, I m, I e) {
     danstd::reverse(b, m);
