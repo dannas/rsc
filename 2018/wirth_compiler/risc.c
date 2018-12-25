@@ -217,6 +217,7 @@ typedef struct Hart {
     uint32_t regs[NUM_REGS];
     bool N;
     bool Z;
+    bool done;
     Bus *bus;
 } Hart;
 
@@ -377,7 +378,9 @@ void step(Hart *hart) {
         break;
     case RET:
         next_pc = hart->regs[disp % NUM_REGS];
-        // TODO(dannas): Exit if disp == 0
+        if (disp == 0) {
+            hart->done = true;
+        }
         break;
     default:
         assert(0);
@@ -422,7 +425,7 @@ void print_hart_state(Hart *hart) {
 
 void cmd_loop(Hart *hart) {
     print_hart_state(hart);
-    while (true) {
+    while (!hart->done) {
         getchar();
         step(hart);
         print_hart_state(hart);

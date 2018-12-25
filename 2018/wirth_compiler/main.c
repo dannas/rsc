@@ -66,6 +66,7 @@ int main() {
     char *buf = read_file("oberon.txt");
 
     init_stream("oberon.txt", buf);
+    init_builtin_types();
 
     parse_module();
 

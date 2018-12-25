@@ -46,9 +46,27 @@ typedef enum TypeKind {
     NUM_TYPE_KINDS,
 } TypeKind;
 
-typedef struct Type {
+typedef struct Type Type;
+
+typedef struct TypeField {
+    Type *type;
+    const char *name;
+    size_t offset;
+} TypeField;
+
+struct Type {
     TypeKind kind;
-} Type;
+    size_t size;
+    struct Type *base;
+
+    union {
+        size_t num_elems;
+        struct {
+            TypeField *fields;
+            size_t num_fields;
+        } record;
+    };
+};
 
 typedef enum SymKind {
     SYM_NONE,
@@ -59,20 +77,41 @@ typedef enum SymKind {
     SYM_MODULE,
 } SymKind;
 
+char* sym_kind_names[] = {
+    [SYM_NONE] = "NONE",
+    [SYM_TYPE] = "TYPE",
+    [SYM_CONST] = "CONSTANT",
+    [SYM_VAR] = "VARABLE",
+    [SYM_PROC] = "PROCEDURE",
+    [SYM_MODULE] = "MODULE",
+};
+
+char* sym_kind_name(SymKind kind) {
+    if (kind < sizeof(sym_kind_names)/sizeof(sym_kind_names[0])) {
+        return sym_kind_names[kind];
+    }
+    return "unknown";
+}
+
 typedef struct Sym {
     SymKind kind;
     const char *name;
-    Type type;
+        Type *type;
+    union {
+        int val;
+        size_t var_index;
+    };
 } Sym;
 
 enum {
-    MAX_LOCAL_SYMS = 8,
+    MAX_SYMBOLS = 4096,
 };
-Sym local_syms[MAX_LOCAL_SYMS];
-Sym *local_syms_end = local_syms;
+Sym symbols[MAX_SYMBOLS];
+Sym *symbols_end = symbols;
+size_t var_index;
 
-Sym* sym_get_local(const char *name) {
-    for (Sym *it = local_syms_end; it != local_syms; it--) {
+Sym* sym_get(const char *name) {
+    for (Sym *it = symbols_end; it != symbols; it--) {
         Sym *sym = it-1;
         if (sym->name == name) {
             return sym;
@@ -81,12 +120,15 @@ Sym* sym_get_local(const char *name) {
     return NULL;
 }
 
-bool sym_push_var(const char *name, Type type) {
-    if (sym_get_local(name)) {
+bool sym_push(const char *name, SymKind kind, Type *type) {
+    if (sym_get(name)) {
         return false;
     }
-    *local_syms_end++ = (Sym){
-        .kind = SYM_VAR,
+    if (symbols_end == symbols + MAX_SYMBOLS) {
+        fatal("Too many local symbols");
+    }
+    *symbols_end++ = (Sym){
+        .kind = kind,
         .name = name,
         .type = type,
     };
@@ -94,11 +136,42 @@ bool sym_push_var(const char *name, Type type) {
 }
 
 Sym* sym_enter() {
-    return local_syms_end;
+    return symbols_end;
 }
 
 void sym_leave(Sym *sym) {
-    local_syms_end = sym;
+    symbols_end = sym;
+}
+
+Type *type_none = &(Type){.kind=TYPE_NONE};
+Type *type_integer = &(Type){.kind=TYPE_INT, .size=4};
+Type *type_boolean = &(Type){.kind=TYPE_BOOL, .size=1};
+
+void init_builtin_types() {
+    sym_push(str_intern("BOOLEAN"), SYM_TYPE, type_boolean);
+    sym_push(str_intern("INTEGER"), SYM_TYPE, type_integer);
+}
+
+Type* type_alloc(TypeKind kind) {
+    Type *type = xcalloc(1, sizeof(Type));
+    type->kind = kind;
+    return type;
+}
+
+Type **cached_array_types;
+
+Type* type_array(Type *base, size_t num_elems) {
+    for (Type **it = cached_array_types; it != buf_end(cached_array_types); it++) {
+        if ((*it)->kind == TYPE_ARRAY && (*it)->base == base && (*it)->num_elems == num_elems) {
+            return *it;
+        }
+    }
+    Type *type = type_alloc(TYPE_ARRAY);
+    type->base = base;
+    type->num_elems = num_elems;
+    type->size = num_elems * base->size;
+    buf_push(cached_array_types, type);
+    return type;
 }
 
 Asm *assembler;
@@ -109,15 +182,21 @@ Reg current_reg = R1;
 
 void parse_expr();
 
-void parse_selector() {
+void parse_selector(Type *type) {
     while (is_token(TOKEN_DOT) || is_token(TOKEN_LBRACKET)) {
         if (is_token(TOKEN_DOT)) {
             // TODO(dannas): Generate asm for selector
             next_token();
             expect_token(TOKEN_NAME);
         }  else if (is_token(TOKEN_LBRACKET)) {
+            if (type->kind != TYPE_ARRAY) {
+                fatal_error_here("Bracket selectors, but not an array");
+            }
             next_token();
             parse_expr();
+            asm_imm_op(assembler, MULI, current_reg-1, current_reg-1, type->size / type->num_elems);
+            asm_reg_op(assembler, ADD, current_reg-2, current_reg-2, current_reg-1);
+            current_reg--;
             expect_token(TOKEN_RBRACKET);
         }
     }
@@ -128,13 +207,25 @@ void parse_factor() {
         current_reg++;
         next_token();
     } else if (is_token(TOKEN_NAME)) {
-        if (!sym_get_local(token.name)) {
-            fatal_error(token.pos, "'%s' is not defined", token.name);
+        Sym *sym = sym_get(token.name);
+        if (!sym) {
+            fatal_error_here("'%s' is not defined", token.name);
         }
-        // TODO(dannas): Lookup index of variable instead of hardcoded 0
-        asm_ldw_var(assembler, current_reg, R0, 0);
+        if (sym->kind == SYM_CONST) {
+            asm_imm_op(assembler, MOVI, current_reg, R0, sym->val);
+            current_reg++;
+        } else if (sym->kind == SYM_VAR) {
+            if (sym->type->kind == TYPE_ARRAY || sym->type->kind == TYPE_RECORD) {
+                asm_imm_op(assembler, MOVI, current_reg, R0, sym->var_index);
+            } else {
+                asm_ldw_var(assembler, current_reg, R0, sym->var_index);
+            }
+            current_reg++;
+        } else {
+            fatal_error_here("Expected variable or constant but got '%s'", sym_kind_name(sym->kind));
+        }
         next_token();
-        parse_selector();
+        parse_selector(sym->type);
     } else if (is_token(TOKEN_LPAREN)) {
         next_token();
         parse_expr();
@@ -210,11 +301,21 @@ void parse_expr() {
 
 void parse_assignment() {
     if (is_token(TOKEN_NAME)) {
+        Sym *sym = sym_get(token.name);
+        if (!sym) {
+            fatal_error_here("'%s' is not defined", token.name);
+        }
+        if (sym->kind != SYM_VAR) {
+            fatal_error_here("'%s' must be VAR but is a %s", sym->name, sym_kind_name(sym->kind));
+        }
         next_token();
-        parse_selector();
+        if (sym->type->kind == TYPE_ARRAY || sym->type->kind == TYPE_RECORD) {
+            fatal_error_here("TODO:types requiring selectors for assignment is not yet implemented");
+        }
+        parse_selector(sym->type);
         expect_token(TOKEN_COLON_ASSIGN);
         parse_expr();
-        asm_stw_var(assembler, current_reg-1, R0, 0);
+        asm_stw_var(assembler, current_reg-1, R0, sym->var_index);
         current_reg--;
     }
 }
@@ -232,7 +333,8 @@ void parse_actual_params() {
 
 void parse_proc_call() {
     expect_token(TOKEN_NAME);
-    parse_selector();
+    // TODO(dannas): Replace this dummy type with the correct one.
+    parse_selector(type_integer);
     if (is_token(TOKEN_LPAREN)) {
         parse_actual_params();
     }
@@ -287,59 +389,113 @@ void parse_stmt_sequence() {
     }
 }
 
-void parse_ident_list() {
+// Should really be under parse_ident_list but I'm making an extra function just to ease
+// the task of returning a field list for the record types.
+void parse_field_ident_list(TypeField **fields, size_t *num_fields) {
     if (!is_token(TOKEN_NAME)) {
         fatal_error_here("Expected name but got '%s'", token_info());
     }
-    sym_push_var(token.name, (Type){.kind = TYPE_NONE});
+    buf_push(*fields, (TypeField){.name=token.name});
+    *num_fields += 1;
     next_token();
     while (match_token(TOKEN_COMMA)) {
         if (!is_token(TOKEN_NAME)) {
             fatal_error_here("Expected name but got '%s'", token_info());
         }
-        sym_push_var(token.name, (Type){.kind = TYPE_NONE});
+        buf_push(*fields, (TypeField){.name=token.name});
+        *num_fields += 1;
         next_token();
     }
 }
 
-Type parse_type();
-
-void parse_array_type() {
-    expect_keyword(ARRAY_keyword);
-    parse_expr();
-    expect_keyword(OF_keyword);
-    parse_type();
-}
-
-void parse_field_list() {
-    if (is_token(TOKEN_NAME)) {
-        parse_ident_list();
-        expect_token(TOKEN_COLON);
-        parse_type();
+void parse_ident_list() {
+    if (!is_token(TOKEN_NAME)) {
+        fatal_error_here("Expected name but got '%s'", token_info());
+    }
+    if (!sym_push(token.name, SYM_NONE, type_none)) {
+        fatal_error_here("identifier '%s' is already defined", token.name);
+    }
+    next_token();
+    while (match_token(TOKEN_COMMA)) {
+        if (!is_token(TOKEN_NAME)) {
+            fatal_error_here("Expected name but got '%s'", token_info());
+        }
+        if (!sym_push(token.name, SYM_NONE, type_none)) {
+            fatal_error_here("identifier '%s' is already defined", token.name);
+        }
+        next_token();
     }
 }
 
-void parse_record_type() {
+Type* parse_type();
+
+Type* parse_array_type() {
+    expect_keyword(ARRAY_keyword);
+
+    if (!is_token(TOKEN_NUMBER)) {
+        fatal_error_here("Expected number but got %s", token_kind_name(token.kind));
+    }
+    if (token.number == 0) {
+        fatal_error_here("Array size must not be zero");
+    }
+    size_t num_elems = token.number;
+    next_token();
+    // TODO(dannas): Add constexpr evaluation for constants
+    //parse_expr();
+    expect_keyword(OF_keyword);
+    Type *base = parse_type();
+    return type_array(base, num_elems);
+}
+
+void parse_field_list(TypeField **fields, size_t *num_fields) {
+    if (is_token(TOKEN_NAME)) {
+        //parse_ident_list();
+        size_t offset = buf_len(*fields);
+        parse_field_ident_list(fields, num_fields);
+        expect_token(TOKEN_COLON);
+        Type *type = parse_type();
+        size_t size = 0;
+
+        for (TypeField *it = *fields + offset; it != buf_end(*fields); it++) {
+            it->type = type;
+            // TODO(dannas): Fix alignmnent. For now, just assume that all types have the same alignment
+            // and that no padding is required.
+            it->offset = size;
+            size += type->size;
+        }
+    }
+}
+
+Type* parse_record_type() {
     expect_keyword(RECORD_keyword);
-    parse_field_list();
+    Type *type = type_alloc(TYPE_RECORD);
+    parse_field_list(&type->record.fields, &type->record.num_fields);
     while (match_token(TOKEN_SEMICOLON)) {
-        parse_field_list();
+        parse_field_list(&type->record.fields, &type->record.num_fields);
+    }
+    for (TypeField *it = type->record.fields; it != buf_end(type->record.fields); it++) {
+        type->size += it->type->size;
     }
     expect_keyword(END_keyword);
+    return type;
 }
 
-Type parse_type() {
-    Type type;
+Type* parse_type() {
+    Type *type;
     if (is_token(TOKEN_NAME)) {
-        // TODO(dannas): Set right type here
-        type.kind = TYPE_NONE;
+        Sym *sym = sym_get(token.name);
+        if (!sym) {
+            fatal_error_here("'%s' is an unknown type", token.name);
+        }
+        if (sym->kind != SYM_TYPE) {
+            fatal_error_here("Expected '%s' to be TYPE but it was %s", token.name, sym_kind_name(sym->kind));
+        }
+        type = sym->type;
         next_token();
     } else if (is_keyword(ARRAY_keyword)) {
-        type.kind = TYPE_ARRAY;
-        parse_array_type();
+        type = parse_array_type();
     } else if (is_keyword(RECORD_keyword)) {
-        type.kind = TYPE_RECORD;
-        parse_record_type();
+        type = parse_record_type();
     } else {
         fatal_error_here("Error Expected name, ARRAY or RECORD but got %s", token_kind_name(token.kind));
     }
@@ -376,7 +532,8 @@ void parse_proc_heading() {
 
 void parse_declarations();
 void parse_proc_body() {
-    Sym *first = sym_enter();
+    Sym *scope = sym_enter();
+    size_t var_index_on_entry = var_index;
 
     parse_declarations();
     if (match_keyword(BEGIN_keyword)) {
@@ -384,8 +541,12 @@ void parse_proc_body() {
     }
     expect_keyword(END_keyword);
     expect_token(TOKEN_NAME);
+    // TODO(dannas): Determine if we're at the bottom of the call stack.
+    // If so, then do a RET 0
+    asm_br_op(assembler, RET, 0);
 
-    sym_leave(first);
+    sym_leave(scope);
+    var_index = var_index_on_entry;
 }
 
 void parse_proc_declaration() {
@@ -394,21 +555,31 @@ void parse_proc_declaration() {
     parse_proc_body();
 }
 
-
 void parse_declarations() {
     if (match_keyword(CONST_keyword)) {
         while (is_token(TOKEN_NAME)) {
+            if (!sym_push(token.name, SYM_CONST, type_integer)) {
+                fatal_error_here("identifier '%s' is already defined", token.name);
+            }
             next_token();
             expect_token(TOKEN_EQ);
-            parse_expr();
+            if (!is_token(TOKEN_NUMBER)) {
+                fatal_error_here("Expected number or ( or ~ but got %s", token_kind_name(token.kind));
+            }
+            symbols_end[-1].val = token.number;
+            next_token();
+            // TODO(dannas): Add constexpr evaluation for constants
+            //parse_expr();
             expect_token(TOKEN_SEMICOLON);
         }
     }
     if (match_keyword(TYPE_keyword)) {
         while (is_token(TOKEN_NAME)) {
+            const char *name = token.name;
             next_token();
             expect_token(TOKEN_EQ);
-            parse_type();
+            Type *type = parse_type();
+            sym_push(name, SYM_TYPE, type);
             expect_token(TOKEN_SEMICOLON);
         }
     }
@@ -417,9 +588,11 @@ void parse_declarations() {
             Sym *first = sym_enter();
             parse_ident_list();
             expect_token(TOKEN_COLON);
-            Type type = parse_type();
-            for (Sym *sym = first; sym < local_syms_end; sym++) {
+            Type *type = parse_type();
+            for (Sym *sym = first; sym < symbols_end; sym++) {
+                sym->kind = SYM_VAR;
                 sym->type = type;
+                sym->var_index = var_index++;
             }
             expect_token(TOKEN_SEMICOLON);
         }
@@ -433,6 +606,7 @@ void parse_declarations() {
 void parse_module() {
     expect_keyword(MODULE_keyword);
     if (is_token(TOKEN_NAME)) {
+        Sym *scope = sym_enter();
         // TODO(dannas): Store name
         next_token();
         expect_token(TOKEN_SEMICOLON);
@@ -446,6 +620,7 @@ void parse_module() {
         // TODO(dannas): Store identifier
         expect_token(TOKEN_NAME);
         expect_token(TOKEN_DOT);
+        sym_leave(scope);
     } else {
         fatal_error_here("Error expected name but got %s", token_kind_name(token.kind));
     }

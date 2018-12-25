@@ -28,6 +28,15 @@ void *xmalloc(size_t num_bytes) {
     return ptr;
 }
 
+void *xcalloc(size_t num_elems, size_t elem_size) {
+    void *ptr = calloc(num_elems, elem_size);
+    if (!ptr) {
+        perror("calloc failed");
+        exit(1);
+    }
+    return ptr;
+}
+
 void *xrealloc(void *ptr, size_t num_bytes) {
     ptr = realloc(ptr, num_bytes);
     if (!ptr) {
