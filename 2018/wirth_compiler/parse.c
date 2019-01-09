@@ -144,7 +144,7 @@ void sym_leave(Sym *sym) {
 }
 
 Type *type_none = &(Type){.kind=TYPE_NONE};
-Type *type_integer = &(Type){.kind=TYPE_INT, .size=4};
+Type *type_integer = &(Type){.kind=TYPE_INT, .size=1};
 Type *type_boolean = &(Type){.kind=TYPE_BOOL, .size=1};
 
 void init_builtin_types() {
@@ -195,8 +195,6 @@ void parse_selector(Type *type) {
             next_token();
             parse_expr();
             asm_imm_op(assembler, MULI, current_reg-1, current_reg-1, type->size / type->num_elems);
-            asm_reg_op(assembler, ADD, current_reg-2, current_reg-2, current_reg-1);
-            current_reg--;
             expect_token(TOKEN_RBRACKET);
         }
     }
@@ -211,21 +209,21 @@ void parse_factor() {
         if (!sym) {
             fatal_error_here("'%s' is not defined", token.name);
         }
+        next_token();
+        parse_selector(sym->type);
         if (sym->kind == SYM_CONST) {
             asm_imm_op(assembler, MOVI, current_reg, R0, sym->val);
             current_reg++;
         } else if (sym->kind == SYM_VAR) {
             if (sym->type->kind == TYPE_ARRAY || sym->type->kind == TYPE_RECORD) {
-                asm_imm_op(assembler, MOVI, current_reg, R0, sym->var_index);
+                asm_ldw_var(assembler, current_reg-1, current_reg-1, sym->var_index);
             } else {
                 asm_ldw_var(assembler, current_reg, R0, sym->var_index);
+                current_reg++;
             }
-            current_reg++;
         } else {
             fatal_error_here("Expected variable or constant but got '%s'", sym_kind_name(sym->kind));
         }
-        next_token();
-        parse_selector(sym->type);
     } else if (is_token(TOKEN_LPAREN)) {
         next_token();
         parse_expr();
@@ -309,13 +307,15 @@ void parse_assignment() {
             fatal_error_here("'%s' must be VAR but is a %s", sym->name, sym_kind_name(sym->kind));
         }
         next_token();
-        if (sym->type->kind == TYPE_ARRAY || sym->type->kind == TYPE_RECORD) {
-            fatal_error_here("TODO:types requiring selectors for assignment is not yet implemented");
-        }
+        TypeKind kind = sym->type->kind;
         parse_selector(sym->type);
         expect_token(TOKEN_COLON_ASSIGN);
         parse_expr();
-        asm_stw_var(assembler, current_reg-1, R0, sym->var_index);
+        if (kind == TYPE_ARRAY || kind ==TYPE_RECORD) {
+            asm_stw_var(assembler, current_reg-1, current_reg-2, sym->var_index);
+        } else {
+            asm_stw_var(assembler, current_reg-1, R0, sym->var_index);
+        }
         current_reg--;
     }
 }

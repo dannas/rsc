@@ -426,7 +426,7 @@ void print_hart_state(Hart *hart) {
 void cmd_loop(Hart *hart) {
     print_hart_state(hart);
     while (!hart->done) {
-        getchar();
+        //getchar();
         step(hart);
         print_hart_state(hart);
     }
