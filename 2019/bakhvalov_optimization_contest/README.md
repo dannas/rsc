@@ -1,6 +1,9 @@
 # Denis Bakhvalovs optimization contest #1
-My first attempt at optimizing loops (previously I've stopped when I had
-removed unneeded system calls and reduced the number of cache misses). 
+My first attempt at optimizing loops. I haven't done much performance work, and
+what I've done has stopped when I've reduced number of syscalls in my programs
+and reduced the number of cache misses to an acceptable level.
+
+I didn't get very far, unfortunately. But with practice I'm sure I will improve!
 
 Tests were run on a Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz with the
 environment setup using the included file setup_for_benchmarking.sh
@@ -162,15 +165,17 @@ The percentage of retiring instructions has increased since version 7.
 ## Version 9
 I unrolled the outer loop by 2x.
 
-$ time -p ./sieve9
-Count: 1028
-real 2.62
-user 2.61
-sys 0.00
+    $ time -p ./sieve9
+    Count: 1028
+    real 2.62
+    user 2.61
+    sys 0.00
 
+Almost every instruction is retiring.
 
-$ cset shield --exec -- toplev.py --core S0-C0 -l2  --no-desc taskset -c 0 ./sieve9
-Count: 1028
-C0    RET            Retiring:               95.71 +-     0.00 % Slots
-C0    RET            Retiring.Base:          95.58 +-     0.00 % Slots <==
+    $ cset shield --exec -- toplev.py --core S0-C0 -l2  --no-desc taskset -c 0 ./sieve9
+    Count: 1028
+    C0    RET            Retiring:               95.71 +-     0.00 % Slots
+    C0    RET            Retiring.Base:          95.58 +-     0.00 % Slots <==
+
 

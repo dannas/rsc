@@ -9,3 +9,15 @@ all:
 	gcc sieve7.c -O3 -o sieve7
 	gcc sieve8.c -O3 -o sieve8
 	gcc sieve9.c -O3 -o sieve9
+
+benchmark:
+	time -p ./sieve
+	time -p ./sieve1
+	time -p ./sieve2
+	time -p ./sieve3
+	time -p ./sieve4
+	time -p ./sieve5
+	time -p ./sieve6
+	time -p ./sieve7
+	time -p ./sieve8
+	time -p ./sieve9
