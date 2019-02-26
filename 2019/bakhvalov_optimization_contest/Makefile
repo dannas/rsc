@@ -7,3 +7,5 @@ all:
 	gcc sieve5.c -O3 -o sieve5
 	gcc sieve6.c -O3 -o sieve6
 	gcc sieve7.c -O3 -o sieve7
+	gcc sieve8.c -O3 -o sieve8
+	gcc sieve9.c -O3 -o sieve9
