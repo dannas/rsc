@@ -1,11 +1,22 @@
 #include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include <errno.h>
+
+#include <grp.h> // setgroup
 
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+#include <sys/syscall.h>
+
+#ifndef OPEN_MAX
+#define OPEN_MAX 1024
+#endif
 
 int system1(const char *cmd) {
     int status;
@@ -87,6 +98,99 @@ int system2(const char *cmd) {
     return status;
 }
 
+int system3(const char *cmd) {
+    int status;
+    pid_t pid;
+
+    switch (pid = fork()) {
+    case -1:
+        return -1;
+    case 0: {
+
+        // Determine max number of open files.
+        // _SC_OPEN_MAX is bound by the resource limit RT_NOFILE and may
+        // change during runtime.
+        int num_fd = sysconf(_SC_OPEN_MAX);
+        if (num_fd ==-1) {
+            num_fd = OPEN_MAX;
+        }
+
+        for (int fd = 3; fd < num_fd; fd++) {
+            close(fd);
+        }
+
+        execl("/bin/sh", "sh", "-c", (char **)cmd, NULL);
+        _exit(127);
+    }
+
+    default:
+        if (waitpid(pid, &status, 0) == -1) {
+            return -1;
+        }
+    }
+    return status;
+}
+
+int system4(const char *cmd) {
+    int status;
+    pid_t pid;
+
+    switch (pid = fork()) {
+    case -1:
+        return -1;
+    case 0: {
+        gid_t new_gid = getgid();
+        gid_t old_gid = getegid();
+        uid_t new_uid = getuid();
+        uid_t old_uid = geteuid();
+
+        // Drop all ancillary groups.
+        setgroups(1, &new_gid);
+
+        // Drop effective group id.
+        if (new_gid != old_gid) {
+            if (setregid(new_gid, new_gid) == -1) {
+                abort();
+            }
+        }
+
+        // Drop effective user id.
+        if (new_uid != old_uid) {
+            if (setreuid(new_uid, new_uid) == -1) {
+                abort();
+            }
+        }
+
+        // Verify that the changes took effect.
+        if (new_gid != old_gid && getegid() != new_gid) {
+            abort();
+        }
+        if (new_uid != old_uid && geteuid() != new_uid) {
+            abort();
+        }
+
+        execl("/bin/sh", "sh", "-c", (char **)cmd, NULL);
+        _exit(127);
+    }
+
+    default:
+        if (waitpid(pid, &status, 0) == -1) {
+            return -1;
+        }
+    }
+    return status;
+}
+
 int main() {
-    system1("sleep 86400");  // Sleep for 24 hours
+    int fd = open("/proc/self/fd", O_DIRECTORY, O_RDONLY);
+    char buf[BUFSIZ];
+    while (true) {
+        int num_read = syscall(SYS_getdents, fd, buf, BUFSIZ);
+        if (num_read == 0) {
+            break;
+        }
+
+    }
+
+
 }
