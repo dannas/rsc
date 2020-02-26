@@ -15,6 +15,7 @@
 #include <assert.h>
 #include <float.h>
 #include <time.h>
+#include <stdint.h>
 
 #include "mm.h"
 #include "memlib.h"
@@ -31,7 +32,7 @@
 #define LINENUM(i) (i+5) /* cnvt trace request nums to linenums (origin 1) */
 
 /* Returns true if p is ALIGNMENT-byte aligned */
-#define IS_ALIGNED(p)  ((((unsigned int)(p)) % ALIGNMENT) == 0)
+#define IS_ALIGNED(p)  ((((uintptr_t)(p)) % ALIGNMENT) == 0)
 
 /****************************** 
  * The key compound data types 
@@ -90,7 +91,7 @@ typedef struct {
  *******************/
 int verbose = 0;        /* global flag for verbose output */
 static int errors = 0;  /* number of errs found when running student malloc */
-char msg[MAXLINE];      /* for whenever we need to compose an error message */
+char msg[2*MAXLINE];      /* for whenever we need to compose an error message */
 
 /* Directory where default tracefiles are found */
 static char tracedir[MAXLINE] = TRACEDIR;
@@ -480,6 +481,7 @@ static trace_t *read_trace(char *tracedir, char *filename)
     unsigned index, size;
     unsigned max_index = 0;
     unsigned op_index;
+    int ignored __attribute__((unused));
 
     if (verbose > 1)
 	printf("Reading tracefile: %s\n", filename);
@@ -495,10 +497,10 @@ static trace_t *read_trace(char *tracedir, char *filename)
 	sprintf(msg, "Could not open %s in read_trace", path);
 	unix_error(msg);
     }
-    fscanf(tracefile, "%d", &(trace->sugg_heapsize)); /* not used */
-    fscanf(tracefile, "%d", &(trace->num_ids));     
-    fscanf(tracefile, "%d", &(trace->num_ops));     
-    fscanf(tracefile, "%d", &(trace->weight));        /* not used */
+    ignored = fscanf(tracefile, "%d", &(trace->sugg_heapsize)); /* not used */
+    ignored = fscanf(tracefile, "%d", &(trace->num_ids));     
+    ignored = fscanf(tracefile, "%d", &(trace->num_ops));     
+    ignored = fscanf(tracefile, "%d", &(trace->weight));        /* not used */
     
     /* We'll store each request line in the trace in this array */
     if ((trace->ops = 
@@ -521,21 +523,21 @@ static trace_t *read_trace(char *tracedir, char *filename)
     while (fscanf(tracefile, "%s", type) != EOF) {
 	switch(type[0]) {
 	case 'a':
-	    fscanf(tracefile, "%u %u", &index, &size);
+	    ignored = fscanf(tracefile, "%u %u", &index, &size);
 	    trace->ops[op_index].type = ALLOC;
 	    trace->ops[op_index].index = index;
 	    trace->ops[op_index].size = size;
 	    max_index = (index > max_index) ? index : max_index;
 	    break;
 	case 'r':
-	    fscanf(tracefile, "%u %u", &index, &size);
+	    ignored = fscanf(tracefile, "%u %u", &index, &size);
 	    trace->ops[op_index].type = REALLOC;
 	    trace->ops[op_index].index = index;
 	    trace->ops[op_index].size = size;
 	    max_index = (index > max_index) ? index : max_index;
 	    break;
 	case 'f':
-	    fscanf(tracefile, "%ud", &index);
+	    ignored = fscanf(tracefile, "%ud", &index);
 	    trace->ops[op_index].type = FREE;
 	    trace->ops[op_index].index = index;
 	    break;
