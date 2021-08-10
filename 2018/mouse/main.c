@@ -1,17 +1,26 @@
 // Interpreter for the Mouse language.
 // http://mouse.davidgsimpson.com/mouse83/intro83.html
 // http://mouse.davidgsimpson.com/mouse83/ref83.html
-//  Decide if we should have bounds checks or just rely on $ for end of program
-//  Add error reporting
+// http://www.retroprogramming.com/2012/08/mouse-language-for-microcomputers-by.html
+//
+// TODO
+//      Decide if we should have bounds checks or just rely on $ for end of program
+//      Add error reporting
+//      Fix recursive calls
+//      Move regs from stack
+//      Let loops use envstack
+//      Comment the code
+//      Write debugger
+//      Add documentation of language like http://www.retroprogramming.com/2012/08/mouse-language-for-microcomputers-by.html
 
 #include <assert.h>
 #include <ctype.h>
+#include <limits.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
-#include <limits.h>
 
 #define POPS(stack, ptr, n) \
     (assert(ptr - stack >= n))
@@ -134,7 +143,8 @@ int32_t interpret(char *program) {
     CallFrame callstack[MAX_STACK];
     CallFrame *fp = callstack;
 
-    int32_t registers[NUM_REGS] = {0};
+    int32_t register_banks[NUM_REGS * MAX_STACK] = {0};
+    int32_t *registers = register_banks;
     char *macros[NUM_MACROS] = {NULL};
 
     bool tracing = false;
@@ -257,6 +267,7 @@ int32_t interpret(char *program) {
             code++;
             fp++;
             memset(fp, 0, sizeof(*fp));
+            fp->type = MACRO_FRAME;
             assert((*code >= 'a' && *code <= 'z') || (*code >= 'A' && *code <= 'Z'));
             char *macro = macros[tolower(*code) - 'a'];
             code++;
@@ -268,12 +279,14 @@ int32_t interpret(char *program) {
             assert(*code == ';');
             code++;
 
-            memcpy(fp->saved_regs, registers, NUM_REGS * sizeof(registers[0]));
+            registers += NUM_REGS;
+            //memcpy(fp->saved_regs, registers, NUM_REGS * sizeof(registers[0]));
             code = macro;
             break;
         }
         case '@':
-            memcpy(registers, fp->saved_regs, NUM_REGS * sizeof(registers[0]));
+            registers -= NUM_REGS;
+            //memcpy(registers, fp->saved_regs, NUM_REGS * sizeof(registers[0]));
             assert(fp >= callstack);
             code = fp->old_code;
 
@@ -291,6 +304,7 @@ int32_t interpret(char *program) {
             code = fp->old_code;
             fp++;
             memset(fp, 0, sizeof(*fp));
+            fp->type = PARAMETER_FRAME;
             fp->old_code = old_code;
 
             // TODO(dannas):
