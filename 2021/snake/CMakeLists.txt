@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.15)
+project(snake)
+find_package(raylib 3.5.0 REQUIRED)
+set(CMAKE_C_STANDARD 11)
+add_executable(snake main.c)
+target_link_libraries(snake raylib)
