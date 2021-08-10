@@ -6,16 +6,22 @@
 
 namespace danstd {
 
-// A bare minimum symboltable for key/value lookups. Do NOT use in production;
-// for educational purpose only.
+// The map class represents an ordered symbol table of generic key-value pairs.
+// It supports the usual put, get, contains, delete, size and is-empty methods.
+// It also provides methods for iterating over all the key-value pairs.
+// A symbol table implements the associative array abstraction: when associating a
+// value with a key that is already present in the symbol table, the convention
+// is to replace the old value with the new value.
 //
-// It demonstrates the most commonly used map functionality such as key/value
-// lookup, insertion, deletion and iteration.
+// This implementation uses an (unbalanced) binary search tree. It requires that
+// the key type implements the less than operator.
 //
-// The map is built upon a plain, non-balancing, binary search tree (BST). So
-// worse case runtime is O(n).
-//
-// The class does not provide allocators, nor custom Compare functions.
+// The get/put, contains, size and delete all takes linear time in the worst case, if the
+// tree becomes unbalanced. The empty operation take constant time.
+// Construction takes constant time.
+
+// The class does not provide allocators, nor custom Compare functions. It also omits
+// some of the range finding functions such as equal_range, lower_bound and upper_bound.
 template <typename K, typename V>
 class map {
 
@@ -129,14 +135,73 @@ public:
 
     V& operator[](const K& key) {
         // TODO(dannas): Rewrite to only traverse the tree once.
-        V* val = get(root_, key);
-        if (!val) {
+        node* node = get(root_, key);
+        if (!node) {
             V def = V();
             root_ = put(nullptr, root_, key, def);
         }
-        return *get(root_, key);
+        return get(root_, key)->kv.second;
     }
 
+    size_t erase(const K& key) {
+        node* curr = get(root_, key);
+        if (!curr)
+            return 0;
+
+        // http://www.algolist.net/Data_structures/Binary_search_tree/Removal
+        // Three cases
+        // i. no children
+        // ii. one children
+        // iii. two children
+        //
+        // Need to specialcase the root node!
+        // Case i and ii  are easy
+        // Case iii can be handled with a trick: Swap values of smallest node in right subtree and current node
+        // Remove the what was smallest node in right subtree
+
+        // TODO(dannas): Make special case for parent == root (or is it for curr == root)?
+        node* parent = curr->parent;
+        //node* parentPtr = parent->right == curr ? parent->right : parent->left;
+
+        // No children
+        if (!curr->left && !curr->right) {
+            //parentPtr = nullptr;
+            delete curr;
+        // One children
+        } else if (curr->left && !curr->right) {
+            //parentPtr = curr->left;
+            curr->left->parent = parent;
+        } else if (!curr->left && curr->right) {
+            //parentPtr = curr->right;
+            curr->right->parent = parent;
+        // Two children
+        } else {
+            ;
+            //node* n = curr->right;
+#if 0
+            while (n->left)
+                n = n->left;
+            curr->kv = n->kv;
+            // TODO(dannas): Update n parent pointer and delete n
+            node *nParent = n->parent;
+            node *nParentPtr = nParent->right == n ? nParent->right : nParent->left;
+            nParentPtr = nullptr;
+            delete n;
+#endif
+        }
+
+#if 0
+        // If this was the last element in the tree, mark it as empty.
+        if (parent == nullptr && curr->left == nullptr && curr->right == nullptr)
+            root_ = nullptr;
+#endif
+
+        delete curr;
+
+        return 1;
+    }
+
+    // Return the number of key-value pairs in this symbol table.
     size_t size() {
         return size(root_);
     }
@@ -167,7 +232,7 @@ private:
         }
     }
 
-    V* get(node* n, const K& key) {
+    node* get(node* n, const K& key) {
         if (!n)
             return nullptr;
         if (key < n->kv.first)
@@ -175,7 +240,7 @@ private:
         else if (key > n->kv.first)
             return get(n->right, key);
         else
-            return &n->kv.second;
+            return n;
     }
 
     node* put(node* parent, node* n, const K& key, const V& val) {
@@ -201,6 +266,7 @@ private:
         return N + 1;
     }
 
+    // Root of the BST.
     node* root_;
 };
 

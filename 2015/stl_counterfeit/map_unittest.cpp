@@ -134,6 +134,20 @@ TEST(Map, AssignmentOperator_CopySeveralElements) {
     ASSERT_EQ(8, copy[7]);
 }
 
+TEST(Map, Erase_EmptyShouldHaveNoEffect) {
+    danstd::map<int, int> m;
+    size_t ret = m.erase(42);
+    ASSERT_EQ(0, ret);
+    ASSERT_EQ(0, m.size());
+}
+
+TEST(Map, Erase_LastElementShouldLeaveMapEmpty) {
+    danstd::map<int, int> m;
+    m[42] = 1;
+    size_t ret = m.erase(42);
+    ASSERT_EQ(1, ret);
+    ASSERT_EQ(0, m.size());
+}
 
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);

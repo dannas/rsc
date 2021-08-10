@@ -1,0 +1,6 @@
+/home/dannas/code/rsc/2015/string_performance/build/CMakeFiles/rebuild_cache.dir
+/home/dannas/code/rsc/2015/string_performance/build/CMakeFiles/edit_cache.dir
+/home/dannas/code/rsc/2015/string_performance/build/CMakeFiles/stringtest.dir
+/home/dannas/code/rsc/2015/string_performance/build/CMakeFiles/String.dir
+/home/dannas/code/rsc/2015/string_performance/build/CMakeFiles/stringtest_autogen.dir
+/home/dannas/code/rsc/2015/string_performance/build/CMakeFiles/String_autogen.dir

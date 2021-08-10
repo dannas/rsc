@@ -3,6 +3,7 @@
 #include <vector>
 #include <iterator>
 #include <utility>
+#include <algorithm>
 
 namespace danstd {
 
@@ -249,6 +250,7 @@ O move_backward(I b, I e, O d_b, O d_e) {
 template <typename I, typename T>
 void fill(I b, I e, T val) {
     for (; b != e; ++b)
+// TODO(dannas): Add
         *b = val;
 }
 
@@ -474,8 +476,16 @@ I partition_point(I b, I e, F f) {
     return b;
 }
 
-// TODO(dannas): Add
-// stable_partion
+// TODO(dannas): Does not handle allocation failures
+template <typename I, typename F>
+I stable_partition(I b, I e, F f) {
+    size_t size = e - b;
+    I t[] = new I[size];
+    copy(b, e, begin(t));
+    I d_e = std::copy_if(begin(t), end(t), b, f);
+    std::copy_if(begin(t), end(t), d_e, [f] (auto x) { return !f(x);});
+    return d_e;
+}
 
 // Sorting operations
 

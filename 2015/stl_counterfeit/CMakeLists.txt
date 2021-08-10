@@ -10,12 +10,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g3 -Wall -Wextra -Werror -Wswitch-e
 set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 set(CMAKE_BUILD_TYPE "Debug")
 
-set(SOURCES
-    algorithm.h
-    unique_ptr.h
-    string.h
-    map.h
-)
 
 add_executable(algorithm-test
     algorithm_unittest.cpp
@@ -37,13 +31,20 @@ add_executable(map-test
     map.h
 )
 
+add_executable(unordered_map-test
+    unordered_map_unittest.cpp
+    unordered_map.h
+)
+
 target_link_libraries(algorithm-test GTest::GTest GTest::Main)
 target_link_libraries(unique_ptr-test GTest::GTest GTest::Main)
 target_link_libraries(string-test GTest::GTest GTest::Main)
 target_link_libraries(map-test GTest::GTest GTest::Main)
+target_link_libraries(unordered_map-test GTest::GTest GTest::Main)
 
 add_test(algorithm-test   algorithm-test)
 add_test(unique_ptr-test   unique_ptr-test)
 add_test(string-test   string-test)
 add_test(map-test   map-test)
+add_test(unordered_map-test   unordered_map-test)
 

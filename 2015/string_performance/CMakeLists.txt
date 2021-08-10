@@ -12,7 +12,7 @@ find_package(Qt5Core)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PKG REQUIRED libglog)
-pkg_check_modules(PKG REQUIRED libgflags)
+pkg_check_modules(PKG REQUIRED gflags)
 include_directories(${PKG_INCLUDE_DIRS})
 
 add_executable(stringtest stringtest.cpp)
