@@ -1,0 +1,35 @@
+7 insert_sort
+    My sorted_insert didn't set a next pointer to NULL
+        Another reason why Nicks code was better - fewer ifs, means less chance of bugs
+
+8 list_append
+    I got confused about what ptr-to-ptrs actually points to
+    The debugger can't singlestep through for statements with empty loop bodies
+
+10 remove_duplicates
+    Bug in list traversal
+        For each node i, I scanned the list from [0, i)
+        If the node i was a duplicated, I removed it with *pp = (*pp)->next
+        But I then unconditionally stepped the ptr: pp = &(*p)->next
+            So the former expression *pp = (*pp)->next updated the value of (**pp).next to be **(p+1)
+            The later didnt change the value of the next ptr, but it followed the value of it.
+            Meaning it would would move 2 steps instead of the intended 1
+    I had misunderstood the problem description - the list was already sorted
+        Then I only need to keep track of adjacent nodes
+    3 attempts at fxing bugs in list traversal before I got it right
+        I needed to keep track of both the node to delete, and when to step the ptr
+            I always stepped the ptr which was wrong. We need to stay in one place until we've determined
+            that there are no more duplicates ahead.
+14 sorted_merge
+    while (a && b) should have been while (a || b)
+    too complex loop body
+        three cases: a empty; b empty; none empty
+        for the two empty cases, it's enough to just point to the head of the remaining list
+15 merge_sort
+    Mixed up args to func
+        front_back_split(head, &a, &b);
+        merge_sort(head); // <---- Should have been &a
+        merge_sort(&b);
+        *head = sorted_merge(a, b);
+    Took some time to debug.
+
