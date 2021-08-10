@@ -1,0 +1,22 @@
+MODULE foo;
+        CONST MA = 1;
+        TYPE A_10_I = ARRAY 10 OF INTEGER;
+             B_10_I = ARRAY 10 OF INTEGER;
+             C_10_I = ARRAY 11 OF BOOLEAN;
+             A_10_B = ARRAY 10 OF BOOLEAN;
+             A_3_4 = ARRAY 3 OF ARRAY 5 OF INTEGER;
+             R_I = RECORD
+                    a, b : INTEGER;
+                    c : BOOLEAN
+             END;
+        VAR mx, my, mz: INTEGER;
+    PROCEDURE Add;
+        CONST A = 1;
+        TYPE T = INTEGER;
+        VAR r : R_I;
+    BEGIN
+        r.a := 1;
+        r.b := 2;
+        r.a := r.a + r.b;
+    END Add;
+END foo.
