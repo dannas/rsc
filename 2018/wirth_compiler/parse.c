@@ -185,9 +185,27 @@ void parse_expr();
 void parse_selector(Type *type) {
     while (is_token(TOKEN_DOT) || is_token(TOKEN_LBRACKET)) {
         if (is_token(TOKEN_DOT)) {
+            if (type->kind != TYPE_RECORD) {
+                fatal_error_here("Dot selector, but not a record");
+            }
             // TODO(dannas): Generate asm for selector
             next_token();
-            expect_token(TOKEN_NAME);
+            if (!is_token(TOKEN_NAME)) {
+                fatal_error_here("Expected a name");
+            }
+            TypeField *field = NULL;
+            for (field = type->record.fields; field < type->record.fields + type->record.num_fields; field++) {
+                if (field->name == token.name) {
+                    break;
+                }
+            }
+            if (!field) {
+                fatal_error_here("'%s' is not a known type field", token.name);
+            }
+            asm_imm_op(assembler, MOVI, current_reg, R0, field->offset);
+            current_reg++;
+
+            next_token();
         }  else if (is_token(TOKEN_LBRACKET)) {
             if (type->kind != TYPE_ARRAY) {
                 fatal_error_here("Bracket selectors, but not an array");
@@ -311,7 +329,9 @@ void parse_assignment() {
         parse_selector(sym->type);
         expect_token(TOKEN_COLON_ASSIGN);
         parse_expr();
-        if (kind == TYPE_ARRAY || kind ==TYPE_RECORD) {
+        if (kind == TYPE_ARRAY) {
+            asm_stw_var(assembler, current_reg-1, current_reg-2, sym->var_index);
+        } else if (kind == TYPE_RECORD) {
             asm_stw_var(assembler, current_reg-1, current_reg-2, sym->var_index);
         } else {
             asm_stw_var(assembler, current_reg-1, R0, sym->var_index);

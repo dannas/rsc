@@ -9,3 +9,7 @@ set(PARTS
 
 set_source_files_properties(${PARTS} PROPERTIES HEADER_FILE_ONLY TRUE)
 add_executable(main main.c ${PARTS})
+add_executable(system_fd system_fd.c)
+add_executable(exploit_fd exploit_fd.c)
+add_executable(system_env system_env.c)
+add_executable(ping exploit_env.c)

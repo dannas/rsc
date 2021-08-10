@@ -1,10 +1,13 @@
 #include <stdlib.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include <errno.h>
 
 #include <grp.h> // setgroup
+#include <dirent.h>
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -131,7 +134,107 @@ int system3(const char *cmd) {
     return status;
 }
 
+// Not async-signal safe. opendir(3) allocates memory.
 int system4(const char *cmd) {
+    int status;
+    pid_t pid;
+
+    switch (pid = fork()) {
+    case -1:
+        return -1;
+    case 0: {
+        DIR *dir = opendir("/proc/self/fd");
+        if (dir == NULL) {
+            perror("opendir");
+            abort();
+        }
+
+        struct dirent *dirent = NULL;
+        errno = 0;
+        dirent = readdir(dir);
+        do {
+            if (dirent == NULL && errno != 0) {
+                perror("readdir");
+                abort();
+            }
+
+            if (dirent->d_type & DT_UNKNOWN) {
+                fprintf(stderr, "File type could not be determined\n");
+                abort();
+            }
+
+            if (dirent->d_type & DT_LNK) {
+                errno = 0;
+                long val = strtol(dirent->d_name, NULL, 10);
+                if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN))
+                        || (errno != 0 && val == 0)) {
+                    fprintf(stderr, "Unknown file descriptor\n");
+                    abort();
+                }
+                int fd = val;
+
+                if (fd > 2 && fd != dirfd(dir)) {
+                    close(fd);
+                }
+            }
+            dirent = readdir(dir);
+        } while (dirent != NULL);
+
+        closedir(dir);
+
+        execl("/bin/sh", "sh", "-c", (char **)cmd, NULL);
+        _exit(127);
+    }
+
+    default:
+        if (waitpid(pid, &status, 0) == -1) {
+            return -1;
+        }
+    }
+    return status;
+}
+
+typedef struct LinuxDirent {
+    long ino;
+    off_t off;
+    unsigned short len;
+    char name[];
+} LinuxDirent;
+
+int system5(const char *cmd) {
+    int status;
+    pid_t pid;
+
+    switch (pid = fork()) {
+    case -1:
+        return -1;
+    case 0: {
+        int dir_fd = open("/proc/self/fd", O_DIRECTORY | O_RDONLY);
+        char buf[BUFSIZ];
+
+        while (true) {
+            ssize_t num_read = syscall(SYS_getdents, dir_fd, buf, sizeof(buf));
+        }
+
+
+        // TODO: check error
+
+
+
+        close(dir_fd);
+        execl("/bin/sh", "sh", "-c", (char **)cmd, NULL);
+        _exit(127);
+    }
+
+    default:
+        if (waitpid(pid, &status, 0) == -1) {
+            return -1;
+        }
+    }
+    return status;
+}
+
+int system6(const char *cmd) {
     int status;
     pid_t pid;
 
@@ -182,15 +285,49 @@ int system4(const char *cmd) {
 }
 
 int main() {
+#if 0
     int fd = open("/proc/self/fd", O_DIRECTORY, O_RDONLY);
     char buf[BUFSIZ];
     while (true) {
         int num_read = syscall(SYS_getdents, fd, buf, BUFSIZ);
         if (num_read == 0) {
+
             break;
         }
+    }
+#endif
 
+
+    extern char** environ;
+    size_t environ_size = 0;
+    size_t num_bytes = 0;
+    for (char **ptr = environ; *ptr != NULL; ptr++) {
+        environ_size++;
+        num_bytes += strlen(*ptr) + 1;
     }
 
+    char *env_buf = malloc(num_bytes);
+    char *new_environ = calloc(environ_size, sizeof(*environ));
 
+    const char **restriced_environ = {
+        "PATH",
+        "IFS",
+        NULL
+    };
+
+    const char **preserved_environ = {
+        "TZ",
+        NULL
+    };
+
+    for (char **ptr = environ; *ptr != NULL; ptr++) {
+        char *key = *ptr;
+        char *end = strchr(*ptr, '=');
+        if  (!end) {
+            continue;
+        }
+        char *val = end + 1;
+        printf("%.*s = %s \n", end-key, key, val);
+
+    }
 }

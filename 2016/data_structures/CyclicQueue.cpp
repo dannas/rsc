@@ -9,6 +9,10 @@ using namespace std;
 // Or use bitwise tricks for powers-of-2.
 // https://www.kernel.org/doc/Documentation/circular-buffers.txt
 
+// TODO(dannas): Write an ADT fuzzer
+//http://blog.regehr.org/archives/896
+// https://github.com/regehr/fs-fuzz
+
 // Uses regular indices. Upon each |enqueue| and |dequeue| call, we make sure
 // that we properly wrap around the indices.
 template <typename T>

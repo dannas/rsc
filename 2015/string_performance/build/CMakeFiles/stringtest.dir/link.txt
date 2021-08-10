@@ -1,1 +1,0 @@
-/usr/lib/ccache/c++  -std=c++11   -rdynamic CMakeFiles/stringtest.dir/stringtest.cpp.o CMakeFiles/stringtest.dir/stringtest_autogen/mocs_compilation.cpp.o  -o stringtest /usr/lib/x86_64-linux-gnu/libQt5Core.so.5.9.5 -lgflags -lgflags -lfolly -lfollybenchmark 

@@ -7,22 +7,11 @@ def Input(day, line_parser=str.split):
     filename = 'advent2019/input{}.txt'.format(day)
     return mapt(line_parser, open(filename))
 
+cat = ''.join
+
 def InputStr(day):
     filename = 'advent2019/input{}.txt'.format(day)
     return open(filename).read().rstrip('\n')
-
-def array(string):
-    return [vector(line) for line in string.splitlines()]
-
-def vector(line):
-    return [atom(word) for word in line.split()]
-
-# TODO(dannas): Check floats as well
-def atom(word):
-    try:
-        return int(word)
-    except ValueError:
-        return word
 
 def mapt(fn, *args):
     return tuple(map(fn, *args))

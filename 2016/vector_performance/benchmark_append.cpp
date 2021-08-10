@@ -58,8 +58,8 @@ static void BM_New(benchmark::State& state) {
         }
         delete [] bigarray;
     }
+    state.SetBytesProcessed(state.iterations() * state.range_x() * sizeof(int));
 }
-BENCHMARK(BM_New)->Range(8, 8<<15);
 
 static void BM_VectorResizeIndex(benchmark::State& state) {
     int N = state.range_x();
@@ -73,8 +73,8 @@ static void BM_VectorResizeIndex(benchmark::State& state) {
             benchmark::ClobberMemory();
         }
     }
+    state.SetBytesProcessed(state.iterations() * state.range_x() * sizeof(int));
 }
-BENCHMARK(BM_VectorResizeIndex)->Range(8, 8<<15);
 
 static void BM_VectorPushBack(benchmark::State& state) {
     int N = state.range_x();
@@ -88,8 +88,8 @@ static void BM_VectorPushBack(benchmark::State& state) {
             benchmark::ClobberMemory();
         }
     }
+    state.SetBytesProcessed(state.iterations() * state.range_x() * sizeof(int));
 }
-BENCHMARK(BM_VectorPushBack)->Range(8, 8<<15);
 
 static void BM_VectorReservePushback(benchmark::State& state) {
     int N = state.range_x();
@@ -104,8 +104,8 @@ static void BM_VectorReservePushback(benchmark::State& state) {
             benchmark::ClobberMemory();
         }
     }
+    state.SetBytesProcessed(state.iterations() * state.range_x() * sizeof(int));
 }
-BENCHMARK(BM_VectorReservePushback)->Range(8, 8<<15);
 
 static void BM_VectorResizeIterator(benchmark::State& state) {
     int N = state.range_x();
@@ -121,8 +121,13 @@ static void BM_VectorResizeIterator(benchmark::State& state) {
             benchmark::ClobberMemory();
         }
     }
+    state.SetBytesProcessed(state.iterations() * state.range_x() * sizeof(int));
 }
-BENCHMARK(BM_VectorResizeIterator)->Range(8, 8<<15);
 
+BENCHMARK(BM_New)->Range(8, 8<<15);
+BENCHMARK(BM_VectorResizeIndex)->Range(8, 8<<15);
+BENCHMARK(BM_VectorPushBack)->Range(8, 8<<15);
+BENCHMARK(BM_VectorReservePushback)->Range(8, 8<<15);
+BENCHMARK(BM_VectorResizeIterator)->Range(8, 8<<15);
 
 BENCHMARK_MAIN();

@@ -1,0 +1,189 @@
+# Arrays and Strings
+1 unique
+    sorting
+        forgot memcpy in strdup
+        used < instead of - in qsort compare function
+        mixed up ptrs and indexes for a compare-prev-with-current loop
+        forgot to free memory
+        mixed up boolean init when replacing return with break
+    hashing
+        wrong signature for calloc
+        forgot to call hash function
+        complicated iteration over string: len instead of checking for \0
+    bitset
+        didn't subtract 'a' from char when used as bitset index
+        used int in shift expr where result should be uint64_t
+
+2 reverse
+    forgot to step ptr when iterating
+    forgot to free copy in test_reverse
+    could have simplified ptr iteration by using '*ptr++' = idiom
+    could have removed strlen call for speedup
+    end++ instead of the intended end-- when replacing strlen with loop
+
+3 remove duplicates
+    forgot to clear bitset[4]
+    mixed up bit_set and bit_test
+    typos in testcases
+
+4 anagrams
+    table
+        tried bitset but quickly realized that I couldn't count number of  chars
+        used two 256 arrays, but changed from int to uint8_t to use less memory
+        I could have used one array and counted up for s and down for t! The solution in the book.
+    sorting
+        realized that I could optimize by comparing len first
+
+5 replace spaces
+    forgot to initialize ptr in for stmt
+    left out const designator for ptr to const char*
+    forgot to insert \0 to the returned buffer
+
+6 rotate image
+    full copy
+        uint32_t grid[][] instead of uint32_t grid[][len]
+        didn't understand how to pass arrays i C
+            void f(uint32_t  *grid[], ...)
+            uint32_t grid[3][3] = {...}
+            f(grid); // error: expected **uint32_t but arg is of type *uint32_t(*)[3]
+
+            Solution:
+                If C99 use: void f(size_t N, uint32_t *grid[N]);
+                If C89 and dim is global and constant: void f(uint32_t *grid[N]);
+                If C89 and dim is dynamic: cast array to **uint32_t: f((uint32_t**)grid[0][0]
+                    fragile, may cause UB
+                    Then you have to use manual calculations for row, col: arr[nrows * N + ncols]
+        passed sizeof(grid[0]) when I wanted the len. Should have been sizeof(grid[0])/sizeof(grid[0][0])
+        (uint32_t[3][3])(grid) did not work as watch expression, but *grid@3 and ((uint32_t(*)[3])grid)[0..2]
+    in place
+        Had a vague idea, but cheated and looked up the answer
+        missed to subtract 1 from grid[N-i] expressions
+        missed to subtract 1 from end expression in inner for loop
+        the var names made it hard to understand the code
+            replaced len-i-1 calculations with an offset variable
+        used sizeof(grid)/sizeof(grid[0][0]) when calculated size to memcmp. Should have used sizeof(grid)
+
+7 clear row/col
+    hash_table
+        forgot to adjust hash key values if zero
+        didn't handle the case where map->len == 0
+        didn't increment i in map_put insertion-loop
+        flipped comparison operator in map_put: 2 * len <= cap
+        didn't distinguish between visited and cleared
+    row and col arrays
+        used NxN space where only 2xN space was needed (could just store rows and cols)
+        checked for zero (if rows[r] == 0 ...) when I should have checked for true
+
+# Linked Lists
+1 remove duplicates
+    didn't remember how to write linked node_append
+    needless complicated node_delete
+        had special case for head==NULL and head->val == val.
+    Tried to record visited node by appending existing nodes
+        Would have rewritten the original nodes next ptrs!
+    traversed [head, ptr) but had wrong stop condition: sptr->next != ptr. Should have been sptr != ptr
+    forgot prev = ptr when iterating over linked list
+    Didn't handle deletion of last node
+    ptr and sptr were too close in naming: ptr and runner are better
+
+3 delete node in middle
+
+# Stacks and Queues
+1 Three stacks
+    assert(sp < size) => assert(sp < array+size)
+    Tried updating a copy instead of ptr to ptr
+        int* stack_ptr[3]
+        int* sp = stack_ptr[index]
+        *sp++ = val;
+   Messed up operator priorities when I first used a ptr-to-ptr
+        int* stack_ptr[3]
+        int** sp = &stack_ptr[index]
+        **sp++ = val; // (**sp)++
+    Had an off by one
+        assert(*sp < (index+1) * NUM_STACK - 1) => assert(*sp < (index+1) * NUM_STACK)
+   Implemented a version using indicies. Had to
+        size_t stack_ptr[3];
+        int *sp = &stack_ptr[index];
+        stack[(*sp)++] = val;
+   The book stored the size of the each stack in stack_ptr instead of the indices in the shared array.
+        Simplified the address calculations
+   The book also avoided using pointers into stack_ptr
+        int stack[NUM_STACK];
+        size_t stack_ptr[3] = {0, 0, 0};
+
+        void push(size_t stack_index, int val) {
+            size_t i = stack_index * NUM_STACK + stack_ptr[stack_index];
+            stack_ptr[stack_index]++;
+            stack[i] = val;
+        }
+2 Min stack
+    My idea was a stack with nodes containing backreferences to the index of the minimum element
+    The book had the same solution, but suggested a separate stack as a way to save space
+    Implemented that but realized that it would only be a space saving if the stack was dynamically allocated
+    The index version was somewhat verbose:
+        int stack[NUM_STACK]
+        size_t stack_index;
+
+        size_t min_stack[NUM_STACK];
+        size_t min_stack_index;
+
+        void push(int val) {
+            if (min_stack_index == 0 || val < stack[min_stack[min_stack_ptr-1]]) {
+                min_stack[min_stack_ptr++] = val;
+            }
+            ...
+        }
+    Using pointers instead gives
+        int stack[NUM_STACK];
+        int *stack_ptr;
+
+        int *stack[NUM_STACK];
+        int **min_stack_ptr;
+
+        void push(int val) {
+            if (min_stack_ptr == min_stack || val < *min_stack_ptr[-1]) {
+                *min_stack_ptr++ = val;
+            }
+            *stack_ptr++ = val;
+        }
+
+3 Set of stacks
+    Tried implementing a simple dynamic array and fell into a deep hole
+        First I wrote the stretchy buffer code again. But that is too long and obscure to be used in an interview
+        Then I wrote a simple dynamic array where I wanted to use a flexible array member and allow passing in a zeroed struct
+        But flexible array members are not zeroed
+
+            typedef struct Arr {
+                size_t len;
+                size_t cap;
+                int buf[];
+            }
+
+            void grow(Arr *arr) {
+                if (arr->buf) // illegal. Points outside the size of the Arr struct
+            }
+        And the Arr needs to be dynamically allocated in one batch (not a separate alloc for buf) so can't place Arr on the stack.
+        Finally rewrote the whole thing using stretchy bufs. Much shorter.
+        Had an off-by-one when I set the
+            stack_index = NUM_STACK -1;
+
+        Should have been
+            stack_index = NUM_STACK;
+
+4 Towers of Hanoi
+    I was stuck trying to figure out how Towers of Hanoi should be solved
+    Knew it was a recursive relation, but couldn't figure out how to approach it.
+    I spent some time coming up with an ADT for a stack, only to figure out that it wasn't needed.
+    I needed three stacks and this is what I came up with:
+        int stacks[3][NUM_STACK];
+        int *sp[3] = {
+            [0] = stacks[0],
+            [1] = stacks[1],
+            [2] = stacks[2],
+        };
+
+
+
+
+
+

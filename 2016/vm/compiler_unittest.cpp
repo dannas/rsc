@@ -95,15 +95,17 @@ TEST(Compiler, RemainderOfTwoConstants) {
 
 TEST(Compiler, ForwardBranch) {
     char buf[] = R"(
-        iconst 1
         br .end
+        iconst 1
         halt
     .end
+        iconst 1
         iconst 1
         iadd
         halt
     )";
     EXEC_AND_COMPARE(2, buf);
+    EXEC_AND_COMPARE2(2, buf);
 }
 
 TEST(Compiler, ForwarAndBackwarddBranch) {
@@ -121,6 +123,7 @@ TEST(Compiler, ForwarAndBackwarddBranch) {
         halt
     )";
     EXEC_AND_COMPARE(3, buf);
+    EXEC_AND_COMPARE2(3, buf);
 }
 
 TEST(Compiler, CompareForLessThan_WhenLess) {

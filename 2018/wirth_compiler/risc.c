@@ -380,6 +380,7 @@ void step(Hart *hart) {
         next_pc = hart->regs[disp % NUM_REGS];
         if (disp == 0) {
             hart->done = true;
+            return;
         }
         break;
     default:

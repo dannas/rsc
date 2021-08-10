@@ -1,18 +1,6 @@
 from common import *
 import sys
 
-# 50min part 1
-# 15min part 2
-# Mixed up def of parameter modes
-# Function ints did not handle negative numbers
-# Did not increment pc correctly
-# Could not call sys.stdin.read from debugger
-# next(str) did not work 
-# str[0] was a str, should have casted it to int
-
-# Lessons
-# Be sure to test all utilities
-# Check small sample in debugger
 
 ADD, MUL, IN, OUT, BT, BF, BLT, BEQ, HALT = 1, 2, 3, 4, 5, 6, 7, 8, 99
 
