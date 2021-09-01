@@ -19,7 +19,8 @@ fun eof() = let
 		(case !state of
 		  COMMENT_SEEN => err pos "missing comment terminator"
 		| STRING_SEEN => err pos " missing string terminator"
-		| _ => (); Tokens.EOF(pos,pos))
+		| _ => (); 
+		Tokens.EOF(pos,pos))
 	end
 
 %% 
@@ -87,7 +88,6 @@ ws=[ \t];
 			     continue());
 <STRING>.     		=>  (stringLiteral := !stringLiteral ^ yytext; 
 			     continue());
-
 <INITIAL>"/*"    	=> (YYBEGIN COMMENT; 
 			    continue());
 <COMMENT>"*/"    	=> (YYBEGIN INITIAL; 
